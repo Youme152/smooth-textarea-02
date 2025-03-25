@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ChevronDown, ArrowUp, Paperclip, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
+import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -17,6 +18,23 @@ const Index = () => {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 24,
     maxHeight: 200,
+  });
+
+  const placeholders = [
+    "What do you want to know?",
+    "How can I help you today?",
+    "Ask me anything...",
+    "Looking for information?",
+    "Need some assistance?",
+    "What can I research for you?",
+    "Let's explore a topic together..."
+  ];
+
+  const { placeholderText } = usePlaceholderTyping({
+    placeholders,
+    typingSpeed: 70,
+    deletingSpeed: 40,
+    pauseDuration: 2000
   });
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -53,7 +71,12 @@ const Index = () => {
 
         {/* Chat Input Container */}
         <div className="w-full mb-5">
-          <div className="w-full bg-[rgba(39,39,42,0.5)] rounded-2xl overflow-hidden">
+          <div className={cn(
+            "w-full rounded-2xl overflow-hidden transition-all duration-300",
+            isInputFocused
+              ? "bg-[rgba(39,39,42,0.6)] shadow-lg ring-2 ring-purple-500/40"
+              : "bg-[rgba(39,39,42,0.5)] shadow-md"
+          )}>
             {/* Input Area */}
             <div className="p-3.5 sm:p-4">
               <textarea
@@ -66,8 +89,12 @@ const Index = () => {
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
-                placeholder="What do you want to know?"
-                className="w-full bg-transparent border-none text-white text-base outline-none resize-none p-0"
+                placeholder={placeholderText}
+                className={cn(
+                  "w-full bg-transparent border-none text-white text-base outline-none resize-none p-0",
+                  "placeholder:text-neutral-500 placeholder:opacity-70 transition-all duration-300",
+                  isInputFocused && "placeholder:text-purple-300 placeholder:opacity-50"
+                )}
                 style={{ overflow: "hidden" }}
               />
             </div>
@@ -75,15 +102,17 @@ const Index = () => {
             {/* Controls */}
             <div className="flex items-center justify-between px-2.5 py-2">
               <div className="flex items-center gap-3">
-                <button className="p-2 text-[#9ca3af] rounded-full hover:bg-white/10">
+                <button className="p-2 text-[#9ca3af] rounded-full hover:bg-white/10 active:scale-95 transition-all">
                   <Paperclip className="w-[18px] h-[18px]" />
                 </button>
                 
                 <button 
                   onClick={handleDeepResearch}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm",
-                    "text-[#9ca3af] hover:bg-white/10 transition-colors"
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm transition-all",
+                    deepResearchActive 
+                      ? "bg-purple-600/30 text-purple-300 shadow-sm shadow-purple-500/20"
+                      : "text-[#9ca3af] hover:bg-white/10 active:bg-purple-600/20 active:text-purple-200"
                   )}
                 >
                   <Search className="w-[18px] h-[18px]" />
@@ -91,14 +120,14 @@ const Index = () => {
                   <ChevronDown className="w-[14px] h-[14px]" />
                 </button>
                 
-                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10">
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10 active:scale-95 transition-all">
                   <MoveHorizontal className="w-[18px] h-[18px]" />
                   Think
                 </button>
               </div>
 
               <div className="flex items-center gap-2">
-                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10">
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10 active:scale-95 transition-all">
                   Grok 3
                   <ChevronDown className="w-[14px] h-[14px]" />
                 </button>
@@ -107,10 +136,10 @@ const Index = () => {
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
                   className={cn(
-                    "w-9 h-9 flex items-center justify-center rounded-lg transition-colors",
+                    "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
                     input.trim() 
-                      ? "bg-white text-black" 
-                      : "bg-[#555] text-white opacity-80"
+                      ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
+                      : "bg-[#555] text-white opacity-80 cursor-not-allowed"
                   )}
                 >
                   <ArrowUp className="w-[18px] h-[18px]" />
@@ -122,14 +151,14 @@ const Index = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-2.5 mt-3.5">
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path>
             </svg>
             Research
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -138,28 +167,28 @@ const Index = () => {
             Create images
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <Heart className="w-4 h-4" />
             How to
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <BarChart2 className="w-4 h-4" />
             Analyze
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <Code className="w-4 h-4" />
             Code
           </button>
         </div>
 
-        <button className="mt-5 mb-2.5 text-sm text-[#9ca3af] bg-transparent border-none cursor-pointer hover:text-white hover:underline">
+        <button className="mt-5 mb-2.5 text-sm text-[#9ca3af] bg-transparent border-none cursor-pointer hover:text-white hover:underline transition-colors">
           Switch to Personas
         </button>
 
         <div className="text-xs text-[#6b7280] text-center mt-2.5">
-          By messaging Grok, you agree to our <a href="#" className="text-[#9ca3af] no-underline hover:underline">Terms</a> and <a href="#" className="text-[#9ca3af] no-underline hover:underline">Privacy Policy</a>.
+          By messaging Grok, you agree to our <a href="#" className="text-[#9ca3af] no-underline hover:underline transition-colors">Terms</a> and <a href="#" className="text-[#9ca3af] no-underline hover:underline transition-colors">Privacy Policy</a>.
         </div>
       </div>
       <Toaster />

@@ -21,9 +21,16 @@ export function VercelV0Chat() {
     "Design a sign-up form...",
     "Build me a portfolio site...",
     "Create a responsive dashboard...",
+    "Implement a contact form...",
+    "Make an interactive quiz...",
   ];
 
-  const { placeholderText } = usePlaceholderTyping({ placeholders });
+  const { placeholderText } = usePlaceholderTyping({ 
+    placeholders,
+    typingSpeed: 70,
+    deletingSpeed: 40, 
+    pauseDuration: 2000
+  });
   
   const handleSendClick = () => {
     if (value.trim()) {

@@ -46,7 +46,7 @@ export function ChatInputArea({
     <div className={cn(
       "relative overflow-hidden rounded-xl transition-all duration-300",
       isInputFocused
-        ? "bg-neutral-800 dark:bg-neutral-900 shadow-lg border border-neutral-600 shadow-neutral-900/20"
+        ? "bg-neutral-800 dark:bg-neutral-900 shadow-lg border border-purple-500/30 ring-2 ring-purple-500/20 shadow-neutral-900/20"
         : "bg-neutral-800 dark:bg-neutral-900 border border-neutral-700 shadow-md"
     )}>
       <div className="overflow-y-auto">
@@ -69,7 +69,9 @@ export function ChatInputArea({
             "text-white text-xl", 
             "focus:outline-none",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
-            "placeholder:text-neutral-500 placeholder:text-xl", 
+            "placeholder:text-neutral-500 placeholder:text-xl",
+            "placeholder:transition-opacity placeholder:duration-200",
+            isInputFocused ? "placeholder:text-purple-300/50" : "placeholder:text-neutral-500",
             "min-h-[60px]",
             "transition-all duration-200"
           )}
@@ -86,14 +88,17 @@ export function ChatInputArea({
               <button
                 type="button"
                 className={cn(
-                  "px-2 py-1 rounded-lg text-sm transition-colors flex items-center justify-between gap-1",
+                  "px-2 py-1 rounded-lg text-sm transition-all duration-200 flex items-center justify-between gap-1",
                   deepResearchActive 
                     ? "bg-purple-600/30 text-purple-300 border border-purple-500/50 shadow-sm shadow-purple-500/20"
                     : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700 active:bg-purple-600/20 active:text-purple-200"
                 )}
                 onClick={toggleDeepResearch}
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className={cn(
+                  "w-4 h-4",
+                  deepResearchActive && "animate-pulse"
+                )} />
                 <span>Deep Research</span>
               </button>
             </TooltipTrigger>
@@ -106,7 +111,7 @@ export function ChatInputArea({
         <button
           type="button"
           className={cn(
-            "px-3 py-2 rounded-lg text-sm transition-all border flex items-center justify-between gap-1",
+            "px-3 py-2 rounded-lg text-sm transition-all duration-200 border flex items-center justify-between gap-1",
             value.trim() ? (
               "bg-neutral-700 text-white border-neutral-600 cursor-pointer hover:bg-neutral-600 active:bg-neutral-500 active:scale-95 shadow-sm"
             ) : (
