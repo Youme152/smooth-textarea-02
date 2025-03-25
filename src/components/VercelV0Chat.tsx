@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,13 +41,6 @@ export function VercelV0Chat() {
   
   const handleDeepResearch = () => {
     setDeepResearchActive(!deepResearchActive);
-    toast({
-      title: deepResearchActive ? "Deep Research Disabled" : "Deep Research Enabled",
-      description: deepResearchActive 
-        ? "Responses will be faster but may have less depth." 
-        : "Your queries will be researched more thoroughly.",
-      duration: 3000
-    });
   };
 
   return (

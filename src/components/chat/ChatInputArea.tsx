@@ -1,10 +1,11 @@
 
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
+import { SuggestionDropdown } from "./SuggestionDropdown";
 
 interface ChatInputAreaProps {
   value: string;
@@ -32,6 +33,50 @@ export function ChatInputArea({
     maxHeight: 200,
   });
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  // Generate suggestions based on input
+  useEffect(() => {
+    if (value.trim().length > 0) {
+      const firstChar = value.trim().toLowerCase().charAt(0);
+      const suggestionsMap: Record<string, string[]> = {
+        'h': [
+          "help me analyze Bitcoin during downturns",
+          "help me understand successful hedge fund strategies",
+          "help me predict interest rates",
+          "how can I save on grocery bills each month?"
+        ],
+        'w': [
+          "what is the best way to invest in stocks?",
+          "what programming language should I learn first?",
+          "what are the top AI trends in 2023?",
+          "where can I find reliable market data?"
+        ],
+        'c': [
+          "create a business plan for my startup",
+          "compare different investment strategies",
+          "can you explain how blockchain works?",
+          "calculate my potential retirement savings"
+        ],
+        // Add more first letters with their suggestions as needed
+      };
+      
+      // Get suggestions for the first character, or provide generic ones
+      const newSuggestions = suggestionsMap[firstChar] || [
+        `${value} - analysis and insights`,
+        `${value} - step by step guide`,
+        `${value} - comparison with alternatives`,
+        `${value} - best practices`
+      ];
+      
+      setSuggestions(newSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [value]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -39,6 +84,15 @@ export function ChatInputArea({
         onSend();
       }
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setValue(suggestion);
+    setShowSuggestions(false);
+    // Adjust textarea height for the new content
+    setTimeout(adjustHeight, 0);
+    // Focus back on textarea
+    textareaRef.current?.focus();
   };
 
   return (
@@ -58,16 +112,20 @@ export function ChatInputArea({
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsInputFocused(true)}
-          onBlur={() => setIsInputFocused(false)}
+          onBlur={() => {
+            setIsInputFocused(false);
+            // Small delay before hiding suggestions to allow for clicking them
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
           placeholder={placeholderText}
           className={cn(
             "w-full px-4 py-3",
             "resize-none",
             "bg-transparent",
-            "border-none",
+            "border-none outline-none",
             "text-white text-xl", 
             "focus:outline-none",
-            "focus-visible:ring-0 focus-visible:ring-offset-0",
+            "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
             "placeholder:text-neutral-500 placeholder:text-xl",
             "placeholder:transition-opacity placeholder:duration-200",
             isInputFocused ? "placeholder:opacity-80" : "placeholder:text-neutral-500",
@@ -79,6 +137,14 @@ export function ChatInputArea({
           }}
         />
       </div>
+
+      {/* Suggestions Dropdown */}
+      <SuggestionDropdown
+        inputValue={value}
+        suggestions={suggestions}
+        visible={showSuggestions && isInputFocused}
+        onSuggestionClick={handleSuggestionClick}
+      />
 
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">

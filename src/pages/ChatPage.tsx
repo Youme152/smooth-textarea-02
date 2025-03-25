@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TextGenerateEffect, MessageLoadingEffect } from "@/components/ui/text-generate-effect";
+import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 
 type Message = {
   id: string;
@@ -21,6 +22,8 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -48,6 +51,47 @@ const ChatPage = () => {
     }, 300);
   }, []);
 
+  // Generate suggestions based on input
+  useEffect(() => {
+    if (input.trim().length > 0) {
+      const firstChar = input.trim().toLowerCase().charAt(0);
+      const suggestionsMap: Record<string, string[]> = {
+        'h': [
+          "help me analyze Bitcoin during downturns",
+          "help me understand successful hedge fund strategies",
+          "help me predict interest rates",
+          "how can I save on grocery bills each month?"
+        ],
+        'w': [
+          "what is the best way to invest in stocks?",
+          "what programming language should I learn first?",
+          "what are the top AI trends in 2023?",
+          "where can I find reliable market data?"
+        ],
+        'c': [
+          "create a business plan for my startup",
+          "compare different investment strategies",
+          "can you explain how blockchain works?",
+          "calculate my potential retirement savings"
+        ],
+        // Add more first letters with their suggestions as needed
+      };
+      
+      // Get suggestions for the first character, or provide generic ones
+      const newSuggestions = suggestionsMap[firstChar] || [
+        `${input} - analysis and insights`,
+        `${input} - step by step guide`,
+        `${input} - comparison with alternatives`,
+        `${input} - best practices`
+      ];
+      
+      setSuggestions(newSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [input]);
+
   const handleSendMessage = () => {
     if (!input.trim()) return;
     
@@ -61,6 +105,7 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setInput("");
     adjustHeight();
+    setShowSuggestions(false);
     
     setIsGenerating(true);
     setTimeout(() => {
@@ -88,6 +133,15 @@ const ChatPage = () => {
       title: "Copied to clipboard",
       duration: 2000,
     });
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    setShowSuggestions(false);
+    // Adjust textarea height for the new content
+    setTimeout(adjustHeight, 0);
+    // Focus back on textarea
+    textareaRef.current?.focus();
   };
 
   return (
@@ -162,16 +216,20 @@ const ChatPage = () => {
               }}
               onKeyDown={handleKeyDown}
               onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
+              onBlur={() => {
+                setIsInputFocused(false);
+                // Small delay before hiding suggestions to allow for clicking them
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
               placeholder="How can I help?"
               className={cn(
                 "w-full px-5 py-4",
                 "resize-none",
                 "bg-transparent",
-                "border-none",
+                "border-none outline-none",
                 "text-white text-base",
                 "focus:outline-none",
-                "focus-visible:ring-0 focus-visible:ring-offset-0",
+                "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
                 "placeholder:text-gray-500 placeholder:text-base",
                 "min-h-[36px]",
                 "transition-all duration-300"
@@ -179,6 +237,14 @@ const ChatPage = () => {
               style={{
                 overflow: "hidden",
               }}
+            />
+
+            {/* Suggestions Dropdown */}
+            <SuggestionDropdown
+              inputValue={input}
+              suggestions={suggestions}
+              visible={showSuggestions && isInputFocused}
+              onSuggestionClick={handleSuggestionClick}
             />
 
             <div className="flex items-center justify-between px-4 py-3">
