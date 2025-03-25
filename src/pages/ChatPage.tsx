@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown, Settings, User, Menu } from "lucide-react";
+import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown, Settings, User, Menu, Copy, ArrowUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
@@ -20,6 +20,7 @@ const ChatPage = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [modelVersion, setModelVersion] = useState("Grok 3");
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -67,65 +68,97 @@ const ChatPage = () => {
       handleSendMessage();
     }
   };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied to clipboard",
+      duration: 2000,
+    });
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1A1B1E] text-white">
+    <div className="flex flex-col h-screen bg-[#131314] text-white">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-[#1A1B1E] p-3">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <header className="border-b border-gray-800 bg-[#131314] p-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2">
               <Menu className="h-5 w-5 text-gray-400" />
             </Button>
-            <span className="font-semibold text-white">Grok AI</span>
+            <span className="font-semibold text-white">Grok</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5 text-gray-400" />
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+              </svg>
             </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="" />
-              <AvatarFallback className="bg-gray-700">
-                <User className="h-4 w-4 text-gray-300" />
-              </AvatarFallback>
-            </Avatar>
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v8" />
+                <path d="m16 6-4 4-4-4" />
+                <path d="M8 14h8" />
+                <path d="M15 18H9" />
+                <path d="M12 22v-4" />
+              </svg>
+            </Button>
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z" />
+                <line x1="18" x2="12" y1="9" y2="15" />
+                <line x1="12" x2="18" y1="9" y2="15" />
+              </svg>
+            </Button>
+            <Button variant="ghost" size="icon" className="text-gray-400">
+              <Settings className="h-5 w-5" />
+            </Button>
+            <Button variant="outline" className="rounded-full px-3 py-1 h-8 text-sm bg-transparent border-gray-700 text-white hover:bg-gray-800">
+              Sign up
+            </Button>
+            <Button variant="ghost" className="text-sm px-3 py-1 h-8">
+              Sign in
+            </Button>
           </div>
         </div>
       </header>
       
-      {/* Main chat area taking most of the screen with messages */}
+      {/* Main chat area */}
       <div className="flex-1 overflow-y-auto p-0">
-        <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="max-w-3xl mx-auto py-8">
           {messages.map((message) => (
             <div 
               key={message.id} 
-              className={cn(
-                "mb-8",
-                message.sender === "user" ? "flex justify-end" : "flex justify-start"
-              )}
+              className="mb-10"
             >
               {message.sender === "user" ? (
-                <div className="max-w-sm rounded-lg p-2 bg-[#303136] text-white">
-                  <p>{message.content}</p>
+                <div className="flex justify-center mb-6">
+                  <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md inline-block max-w-fit">
+                    {message.content}
+                  </div>
                 </div>
               ) : (
-                <div className="max-w-2xl">
-                  <div className="rounded-lg p-2 bg-[#303136] text-white mb-2">
-                    <p>{message.content}</p>
-                  </div>
-                  <div className="flex items-center space-x-1 ml-2">
-                    <button className="p-1 rounded hover:bg-gray-700">
-                      <RotateCcw className="h-4 w-4 text-gray-400" />
-                    </button>
-                    <button className="p-1 rounded hover:bg-gray-700">
-                      <Download className="h-4 w-4 text-gray-400" />
-                    </button>
-                    <button className="p-1 rounded hover:bg-gray-700">
-                      <ThumbsUp className="h-4 w-4 text-gray-400" />
-                    </button>
-                    <button className="p-1 rounded hover:bg-gray-700">
-                      <ThumbsDown className="h-4 w-4 text-gray-400" />
-                    </button>
+                <div className="flex flex-col">
+                  <div className="text-white mb-2">
+                    <p className="mb-2">{message.content}</p>
+                    <div className="flex items-center space-x-2 mt-4">
+                      <button className="p-1 rounded hover:bg-gray-800">
+                        <RotateCcw className="h-4 w-4 text-gray-400" />
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-800">
+                        <Copy className="h-4 w-4 text-gray-400" onClick={() => copyToClipboard(message.content)} />
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-800">
+                        <Download className="h-4 w-4 text-gray-400" />
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-800">
+                        <ThumbsUp className="h-4 w-4 text-gray-400" />
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-800">
+                        <ThumbsDown className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -136,10 +169,10 @@ const ChatPage = () => {
       </div>
       
       {/* Input area fixed at the bottom */}
-      <div className="border-t border-gray-800 bg-[#1A1B1E] p-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-[#131314] p-4 pb-8 flex justify-center">
+        <div className="w-full max-w-3xl relative">
           <div className={cn(
-            "relative bg-[#27272A] rounded-lg transition-all duration-300",
+            "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
             isInputFocused ? "ring-1 ring-gray-500" : ""
           )}>
             <Textarea
@@ -161,7 +194,7 @@ const ChatPage = () => {
                 "text-white text-sm",
                 "focus:outline-none",
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
-                "placeholder:text-gray-400 placeholder:text-sm",
+                "placeholder:text-gray-500 placeholder:text-sm",
                 "min-h-[24px]",
                 "transition-all duration-200"
               )}
@@ -182,7 +215,7 @@ const ChatPage = () => {
               
               <div className="flex items-center gap-2">
                 <div className="flex items-center text-gray-400 text-sm">
-                  <span>Grok 3</span>
+                  <span>{modelVersion}</span>
                   <svg 
                     className="w-4 h-4 ml-1" 
                     fill="none" 
@@ -202,7 +235,7 @@ const ChatPage = () => {
                     input.trim() ? "opacity-100" : "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <Send className="h-5 w-5" />
+                  <ArrowUp className="h-5 w-5" />
                 </button>
               </div>
             </div>
