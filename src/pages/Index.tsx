@@ -86,4 +86,40 @@ const Index = () => {
           "create a banner for a video"
         ],
         'm': [
-          "market research for a
+          "market research for a new product",
+          "market analysis for my business idea",
+          "market trends in the tech industry",
+          "market opportunities in e-commerce"
+        ]
+      };
+
+      if (suggestionsMap[firstChar]) {
+        setSuggestions(suggestionsMap[firstChar]);
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [input]);
+
+  return (
+    <div>
+      <input
+        ref={textareaRef}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onFocus={() => setIsInputFocused(true)}
+        onBlur={() => setIsInputFocused(false)}
+        placeholder={placeholderText}
+        style={{ height: textareaRef.current?.clientHeight }}
+      />
+      {showSuggestions && (
+        <SuggestionDropdown suggestions={suggestions} />
+      )}
+    </div>
+  );
+};
+
+export default Index;
