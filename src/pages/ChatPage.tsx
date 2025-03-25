@@ -13,6 +13,7 @@ type Message = {
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [deepResearchCategory, setDeepResearchCategory] = useState<string | null>(null);
   
   useEffect(() => {
     setIsGenerating(true);
@@ -53,6 +54,12 @@ const ChatPage = () => {
     }, 300);
   };
 
+  const handleDeepSearchCategorySelect = (category: string) => {
+    setDeepResearchCategory(category);
+    // You could add functionality here to perform a deep search based on the selected category
+    console.log(`Deep search selected category: ${category}`);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
       <MessageList 
@@ -60,7 +67,10 @@ const ChatPage = () => {
         isGenerating={isGenerating}
       />
       
-      <ChatInput onSendMessage={handleSendMessage} />
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+        onDeepSearchCategorySelect={handleDeepSearchCategorySelect}
+      />
     </div>
   );
 };
