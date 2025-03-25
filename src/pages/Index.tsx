@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
+import { ChevronDown, ArrowUp, Search, Brain, BarChart2, Youtube, Image, LineChart, DollarSign, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
@@ -193,34 +193,38 @@ const Index = () => {
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-2.5 mt-3.5">
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path>
-            </svg>
-            Research
-          </button>
-          
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            Create images
-          </button>
-          
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
-            <Heart className="w-4 h-4" />
-            How to
+            <Brain className="w-4 h-4" />
+            Brainstorm
           </button>
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
             <BarChart2 className="w-4 h-4" />
-            Analyze
+            Top Trends This Week
           </button>
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
-            <Code className="w-4 h-4" />
-            Code
+            <Youtube className="w-4 h-4" />
+            Create Youtube Channel
+          </button>
+          
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+            <Image className="w-4 h-4" />
+            Make me a Thumbnail
+          </button>
+          
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+            <LineChart className="w-4 h-4" />
+            Market Research
+          </button>
+          
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+            <DollarSign className="w-4 h-4" />
+            Earn $100 Challenge
+          </button>
+          
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+            <Instagram className="w-4 h-4" />
+            Plan IG Content For mY tRIP
           </button>
         </div>
       </div>
