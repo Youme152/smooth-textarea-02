@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,8 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Create a ref for the textarea instead of reusing the textareaRef from useAutoResizeTextarea
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 24,
     maxHeight: 200,
@@ -104,20 +107,37 @@ const Index = () => {
     }
   }, [input]);
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    setShowSuggestions(false);
+  };
+
   return (
-    <div>
-      <input
-        ref={textareaRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onFocus={() => setIsInputFocused(true)}
-        onBlur={() => setIsInputFocused(false)}
-        placeholder={placeholderText}
-        style={{ height: textareaRef.current?.clientHeight }}
-      />
-      {showSuggestions && (
-        <SuggestionDropdown suggestions={suggestions} />
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
+      <div className="w-full max-w-2xl relative">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value);
+            adjustHeight();
+          }}
+          onFocus={() => setIsInputFocused(true)}
+          onBlur={() => setIsInputFocused(false)}
+          placeholder={placeholderText}
+          className="w-full bg-[#1e1e1e] text-white rounded-lg p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{ minHeight: "50px" }}
+        />
+        
+        {showSuggestions && (
+          <SuggestionDropdown
+            inputValue={input}
+            suggestions={suggestions}
+            visible={showSuggestions}
+            onSuggestionClick={handleSuggestionClick}
+          />
+        )}
+      </div>
     </div>
   );
 };
