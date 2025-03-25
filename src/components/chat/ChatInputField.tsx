@@ -52,7 +52,7 @@ export function ChatInputField({
           isInputFocused ? "placeholder:opacity-80" : "placeholder:text-neutral-500",
           "h-[60px] min-h-[60px] max-h-[60px]", // Fixed height
           "transition-all duration-200",
-          "overflow-y-auto" // Allow scrolling within the fixed height
+          "overflow-hidden" // Changed from overflow-y-auto to overflow-hidden
         )}
       />
     </div>

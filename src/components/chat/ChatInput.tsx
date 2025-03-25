@@ -3,7 +3,6 @@ import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ArrowUp } from "lucide-react";
-import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -60,7 +59,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               "placeholder:text-gray-500 placeholder:text-base",
               "h-[36px] min-h-[36px] max-h-[36px]", // Fixed height
               "transition-all duration-300",
-              "overflow-y-auto" // Allow scrolling within the fixed height
+              "overflow-hidden" // Changed from overflow-y-auto to overflow-hidden
             )}
           />
 
