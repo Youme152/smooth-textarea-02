@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -14,7 +13,7 @@ interface TextGenerateEffectProps {
 export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
   text,
   className = "",
-  typingSpeed = 40,
+  typingSpeed = 1,
   showCursor = true,
 }) => {
   const [displayedText, setDisplayedText] = useState("");
@@ -23,7 +22,6 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Reset state when text changes entirely
     if (text !== displayedText && currentIndex === 0) {
       setDisplayedText("");
     }
@@ -34,7 +32,7 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
       timeout = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-      }, typingSpeed); // Configurable speed
+      }, typingSpeed);
     } else {
       setIsComplete(true);
     }
@@ -55,18 +53,10 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
           <span className="inline-block w-[2px] h-5 bg-white/70 ml-[1px] animate-pulse" />
         )}
       </div>
-      {!isComplete && (
-        <div className="absolute -bottom-4 left-0 opacity-30 text-xs tracking-wider">
-          <span className="inline-block animate-pulse">
-            Generating...
-          </span>
-        </div>
-      )}
     </div>
   );
 };
 
-// Add a loading message component that shows dots animating
 export const MessageLoadingEffect = () => {
   return (
     <div className="flex items-center gap-1 text-neutral-400 px-2 py-3">
@@ -79,7 +69,6 @@ export const MessageLoadingEffect = () => {
   );
 };
 
-// Add animated text with gradient effect
 export const AnimatedGradientText = ({ text, className = "" }: { text: string; className?: string }) => {
   return (
     <span 
@@ -98,4 +87,3 @@ export const AnimatedGradientText = ({ text, className = "" }: { text: string; c
     </span>
   );
 };
-

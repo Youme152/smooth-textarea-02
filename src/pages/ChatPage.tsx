@@ -3,13 +3,12 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown, Settings, User, Menu, Copy, ArrowUp } from "lucide-react";
+import { ArrowUp, RotateCcw, Download, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TextGenerateEffect, MessageLoadingEffect, AnimatedGradientText } from "@/components/ui/text-generate-effect";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 type Message = {
   id: string;
@@ -22,7 +21,6 @@ const ChatPage = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [modelVersion, setModelVersion] = useState("Grok 3");
   const [isGenerating, setIsGenerating] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -50,7 +48,7 @@ const ChatPage = () => {
       };
       setMessages([initialMessage]);
       setIsGenerating(false);
-    }, 1200);
+    }, 300); // Faster initial message load
   }, []);
 
   const handleSendMessage = () => {
@@ -79,7 +77,7 @@ const ChatPage = () => {
       };
       setMessages(prev => [...prev, assistantResponse]);
       setIsGenerating(false);
-    }, 2000);
+    }, 300); // Faster assistant response
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -118,7 +116,7 @@ const ChatPage = () => {
                 <div className="max-w-2xl outline-none focus:outline-none ring-0">
                   <div className="text-white mb-2">
                     <div className="mb-2">
-                      <TextGenerateEffect text={message.content} typingSpeed={30} />
+                      <TextGenerateEffect text={message.content} typingSpeed={1} />
                     </div>
                     <div className="flex items-center space-x-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
@@ -142,13 +140,6 @@ const ChatPage = () => {
               )}
             </div>
           ))}
-          {isGenerating && (
-            <div className="flex justify-start mb-10">
-              <div className="max-w-2xl outline-none">
-                <MessageLoadingEffect />
-              </div>
-            </div>
-          )}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -159,7 +150,7 @@ const ChatPage = () => {
           <div className={cn(
             "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
             isInputFocused 
-              ? "ring-2 ring-gray-500/50 shadow-lg" 
+              ? "ring-1 ring-gray-500/50 shadow-lg" 
               : "ring-1 ring-gray-700/30 shadow-md"
           )}>
             <Textarea
@@ -172,7 +163,7 @@ const ChatPage = () => {
               onKeyDown={handleKeyDown}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
-              placeholder="How can Grok help?"
+              placeholder="How can I help?"
               className={cn(
                 "w-full px-5 py-4",
                 "resize-none",
@@ -191,29 +182,9 @@ const ChatPage = () => {
             />
 
             <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors focus:outline-none hover:bg-gray-800/50"
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
-              </div>
+              <div></div> {/* Empty div to maintain space */}
               
               <div className="flex items-center gap-2">
-                <div className="flex items-center text-gray-400 text-sm bg-gray-800/30 px-2 py-1 rounded-full hover:bg-gray-800/50 transition-colors cursor-pointer">
-                  <span>{modelVersion}</span>
-                  <svg 
-                    className="w-4 h-4 ml-1" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                
                 <button
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
