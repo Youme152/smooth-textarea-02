@@ -172,7 +172,7 @@ export function ChatInputArea({
             "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
             value.trim() 
               ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
-              : "bg-[#555] text-white opacity-80 cursor-not-allowed"
+              : "bg-neutral-600 text-white opacity-80 cursor-not-allowed"
           )}
           onClick={onSend}
           disabled={!value.trim()}
