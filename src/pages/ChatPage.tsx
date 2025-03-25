@@ -10,6 +10,8 @@ type Message = {
   timestamp: Date;
 };
 
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
+
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -19,7 +21,7 @@ const ChatPage = () => {
     setTimeout(() => {
       const initialMessage = {
         id: Date.now().toString(),
-        content: "It seems like your message might be incomplete. Could you please provide more context or clarify your request? I'm here to assist!",
+        content: "Hello! How can I assist you today?",
         sender: "assistant" as const,
         timestamp: new Date(),
       };
@@ -28,7 +30,33 @@ const ChatPage = () => {
     }, 300);
   }, []);
 
-  const handleSendMessage = (input: string) => {
+  const fetchAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message: userMessage,
+          timestamp: new Date().toISOString()
+        }),
+      });
+      
+      if (!response.ok) {
+        console.error('Error from webhook:', response.status);
+        return "I'm sorry, I couldn't process your request at the moment. Please try again later.";
+      }
+      
+      const data = await response.json();
+      return data.response || "I understand your message. Is there anything specific you'd like me to help you with?";
+    } catch (error) {
+      console.error('Error calling webhook:', error);
+      return "I'm having trouble connecting to my services. Please try again in a moment.";
+    }
+  };
+
+  const handleSendMessage = async (input: string) => {
     if (!input.trim()) return;
     
     const newMessage: Message = {
@@ -39,18 +67,33 @@ const ChatPage = () => {
     };
     
     setMessages(prev => [...prev, newMessage]);
-    
     setIsGenerating(true);
-    setTimeout(() => {
+    
+    try {
+      const aiResponse = await fetchAIResponse(input);
+      
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I understand your message. Is there anything specific you'd like me to help you with?",
+        content: aiResponse,
         sender: "assistant",
         timestamp: new Date(),
       };
+      
       setMessages(prev => [...prev, assistantResponse]);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm sorry, I encountered an error processing your request. Please try again.",
+        sender: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsGenerating(false);
-    }, 300);
+    }
   };
 
   return (
