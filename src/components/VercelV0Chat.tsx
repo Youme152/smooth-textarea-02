@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatInputArea } from "./chat/ChatInputArea";
-import { ActionButtonsRow } from "./chat/ActionButtonsRow";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 
 export function VercelV0Chat() {
@@ -15,7 +14,7 @@ export function VercelV0Chat() {
   const navigate = useNavigate();
   
   const placeholders = [
-    "Ask v0 a question...",
+    "Ask a question...",
     "Help me create a landing page...",
     "Design a sign-up form...",
     "Build me a portfolio site...",
@@ -37,12 +36,12 @@ export function VercelV0Chat() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 space-y-8">
-      <h1 className="text-4xl font-bold text-black dark:text-white">
-        What can I help you ship?
+    <div className="flex flex-col items-center w-full max-w-3xl mx-auto p-4 space-y-8">
+      <h1 className="text-5xl font-bold text-white">
+        What do you want to create today?
       </h1>
 
-      <div className="w-full">
+      <div className="w-full max-w-2xl">
         <TooltipProvider>
           <ChatInputArea 
             value={value}
@@ -55,8 +54,6 @@ export function VercelV0Chat() {
             placeholderText={placeholderText}
           />
         </TooltipProvider>
-
-        <ActionButtonsRow />
       </div>
     </div>
   );
