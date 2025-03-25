@@ -27,13 +27,13 @@ export function ChatInputField({
   placeholderText
 }: ChatInputFieldProps) {
   return (
-    <div className="overflow-y-auto">
+    <div className="overflow-hidden">
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          adjustHeight();
+          // No height adjustment
         }}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
@@ -50,12 +50,10 @@ export function ChatInputField({
           "placeholder:text-neutral-500 placeholder:text-xl",
           "placeholder:transition-opacity placeholder:duration-200",
           isInputFocused ? "placeholder:opacity-80" : "placeholder:text-neutral-500",
-          "min-h-[60px]",
-          "transition-all duration-200"
+          "h-[60px] min-h-[60px] max-h-[60px]", // Fixed height
+          "transition-all duration-200",
+          "overflow-y-auto" // Allow scrolling within the fixed height
         )}
-        style={{
-          overflow: "hidden",
-        }}
       />
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -18,10 +17,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 24,
-    maxHeight: 200,
-  });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const placeholders = [
     "What do you want to know?",
@@ -100,8 +96,6 @@ const Index = () => {
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
     setShowSuggestions(false);
-    // Adjust textarea height for the new content
-    setTimeout(adjustHeight, 0);
   };
 
   return (
@@ -128,7 +122,6 @@ const Index = () => {
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
-                  adjustHeight();
                 }}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsInputFocused(true)}
@@ -141,9 +134,10 @@ const Index = () => {
                 className={cn(
                   "w-full bg-transparent border-none text-white text-base outline-none resize-none p-0",
                   "placeholder:text-neutral-500 placeholder:opacity-70 transition-all duration-300",
-                  isInputFocused && "placeholder:opacity-50"
+                  isInputFocused && "placeholder:opacity-50",
+                  "h-[24px] min-h-[24px] max-h-[24px]", // Fixed height
+                  "overflow-y-auto" // Allow scrolling within the fixed height
                 )}
-                style={{ overflow: "hidden" }}
               />
             </div>
 

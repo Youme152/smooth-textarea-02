@@ -13,20 +13,12 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 36,
-    maxHeight: 100, // Reduced max height to prevent excessive growth
-  });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
     onSendMessage(input);
     setInput("");
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.style.height = '36px'; // Reset height after sending
-      }
-    }, 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -50,7 +42,6 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             value={input}
             onChange={(e) => {
               setInput(e.target.value);
-              adjustHeight();
             }}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsInputFocused(true)}
@@ -67,12 +58,10 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               "focus:outline-none",
               "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
               "placeholder:text-gray-500 placeholder:text-base",
-              "min-h-[36px] max-h-[100px]", // Added max-height restriction
-              "transition-all duration-300"
+              "h-[36px] min-h-[36px] max-h-[36px]", // Fixed height
+              "transition-all duration-300",
+              "overflow-y-auto" // Allow scrolling within the fixed height
             )}
-            style={{
-              overflow: "auto", // Changed from hidden to auto to allow scrolling
-            }}
           />
 
           <div className="flex items-center justify-between px-4 py-3">
