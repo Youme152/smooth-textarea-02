@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Message = {
   id: string;
@@ -60,6 +61,17 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setInput("");
     adjustHeight();
+    
+    // Simulate assistant response after a short delay
+    setTimeout(() => {
+      const assistantResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I understand your message. Is there anything specific you'd like me to help you with?",
+        sender: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantResponse]);
+    }, 1000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -78,7 +90,7 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#131314] text-white">
+    <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
       {/* Header */}
       <header className="bg-[#131314] p-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -125,16 +137,16 @@ const ChatPage = () => {
       </header>
       
       {/* Main chat area */}
-      <div className="flex-1 overflow-y-auto p-0">
-        <div className="max-w-3xl mx-auto py-8">
+      <ScrollArea className="flex-1">
+        <div className="max-w-3xl mx-auto py-8 px-4">
           {messages.map((message) => (
             <div 
               key={message.id} 
               className="mb-10"
             >
               {message.sender === "user" ? (
-                <div className="flex justify-center mb-6">
-                  <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md inline-block max-w-fit">
+                <div className="flex flex-col items-center mb-6">
+                  <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md">
                     {message.content}
                   </div>
                 </div>
@@ -166,7 +178,7 @@ const ChatPage = () => {
           ))}
           <div ref={messagesEndRef} />
         </div>
-      </div>
+      </ScrollArea>
       
       {/* Input area fixed at the bottom - made larger */}
       <div className="bg-[#131314] p-4 pb-8 flex justify-center">
