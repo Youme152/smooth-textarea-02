@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { TextGenerateEffect, MessageLoadingEffect, AnimatedGradientText } from "@/components/ui/text-generate-effect";
 
 type Message = {
   id: string;
@@ -36,7 +36,7 @@ const ChatPage = () => {
   // Auto-scroll to the bottom of the chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isGenerating]);
   
   // Simulate initial assistant message
   useEffect(() => {
@@ -50,7 +50,7 @@ const ChatPage = () => {
       };
       setMessages([initialMessage]);
       setIsGenerating(false);
-    }, 500);
+    }, 1200);
   }, []);
 
   const handleSendMessage = () => {
@@ -79,7 +79,7 @@ const ChatPage = () => {
       };
       setMessages(prev => [...prev, assistantResponse]);
       setIsGenerating(false);
-    }, 1000);
+    }, 2000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -106,19 +106,19 @@ const ChatPage = () => {
             <div 
               key={message.id} 
               className={cn(
-                "mb-10 group",
+                "mb-10 group focus:outline-none",
                 message.sender === "user" ? "flex justify-end" : "flex justify-start"
               )}
             >
               {message.sender === "user" ? (
-                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none shadow-md hover:shadow-lg transition-shadow duration-200">
+                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none shadow-md hover:shadow-lg transition-shadow duration-200 focus:outline-none ring-0">
                   {message.content}
                 </div>
               ) : (
-                <div className="max-w-2xl outline-none">
+                <div className="max-w-2xl outline-none focus:outline-none ring-0">
                   <div className="text-white mb-2">
                     <div className="mb-2">
-                      <TextGenerateEffect text={message.content} />
+                      <TextGenerateEffect text={message.content} typingSpeed={30} />
                     </div>
                     <div className="flex items-center space-x-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
@@ -145,13 +145,7 @@ const ChatPage = () => {
           {isGenerating && (
             <div className="flex justify-start mb-10">
               <div className="max-w-2xl outline-none">
-                <div className="text-white mb-2">
-                  <p className="mb-2">
-                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse mr-1"></span>
-                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150 mr-1"></span>
-                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></span>
-                  </p>
-                </div>
+                <MessageLoadingEffect />
               </div>
             </div>
           )}
