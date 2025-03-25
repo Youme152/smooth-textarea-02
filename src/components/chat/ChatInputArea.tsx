@@ -90,7 +90,7 @@ export function ChatInputArea({
                 className={cn(
                   "px-2 py-1 rounded-lg text-sm transition-all duration-200 flex items-center justify-between gap-1",
                   deepResearchActive 
-                    ? "bg-blue-600 text-white border border-blue-500 shadow-sm shadow-blue-500/20"
+                    ? "bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm shadow-blue-500/20"
                     : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700 active:bg-blue-600/20 active:text-blue-200"
                 )}
                 onClick={toggleDeepResearch}
@@ -132,3 +132,4 @@ export function ChatInputArea({
     </div>
   );
 }
+

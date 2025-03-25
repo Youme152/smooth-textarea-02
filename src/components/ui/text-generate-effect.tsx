@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface TextGenerateEffectProps {
   text: string;
@@ -56,19 +55,26 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
           <span className="inline-block w-[2px] h-5 bg-white/70 ml-[1px] animate-pulse" />
         )}
       </div>
+      {!isComplete && (
+        <div className="absolute -bottom-4 left-0 opacity-30 text-xs tracking-wider">
+          <span className="inline-block animate-pulse">
+            Generating...
+          </span>
+        </div>
+      )}
     </div>
   );
 };
 
-// Updated loading message component with a more modern design
+// Add a loading message component that shows dots animating
 export const MessageLoadingEffect = () => {
   return (
-    <div className="flex items-center gap-2 text-neutral-400 p-3">
-      <div className="flex space-x-1.5">
-        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[bounce_0.7s_infinite_0s]"></div>
-        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[bounce_0.7s_infinite_0.1s]"></div>
-        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[bounce_0.7s_infinite_0.2s]"></div>
-      </div>
+    <div className="flex items-center gap-1 text-neutral-400 px-2 py-3">
+      <span className="relative flex h-3 w-3">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-3 w-3 bg-neutral-500"></span>
+      </span>
+      <span className="text-sm">Generating response</span>
     </div>
   );
 };
@@ -92,3 +98,4 @@ export const AnimatedGradientText = ({ text, className = "" }: { text: string; c
     </span>
   );
 };
+
