@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip, FileSearch, Loader2 } from "lucide-react";
+import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
@@ -19,12 +19,11 @@ const ChatPage = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 60,
+    minHeight: 24,
     maxHeight: 200,
   });
   
@@ -60,17 +59,6 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setInput("");
     adjustHeight();
-    
-    // Simulate assistant reply
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: `I'm processing your request about "${input.substring(0, 30)}${input.length > 30 ? '...' : ''}"`,
-        sender: "assistant",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 1000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -79,165 +67,122 @@ const ChatPage = () => {
       handleSendMessage();
     }
   };
-  
-  const handleDeepResearch = () => {
-    if (!input.trim()) {
-      toast({
-        title: "Please enter a query first",
-        description: "Enter what you'd like to research before starting deep research.",
-        duration: 3000,
-      });
-      return;
-    }
-    
-    // Toggle deep research mode
-    setDeepResearchActive(!deepResearchActive);
-    
-    if (!deepResearchActive) {
-      setIsSearching(true);
-      
-      // Simulate search process
-      setTimeout(() => {
-        setIsSearching(false);
-        toast({
-          title: "Deep Research Complete",
-          description: "Found detailed information about your query.",
-          duration: 3000,
-        });
-        
-        // Add a message about the research
-        const researchMessage: Message = {
-          id: Date.now().toString(),
-          content: `I've completed a deep research on "${input.substring(0, 30)}${input.length > 30 ? '...' : ''}" and found some relevant information. Feel free to ask for specific details.`,
-          sender: "assistant",
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, researchMessage]);
-      }, 2000);
-    }
-  };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Chat header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Chat Assistant</h1>
-      </div>
-      
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={cn(
-              "flex max-w-[80%] rounded-lg p-4",
-              message.sender === "user" 
-                ? "bg-blue-100 dark:bg-blue-900/30 ml-auto" 
-                : "bg-gray-100 dark:bg-gray-800"
-            )}
-          >
-            <p className="text-gray-800 dark:text-gray-200">{message.content}</p>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Input area */}
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
-        <div className={cn(
-          "relative bg-white dark:bg-neutral-900 rounded-xl border transition-all duration-300",
-          isInputFocused 
-            ? "border-neutral-400 dark:border-neutral-600 shadow-md" 
-            : "border-neutral-200 dark:border-neutral-800 shadow-sm"
-        )}>
-          <Textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              adjustHeight();
-            }}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setIsInputFocused(true)}
-            onBlur={() => setIsInputFocused(false)}
-            placeholder="How can I help?"
-            className={cn(
-              "w-full px-4 py-3",
-              "resize-none",
-              "bg-transparent",
-              "border-none",
-              "text-neutral-900 dark:text-white text-sm",
-              "focus:outline-none",
-              "focus-visible:ring-0 focus-visible:ring-offset-0",
-              "placeholder:text-neutral-500 placeholder:text-sm",
-              "min-h-[60px]",
-              "transition-all duration-200"
-            )}
-            style={{
-              overflow: "hidden",
-            }}
-          />
-
-          <div className="flex items-center justify-between p-3">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="group p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1"
-              >
-                <Paperclip className="w-4 h-4 text-neutral-500 dark:text-white" />
-                <span className="text-xs text-neutral-500 dark:text-zinc-400 hidden group-hover:inline transition-opacity">
-                  Attach
-                </span>
-              </button>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={cn(
-                        "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
-                        (deepResearchActive || isSearching) ? 
-                          "bg-blue-500/10 border-blue-500/30 text-blue-500" :
-                          "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                      )}
-                      onClick={handleDeepResearch}
-                      disabled={isSearching}
-                    >
-                      {isSearching ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          <span>Researching...</span>
-                        </>
-                      ) : (
-                        <>
-                          <FileSearch className="h-3.5 w-3.5" />
-                          <span>Deep Research</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="z-50">
-                    <p className="text-xs">Search the web for deeper insights</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            
-            <Button
-              onClick={handleSendMessage}
+    <div className="flex flex-col h-screen bg-[#1A1B1E] text-white">
+      {/* Main chat area taking most of the screen with messages */}
+      <div className="flex-1 overflow-y-auto p-0">
+        <div className="max-w-4xl mx-auto py-8 px-4">
+          {messages.map((message) => (
+            <div 
+              key={message.id} 
               className={cn(
-                "px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
-                input.trim() ? 
-                  "bg-black text-white dark:bg-white dark:text-black" :
-                  "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed"
+                "mb-8",
+                message.sender === "user" ? "flex justify-end" : "flex justify-start"
               )}
-              disabled={!input.trim()}
             >
-              <Send className="h-3.5 w-3.5" />
-              <span>Send</span>
-            </Button>
+              {message.sender === "user" ? (
+                <div className="max-w-sm rounded-lg p-2 bg-[#303136] text-white">
+                  <p>{message.content}</p>
+                </div>
+              ) : (
+                <div className="max-w-2xl">
+                  <div className="rounded-lg p-2 bg-[#303136] text-white mb-2">
+                    <p>{message.content}</p>
+                  </div>
+                  <div className="flex items-center space-x-1 ml-2">
+                    <button className="p-1 rounded hover:bg-gray-700">
+                      <RotateCcw className="h-4 w-4 text-gray-400" />
+                    </button>
+                    <button className="p-1 rounded hover:bg-gray-700">
+                      <Download className="h-4 w-4 text-gray-400" />
+                    </button>
+                    <button className="p-1 rounded hover:bg-gray-700">
+                      <ThumbsUp className="h-4 w-4 text-gray-400" />
+                    </button>
+                    <button className="p-1 rounded hover:bg-gray-700">
+                      <ThumbsDown className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+      
+      {/* Input area fixed at the bottom */}
+      <div className="border-t border-gray-800 bg-[#1A1B1E] p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className={cn(
+            "relative bg-[#27272A] rounded-lg transition-all duration-300",
+            isInputFocused ? "ring-1 ring-gray-500" : ""
+          )}>
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                adjustHeight();
+              }}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              placeholder="How can Grok help?"
+              className={cn(
+                "w-full px-4 py-3",
+                "resize-none",
+                "bg-transparent",
+                "border-none",
+                "text-white text-sm",
+                "focus:outline-none",
+                "focus-visible:ring-0 focus-visible:ring-offset-0",
+                "placeholder:text-gray-400 placeholder:text-sm",
+                "min-h-[24px]",
+                "transition-all duration-200"
+              )}
+              style={{
+                overflow: "hidden",
+              }}
+            />
+
+            <div className="flex items-center justify-between px-3 py-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="flex items-center text-gray-400 text-sm">
+                  <span>Grok 3</span>
+                  <svg 
+                    className="w-4 h-4 ml-1" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!input.trim()}
+                  className={cn(
+                    "p-1 rounded text-white transition-all",
+                    input.trim() ? "opacity-100" : "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
