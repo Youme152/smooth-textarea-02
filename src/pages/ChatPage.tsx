@@ -92,7 +92,7 @@ const ChatPage = () => {
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
       {/* Header */}
-      <header className="bg-[#131314] p-3 border-b border-gray-800">
+      <header className="bg-[#131314] p-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2">
