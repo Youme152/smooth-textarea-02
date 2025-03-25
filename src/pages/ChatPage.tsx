@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { TextGenerateEffect, MessageLoadingEffect } from "@/components/ui/text-generate-effect";
 
 type Message = {
   id: string;
@@ -31,12 +30,10 @@ const ChatPage = () => {
   
   const { toast } = useToast();
 
-  // Auto-scroll to the bottom of the chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isGenerating]);
   
-  // Simulate initial assistant message
   useEffect(() => {
     setIsGenerating(true);
     setTimeout(() => {
@@ -48,13 +45,12 @@ const ChatPage = () => {
       };
       setMessages([initialMessage]);
       setIsGenerating(false);
-    }, 300); // Faster initial message load
+    }, 300);
   }, []);
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
     
-    // Add user message
     const newMessage: Message = {
       id: Date.now().toString(),
       content: input,
@@ -66,7 +62,6 @@ const ChatPage = () => {
     setInput("");
     adjustHeight();
     
-    // Simulate assistant response after a short delay
     setIsGenerating(true);
     setTimeout(() => {
       const assistantResponse: Message = {
@@ -77,7 +72,7 @@ const ChatPage = () => {
       };
       setMessages(prev => [...prev, assistantResponse]);
       setIsGenerating(false);
-    }, 300); // Faster assistant response
+    }, 300);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -97,7 +92,6 @@ const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
-      {/* Main chat area */}
       <ScrollArea className="flex-1">
         <div className="max-w-3xl mx-auto py-8 px-4">
           {messages.map((message) => (
@@ -140,11 +134,17 @@ const ChatPage = () => {
               )}
             </div>
           ))}
+          
+          {isGenerating && (
+            <div className="mb-10 flex justify-start">
+              <MessageLoadingEffect />
+            </div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
       
-      {/* Input area fixed at the bottom */}
       <div className="bg-[#131314] p-4 pb-8 flex justify-center">
         <div className="w-full max-w-3xl relative">
           <div className={cn(
@@ -182,7 +182,7 @@ const ChatPage = () => {
             />
 
             <div className="flex items-center justify-between px-4 py-3">
-              <div></div> {/* Empty div to maintain space */}
+              <div></div>
               
               <div className="flex items-center gap-2">
                 <button

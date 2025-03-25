@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -59,12 +60,13 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
 
 export const MessageLoadingEffect = () => {
   return (
-    <div className="flex items-center gap-1 text-neutral-400 px-2 py-3">
-      <span className="relative flex h-3 w-3">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-3 w-3 bg-neutral-500"></span>
-      </span>
-      <span className="text-sm">Generating response</span>
+    <div className="flex items-center gap-2 text-neutral-400 px-2 py-3">
+      <div className="flex space-x-1.5">
+        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[pulse_1s_ease-in-out_infinite]"></div>
+        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[pulse_1s_ease-in-out_0.2s_infinite]"></div>
+        <div className="h-2 w-2 rounded-full bg-neutral-400 animate-[pulse_1s_ease-in-out_0.4s_infinite]"></div>
+      </div>
+      <span className="text-sm">Thinking...</span>
     </div>
   );
 };
