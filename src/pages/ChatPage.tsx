@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,6 @@ const ChatPage = () => {
     }, 300);
   }, []);
 
-  // Generate suggestions based on input
   useEffect(() => {
     if (input.trim().length > 0) {
       const firstChar = input.trim().toLowerCase().charAt(0);
@@ -77,7 +75,6 @@ const ChatPage = () => {
         // Add more first letters with their suggestions as needed
       };
       
-      // Get suggestions for the first character, or provide generic ones
       const newSuggestions = suggestionsMap[firstChar] || [
         `${input} - analysis and insights`,
         `${input} - step by step guide`,
@@ -138,9 +135,7 @@ const ChatPage = () => {
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
     setShowSuggestions(false);
-    // Adjust textarea height for the new content
     setTimeout(adjustHeight, 0);
-    // Focus back on textarea
     textareaRef.current?.focus();
   };
 
@@ -218,10 +213,9 @@ const ChatPage = () => {
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => {
                 setIsInputFocused(false);
-                // Small delay before hiding suggestions to allow for clicking them
                 setTimeout(() => setShowSuggestions(false), 200);
               }}
-              placeholder="How can I help?"
+              placeholder="Reply to Ora..."
               className={cn(
                 "w-full px-5 py-4",
                 "resize-none",
@@ -239,7 +233,6 @@ const ChatPage = () => {
               }}
             />
 
-            {/* Suggestions Dropdown */}
             <SuggestionDropdown
               inputValue={input}
               suggestions={suggestions}
@@ -258,7 +251,7 @@ const ChatPage = () => {
                     "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
                     input.trim() 
                       ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
-                      : "bg-[#555] text-white opacity-80 cursor-not-allowed"
+                      : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
                   )}
                 >
                   <ArrowUp className="h-5 w-5" />

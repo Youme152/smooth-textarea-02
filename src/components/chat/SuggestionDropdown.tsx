@@ -16,18 +16,29 @@ export function SuggestionDropdown({
 }: SuggestionDropdownProps) {
   if (!visible || !inputValue || suggestions.length === 0) return null;
 
+  // Get the first character to highlight
+  const firstChar = inputValue.toLowerCase().charAt(0);
+
   return (
-    <div className="suggestion-dropdown absolute left-0 right-0 bg-black/90 backdrop-blur-md rounded-lg overflow-hidden shadow-lg z-10 mt-1 transition-all duration-150 border border-neutral-800">
+    <div className="suggestion-dropdown absolute left-0 right-0 bg-black/80 backdrop-blur-lg rounded-lg overflow-hidden shadow-lg z-10 mt-1 transition-all duration-150 border border-neutral-800/50">
       <ul className="py-1">
         {suggestions.map((suggestion, index) => {
-          // Don't highlight with color, just show the full suggestion
+          // Highlight the first character of the suggestion that matches the input
+          const highlightedSuggestion = (
+            <span className="text-white">
+              {firstChar}<span className="text-white/80">{suggestion.slice(1)}</span>
+            </span>
+          );
+          
           return (
             <li 
               key={index}
-              className="px-4 py-2.5 text-gray-300 hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="px-4 py-2.5 text-white hover:bg-neutral-800/50 transition-colors cursor-pointer"
               onClick={() => onSuggestionClick(suggestion)}
             >
-              {suggestion}
+              {suggestion.toLowerCase().startsWith(firstChar) 
+                ? highlightedSuggestion 
+                : <span className="text-white">{suggestion}</span>}
             </li>
           );
         })}
