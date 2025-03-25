@@ -75,7 +75,7 @@ const Index = () => {
           <div className={cn(
             "w-full rounded-2xl overflow-hidden transition-all duration-300",
             isInputFocused
-              ? "bg-[rgba(39,39,42,0.6)] shadow-lg ring-2 ring-purple-500/40"
+              ? "bg-[rgba(39,39,42,0.6)] border border-purple-500/30"
               : "bg-[rgba(39,39,42,0.5)] shadow-md"
           )}>
             {/* Input Area */}
@@ -103,22 +103,24 @@ const Index = () => {
             {/* Controls */}
             <div className="flex items-center justify-between px-2.5 py-2">
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={handleDeepResearch}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all",
-                    deepResearchActive 
-                      ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
-                      : "text-[#9ca3af] hover:bg-white/10 active:bg-blue-600/20 active:text-blue-200"
-                  )}
-                >
-                  {deepResearchActive ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Search className="w-4 h-4" />
-                  )}
-                  DeepSearch
-                </button>
+                {input.trim() === "" && (
+                  <button 
+                    onClick={handleDeepResearch}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all",
+                      deepResearchActive 
+                        ? "bg-blue-600 text-white"
+                        : "text-[#9ca3af] hover:bg-white/10"
+                    )}
+                  >
+                    {deepResearchActive ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
+                    DeepSearch
+                  </button>
+                )}
               </div>
 
               <Button
