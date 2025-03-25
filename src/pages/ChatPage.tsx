@@ -24,8 +24,8 @@ const ChatPage = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 24,
-    maxHeight: 200,
+    minHeight: 36,
+    maxHeight: 240,
   });
   
   const { toast } = useToast();
@@ -80,7 +80,7 @@ const ChatPage = () => {
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white">
       {/* Header */}
-      <header className="border-b border-gray-800 bg-[#131314] p-3">
+      <header className="bg-[#131314] p-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2">
@@ -168,7 +168,7 @@ const ChatPage = () => {
         </div>
       </div>
       
-      {/* Input area fixed at the bottom */}
+      {/* Input area fixed at the bottom - made larger */}
       <div className="bg-[#131314] p-4 pb-8 flex justify-center">
         <div className="w-full max-w-3xl relative">
           <div className={cn(
@@ -187,15 +187,15 @@ const ChatPage = () => {
               onBlur={() => setIsInputFocused(false)}
               placeholder="How can Grok help?"
               className={cn(
-                "w-full px-4 py-3",
+                "w-full px-5 py-4",
                 "resize-none",
                 "bg-transparent",
                 "border-none",
-                "text-white text-sm",
+                "text-white text-base",
                 "focus:outline-none",
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
-                "placeholder:text-gray-500 placeholder:text-sm",
-                "min-h-[24px]",
+                "placeholder:text-gray-500 placeholder:text-base",
+                "min-h-[36px]",
                 "transition-all duration-200"
               )}
               style={{
@@ -203,7 +203,7 @@ const ChatPage = () => {
               }}
             />
 
-            <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
