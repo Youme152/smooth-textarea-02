@@ -37,11 +37,11 @@ export function VercelV0Chat() {
 
   return (
     <div className="flex flex-col items-center w-full max-w-3xl mx-auto p-4 space-y-8">
-      <h1 className="text-5xl font-bold text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+      <h1 className="text-5xl font-playfair font-bold tracking-tight leading-tight text-white bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
         What will you make viral today?
       </h1>
 
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-xl">
         <TooltipProvider>
           <ChatInputArea 
             value={value}

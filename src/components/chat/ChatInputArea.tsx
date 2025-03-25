@@ -65,10 +65,10 @@ export function ChatInputArea({
             "resize-none",
             "bg-transparent",
             "border-none",
-            "text-white text-lg",
+            "text-white text-xl", // Increased font size here
             "focus:outline-none",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
-            "placeholder:text-neutral-500 placeholder:text-lg",
+            "placeholder:text-neutral-500 placeholder:text-xl", // Increased placeholder font size
             "min-h-[60px]",
             "transition-all duration-200"
           )}
