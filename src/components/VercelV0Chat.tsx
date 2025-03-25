@@ -22,7 +22,7 @@ export function VercelV0Chat() {
     "Build me a portfolio site...",
     "Create a responsive dashboard...",
     "Implement a contact form...",
-    "Make an interactive quiz...",
+    "Draw a river otter playing a ukulele...",
   ];
 
   const { placeholderText } = usePlaceholderTyping({ 

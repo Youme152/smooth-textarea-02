@@ -59,6 +59,12 @@ export function ChatInputArea({
           "can you explain how blockchain works?",
           "calculate my potential retirement savings"
         ],
+        'd': [
+          "draw a river otter playing a ukulele",
+          "draw Isaac Newton with an apple falling from his hand",
+          "draw astronauts on the surface of the moon having a picnic in spacesuits",
+          "design a modern logo for my tech company"
+        ],
         // Add more first letters with their suggestions as needed
       };
       
@@ -113,9 +119,13 @@ export function ChatInputArea({
           onKeyDown={handleKeyDown}
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => {
-            setIsInputFocused(false);
             // Small delay before hiding suggestions to allow for clicking them
-            setTimeout(() => setShowSuggestions(false), 200);
+            setTimeout(() => {
+              if (!document.activeElement?.closest('.suggestion-dropdown')) {
+                setIsInputFocused(false);
+                setShowSuggestions(false);
+              }
+            }, 150);
           }}
           placeholder={placeholderText}
           className={cn(
@@ -138,7 +148,7 @@ export function ChatInputArea({
         />
       </div>
 
-      {/* Suggestions Dropdown */}
+      {/* Suggestions Dropdown - Styled to be more integrated */}
       <SuggestionDropdown
         inputValue={value}
         suggestions={suggestions}
