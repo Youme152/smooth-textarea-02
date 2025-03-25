@@ -10,17 +10,17 @@ export function ChatMessage({ id, content, sender, timestamp }: ChatMessageProps
   return (
     <div 
       className={cn(
-        "mb-8",
-        sender === "user" ? "flex justify-end" : "flex justify-start"
+        "mb-8 max-w-4xl mx-auto",
+        sender === "user" ? "bg-[#1E1E1E] p-4 rounded-lg w-fit ml-auto mr-8" : ""
       )}
     >
       {sender === "user" ? (
-        <div className="max-w-sm rounded-lg p-2 bg-[#303136] text-white">
+        <div className="text-white text-sm">
           <p>{content}</p>
         </div>
       ) : (
-        <div className="max-w-2xl">
-          <div className="rounded-lg p-2 bg-[#303136] text-white mb-2">
+        <div className="max-w-full">
+          <div className="text-white text-sm mb-2 flex flex-col space-y-2">
             <p>{content}</p>
           </div>
           <MessageActions />

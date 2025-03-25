@@ -16,8 +16,8 @@ export function ChatMessageList({ messages }: ChatMessageListProps) {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-0">
-      <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="flex-1 overflow-y-auto py-8 px-4 bg-[#121212]">
+      <div className="max-w-4xl mx-auto">
         {messages.map((message) => (
           <ChatMessage
             key={message.id}

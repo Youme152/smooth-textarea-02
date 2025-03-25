@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip } from "lucide-react";
+import { Send, Paperclip, ArrowUp } from "lucide-react";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 interface ChatInputProps {
@@ -26,11 +26,11 @@ export function ChatInput({ input, setInput, handleSendMessage }: ChatInputProps
   };
 
   return (
-    <div className="border-t border-gray-800 bg-[#1A1B1E] p-4">
+    <div className="border-t border-gray-800 bg-[#121212] p-4">
       <div className="max-w-4xl mx-auto">
         <div className={cn(
-          "relative bg-[#27272A] rounded-lg transition-all duration-300",
-          isInputFocused ? "ring-1 ring-gray-500" : ""
+          "relative bg-[#222222] rounded-xl transition-all duration-300",
+          isInputFocused ? "ring-1 ring-gray-600" : ""
         )}>
           <Textarea
             ref={textareaRef}
@@ -60,7 +60,7 @@ export function ChatInput({ input, setInput, handleSendMessage }: ChatInputProps
             }}
           />
 
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-gray-700">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -88,11 +88,13 @@ export function ChatInput({ input, setInput, handleSendMessage }: ChatInputProps
                 onClick={handleSendMessage}
                 disabled={!input.trim()}
                 className={cn(
-                  "p-1 rounded text-white transition-all",
-                  input.trim() ? "opacity-100" : "opacity-50 cursor-not-allowed"
+                  "p-2 rounded-full transition-all",
+                  input.trim() 
+                    ? "bg-orange-500 hover:bg-orange-600 cursor-pointer" 
+                    : "bg-gray-700 opacity-50 cursor-not-allowed"
                 )}
               >
-                <Send className="h-5 w-5" />
+                <ArrowUp className="h-4 w-4 text-white" />
               </button>
             </div>
           </div>

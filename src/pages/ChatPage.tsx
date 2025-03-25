@@ -33,10 +33,21 @@ const ChatPage = () => {
     
     setMessages(prev => [...prev, newMessage]);
     setInput("");
+
+    // Simulate assistant thinking and respond after a brief delay
+    setTimeout(() => {
+      const assistantResponse: Message = {
+        id: Date.now().toString(),
+        content: "I'm processing your request. How can I help you further?",
+        sender: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantResponse]);
+    }, 1000);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1A1B1E] text-white">
+    <div className="flex flex-col h-screen bg-[#121212] text-white">
       <ChatHeader />
       <ChatMessageList messages={messages} />
       <ChatInput 
