@@ -1,63 +1,93 @@
 
-import { useState } from "react";
-import { SendButton } from "./SendButton";
-import { DeepSearchDropdown } from "./DeepSearchDropdown";
+import { useState, useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { ArrowUp } from "lucide-react";
+import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
-  onDeepSearchCategorySelect: (category: string) => void;
 }
 
-export function ChatInput({ onSendMessage, onDeepSearchCategorySelect }: ChatInputProps) {
-  const [message, setMessage] = useState("");
-  const [deepResearchActive, setDeepResearchActive] = useState(false);
+export function ChatInput({ onSendMessage }: ChatInputProps) {
+  const [input, setInput] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
   
-  const handleSend = () => {
-    if (!message.trim()) return;
-    onSendMessage(message.trim());
-    setMessage("");
+  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
+    minHeight: 36,
+    maxHeight: 240,
+  });
+
+  const handleSendMessage = () => {
+    if (!input.trim()) return;
+    onSendMessage(input);
+    setInput("");
+    adjustHeight();
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSendMessage();
     }
-  };
-  
-  const handleCategorySelect = (category: string) => {
-    setDeepResearchActive(true);
-    onDeepSearchCategorySelect(category);
   };
 
   return (
-    <div className="border-t border-neutral-800 bg-[#131314]">
-      <div className="container max-w-4xl mx-auto px-4 py-4">
-        <div className="bg-[rgba(39,39,42,0.6)] rounded-xl shadow-md border border-neutral-700 overflow-hidden">
-          <div className="p-3.5">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Message Grok..."
-              className="w-full bg-transparent border-none text-white text-base outline-none resize-none p-0 placeholder:text-neutral-500"
-              rows={1}
-              style={{ maxHeight: "200px", overflow: "auto" }}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between px-2.5 py-2">
-            <div className="flex items-center gap-3">
-              <DeepSearchDropdown 
-                deepResearchActive={deepResearchActive}
-                onCategorySelect={handleCategorySelect}
-              />
-            </div>
+    <div className="bg-[#131314] p-4 pb-8 flex justify-center">
+      <div className="w-full max-w-3xl relative">
+        <div className={cn(
+          "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
+          isInputFocused 
+            ? "border border-neutral-700 shadow-lg" 
+            : "border border-neutral-800 shadow-md"
+        )}>
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              adjustHeight();
+            }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => {
+              setIsInputFocused(false);
+            }}
+            placeholder="Reply to Ora..."
+            className={cn(
+              "w-full px-5 py-4",
+              "resize-none",
+              "bg-transparent",
+              "border-none outline-none",
+              "text-white text-base",
+              "focus:outline-none",
+              "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
+              "placeholder:text-gray-500 placeholder:text-base",
+              "min-h-[36px]",
+              "transition-all duration-300"
+            )}
+            style={{
+              overflow: "hidden",
+            }}
+          />
+
+          <div className="flex items-center justify-between px-4 py-3">
+            <div></div>
             
-            <SendButton 
-              onClick={handleSend}
-              disabled={!message.trim()}
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSendMessage}
+                disabled={!input.trim()}
+                className={cn(
+                  "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
+                  input.trim() 
+                    ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
+                    : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
+                )}
+              >
+                <ArrowUp className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
