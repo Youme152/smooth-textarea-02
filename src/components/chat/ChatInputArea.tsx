@@ -1,10 +1,11 @@
 
 import { useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusIcon, Send } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ChatInputAreaProps {
   value: string;
@@ -80,15 +81,26 @@ export function ChatInputArea({
 
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className={cn(
-              "px-2 py-1 rounded-lg text-sm text-neutral-400 transition-colors border border-dashed border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800 flex items-center justify-between gap-1"
-            )}
-          >
-            <PlusIcon className="w-4 h-4" />
-            Project
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "px-2 py-1 rounded-lg text-sm transition-colors flex items-center justify-between gap-1",
+                  deepResearchActive 
+                    ? "bg-purple-600/20 text-purple-300 border border-purple-500/30"
+                    : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800"
+                )}
+                onClick={toggleDeepResearch}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Deep Research</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              Use Deep Research for more comprehensive results
+            </TooltipContent>
+          </Tooltip>
         </div>
         
         <button
@@ -96,7 +108,7 @@ export function ChatInputArea({
           className={cn(
             "px-3 py-2 rounded-lg text-sm transition-all border flex items-center justify-between gap-1",
             value.trim() ? (
-              "bg-orange-500 text-white border-orange-500 cursor-pointer hover:bg-orange-600"
+              "bg-neutral-700 text-white border-neutral-600 cursor-pointer hover:bg-neutral-600"
             ) : (
               "text-neutral-500 border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800"
             )

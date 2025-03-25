@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatInputArea } from "./chat/ChatInputArea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
+import { toast } from "@/components/ui/use-toast";
 
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
@@ -31,8 +32,14 @@ export function VercelV0Chat() {
   };
   
   const handleDeepResearch = () => {
-    // Just toggle deep research mode without toast
     setDeepResearchActive(!deepResearchActive);
+    toast({
+      title: deepResearchActive ? "Deep Research Disabled" : "Deep Research Enabled",
+      description: deepResearchActive 
+        ? "Responses will be faster but may have less depth." 
+        : "Your queries will be researched more thoroughly.",
+      duration: 3000
+    });
   };
 
   return (
