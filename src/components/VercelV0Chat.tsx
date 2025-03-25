@@ -13,6 +13,7 @@ import {
   PlusIcon,
   FileSearch,
   Loader2,
+  Send,
 } from "lucide-react";
 import { ActionButton } from "./ActionButton";
 import { useAutoResizeTextarea } from "./AutoResizeTextarea";
@@ -32,6 +33,7 @@ export function VercelV0Chat() {
   const [isTyping, setIsTyping] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [showDeepResearchTooltip, setShowDeepResearchTooltip] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   
   const { toast } = useToast();
   
@@ -117,7 +119,12 @@ export function VercelV0Chat() {
       </h1>
 
       <div className="w-full">
-        <div className="relative bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+        <div className={cn(
+          "relative bg-white dark:bg-neutral-900 rounded-xl border transition-all duration-300",
+          isInputFocused 
+            ? "border-neutral-400 dark:border-neutral-600 shadow-md" 
+            : "border-neutral-200 dark:border-neutral-800 shadow-sm"
+        )}>
           <div className="overflow-y-auto">
             <Textarea
               ref={textareaRef}
@@ -127,6 +134,8 @@ export function VercelV0Chat() {
                 adjustHeight();
               }}
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               placeholder={placeholderText}
               className={cn(
                 "w-full px-4 py-3",
@@ -166,11 +175,11 @@ export function VercelV0Chat() {
                       size="sm"
                       className={cn(
                         "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
-                        "border-neutral-300 dark:border-neutral-700",
-                        "text-neutral-600 dark:text-neutral-400",
-                        "bg-white/80 dark:bg-neutral-900/80",
-                        "hover:bg-neutral-100 dark:hover:bg-neutral-800",
-                        isSearching && "bg-blue-500/10 border-blue-500/30 text-blue-500"
+                        isSearching ? (
+                          "bg-blue-500/10 border-blue-500/30 text-blue-500"
+                        ) : (
+                          "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                        )
                       )}
                       onClick={handleDeepResearch}
                       disabled={isSearching}
@@ -203,21 +212,22 @@ export function VercelV0Chat() {
                 <PlusIcon className="w-4 h-4" />
                 Project
               </button>
+              
               <button
                 type="button"
                 className={cn(
-                  "px-1.5 py-1.5 rounded-lg text-sm transition-colors border flex items-center justify-between gap-1",
-                  value.trim()
-                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                    : "text-neutral-500 dark:text-zinc-400 border-neutral-300 dark:border-zinc-700 hover:border-neutral-400 dark:hover:border-zinc-600 hover:bg-neutral-50 dark:hover:bg-zinc-800"
+                  "px-1.5 py-1.5 rounded-lg text-sm transition-all border flex items-center justify-between gap-1",
+                  value.trim() ? (
+                    "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                  ) : (
+                    "text-neutral-500 dark:text-zinc-400 border-neutral-300 dark:border-zinc-700 hover:border-neutral-400 dark:hover:border-zinc-600 hover:bg-neutral-50 dark:hover:bg-zinc-800"
+                  )
                 )}
               >
-                <ArrowUpIcon
+                <Send
                   className={cn(
                     "w-4 h-4",
-                    value.trim()
-                      ? "text-white dark:text-black"
-                      : "text-neutral-500 dark:text-zinc-400"
+                    value.trim() ? "text-white dark:text-black" : "text-neutral-500 dark:text-zinc-400"
                   )}
                 />
                 <span className="sr-only">Send</span>
