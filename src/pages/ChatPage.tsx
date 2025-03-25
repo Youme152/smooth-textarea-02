@@ -3,13 +3,14 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown, Settings, User, Menu, Copy, ArrowUp } from "lucide-react";
+import { Send, ArrowUp, Copy, RotateCcw, Download, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TextGenerateEffect, MessageLoadingEffect, AnimatedGradientText } from "@/components/ui/text-generate-effect";
+import { TextGenerateEffect, MessageLoadingEffect } from "@/components/ui/text-generate-effect";
+import { ChatInputArea } from "@/components/chat/ChatInputArea";
 
 type Message = {
   id: string;
@@ -22,15 +23,10 @@ const ChatPage = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [modelVersion, setModelVersion] = useState("Grok 3");
+  const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-    minHeight: 36,
-    maxHeight: 240,
-  });
-  
   const { toast } = useToast();
 
   // Auto-scroll to the bottom of the chat
@@ -66,7 +62,6 @@ const ChatPage = () => {
     
     setMessages(prev => [...prev, newMessage]);
     setInput("");
-    adjustHeight();
     
     // Simulate assistant response after a short delay
     setIsGenerating(true);
@@ -81,13 +76,6 @@ const ChatPage = () => {
       setIsGenerating(false);
     }, 2000);
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -95,6 +83,10 @@ const ChatPage = () => {
       title: "Copied to clipboard",
       duration: 2000,
     });
+  };
+
+  const toggleDeepResearch = () => {
+    setDeepResearchActive(!deepResearchActive);
   };
 
   return (
@@ -155,80 +147,17 @@ const ChatPage = () => {
       
       {/* Input area fixed at the bottom */}
       <div className="bg-[#131314] p-4 pb-8 flex justify-center">
-        <div className="w-full max-w-3xl relative">
-          <div className={cn(
-            "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
-            isInputFocused 
-              ? "ring-2 ring-gray-500/50 shadow-lg" 
-              : "ring-1 ring-gray-700/30 shadow-md"
-          )}>
-            <Textarea
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                adjustHeight();
-              }}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-              placeholder="How can Grok help?"
-              className={cn(
-                "w-full px-5 py-4",
-                "resize-none",
-                "bg-transparent",
-                "border-none",
-                "text-white text-base",
-                "focus:outline-none",
-                "focus-visible:ring-0 focus-visible:ring-offset-0",
-                "placeholder:text-gray-500 placeholder:text-base",
-                "min-h-[36px]",
-                "transition-all duration-300"
-              )}
-              style={{
-                overflow: "hidden",
-              }}
-            />
-
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors focus:outline-none hover:bg-gray-800/50"
-                >
-                  <Paperclip className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="flex items-center text-gray-400 text-sm bg-gray-800/30 px-2 py-1 rounded-full hover:bg-gray-800/50 transition-colors cursor-pointer">
-                  <span>{modelVersion}</span>
-                  <svg 
-                    className="w-4 h-4 ml-1" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!input.trim()}
-                  className={cn(
-                    "p-1 rounded-full text-white transition-all focus:outline-none",
-                    input.trim() 
-                      ? "opacity-100 bg-blue-600 hover:bg-blue-700 transform hover:scale-105" 
-                      : "opacity-50 cursor-not-allowed bg-gray-700"
-                  )}
-                >
-                  <ArrowUp className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="w-full max-w-3xl">
+          <ChatInputArea
+            value={input}
+            setValue={setInput}
+            onSend={handleSendMessage}
+            isInputFocused={isInputFocused}
+            setIsInputFocused={setIsInputFocused}
+            deepResearchActive={deepResearchActive}
+            toggleDeepResearch={toggleDeepResearch}
+            placeholderText="How can I help you today?"
+          />
         </div>
       </div>
     </div>
