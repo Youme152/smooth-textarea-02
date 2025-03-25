@@ -92,7 +92,7 @@ const ChatPage = () => {
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
       {/* Header */}
-      <header className="bg-[#131314] p-3">
+      <header className="bg-[#131314] p-3 border-b border-gray-800">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
             <Button variant="ghost" size="icon" className="mr-2">
@@ -142,16 +142,17 @@ const ChatPage = () => {
           {messages.map((message) => (
             <div 
               key={message.id} 
-              className="mb-10"
+              className={cn(
+                "mb-10",
+                message.sender === "user" ? "flex justify-end" : "flex justify-start"
+              )}
             >
               {message.sender === "user" ? (
-                <div className="flex flex-col items-center mb-6">
-                  <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md">
-                    {message.content}
-                  </div>
+                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md">
+                  {message.content}
                 </div>
               ) : (
-                <div className="flex flex-col">
+                <div className="max-w-2xl">
                   <div className="text-white mb-2">
                     <p className="mb-2">{message.content}</p>
                     <div className="flex items-center space-x-2 mt-4">
@@ -180,7 +181,7 @@ const ChatPage = () => {
         </div>
       </ScrollArea>
       
-      {/* Input area fixed at the bottom - made larger */}
+      {/* Input area fixed at the bottom */}
       <div className="bg-[#131314] p-4 pb-8 flex justify-center">
         <div className="w-full max-w-3xl relative">
           <div className={cn(
