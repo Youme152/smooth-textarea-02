@@ -1,7 +1,7 @@
 
 import { useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
@@ -88,17 +88,18 @@ export function ChatInputArea({
               <button
                 type="button"
                 className={cn(
-                  "px-2 py-1 rounded-lg text-sm transition-all duration-200 flex items-center justify-between gap-1",
+                  "px-3 py-2 rounded-full text-sm transition-all duration-200 flex items-center gap-2",
                   deepResearchActive 
-                    ? "bg-blue-600 text-white border border-blue-500 shadow-sm shadow-blue-500/20"
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
                     : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700 active:bg-blue-600/20 active:text-blue-200"
                 )}
                 onClick={toggleDeepResearch}
               >
-                <Sparkles className={cn(
-                  "w-4 h-4",
-                  deepResearchActive && "animate-pulse"
-                )} />
+                {deepResearchActive ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
                 <span>Deep Research</span>
               </button>
             </TooltipTrigger>
@@ -108,26 +109,15 @@ export function ChatInputArea({
           </Tooltip>
         </div>
         
-        <button
-          type="button"
-          className={cn(
-            "px-3 py-2 rounded-lg text-sm transition-all duration-200 border flex items-center justify-between gap-1",
-            value.trim() ? (
-              "bg-white text-black border-gray-300 cursor-pointer hover:bg-gray-100 active:bg-gray-200 active:scale-95 shadow-sm"
-            ) : (
-              "text-neutral-500 border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800 cursor-not-allowed"
-            )
-          )}
+        <Button
+          variant="rainbow"
+          className="rounded-full px-4 py-2 border-none"
           onClick={onSend}
+          disabled={!value.trim()}
         >
-          <Send
-            className={cn(
-              "w-4 h-4",
-              value.trim() ? "text-black" : "text-neutral-500"
-            )}
-          />
+          <Send className="w-4 h-4 mr-2" />
           <span>Send</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

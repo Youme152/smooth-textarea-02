@@ -3,10 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
+import { ChevronDown, ArrowUp, Search, MoveHorizontal, Heart, BarChart2, Code, Loader2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -105,31 +106,31 @@ const Index = () => {
                 <button 
                   onClick={handleDeepResearch}
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm transition-all",
+                    "flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all",
                     deepResearchActive 
-                      ? "bg-blue-600/30 text-blue-300 shadow-sm shadow-blue-500/20"
+                      ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
                       : "text-[#9ca3af] hover:bg-white/10 active:bg-blue-600/20 active:text-blue-200"
                   )}
                 >
-                  <Search className="w-[18px] h-[18px]" />
+                  {deepResearchActive ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
                   DeepSearch
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!input.trim()}
-                  className={cn(
-                    "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
-                    input.trim() 
-                      ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
-                      : "bg-[#555] text-white opacity-80 cursor-not-allowed"
-                  )}
-                >
-                  <ArrowUp className="w-[18px] h-[18px]" />
-                </button>
-              </div>
+              <Button
+                variant="rainbow"
+                size="sm"
+                className="rounded-full px-4 py-1.5"
+                onClick={handleSendMessage}
+                disabled={!input.trim()}
+              >
+                <Send className="w-4 h-4 mr-1" />
+                Send
+              </Button>
             </div>
           </div>
         </div>
@@ -174,4 +175,3 @@ const Index = () => {
 };
 
 export default Index;
-
