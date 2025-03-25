@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -11,9 +11,14 @@ import {
   ArrowUpIcon,
   Paperclip,
   PlusIcon,
+  FileSearch,
+  Loader2,
 } from "lucide-react";
 import { ActionButton } from "./ActionButton";
 import { useAutoResizeTextarea } from "./AutoResizeTextarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
@@ -25,6 +30,10 @@ export function VercelV0Chat() {
   const [placeholderText, setPlaceholderText] = useState("");
   const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDeepResearchTooltip, setShowDeepResearchTooltip] = useState(false);
+  
+  const { toast } = useToast();
   
   const placeholders = [
     "Ask v0 a question...",
@@ -77,6 +86,29 @@ export function VercelV0Chat() {
       }
     }
   };
+  
+  const handleDeepResearch = () => {
+    if (!value.trim()) {
+      toast({
+        title: "Please enter a query first",
+        description: "Enter what you'd like to research before starting deep research.",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    // Simulate search process
+    setTimeout(() => {
+      setIsSearching(false);
+      toast({
+        title: "Deep Research Complete",
+        description: "Found detailed information about your query.",
+        duration: 3000,
+      });
+    }, 2000);
+  };
 
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 space-y-8">
@@ -125,7 +157,44 @@ export function VercelV0Chat() {
                   Attach
                 </span>
               </button>
+              
+              <TooltipProvider>
+                <Tooltip open={showDeepResearchTooltip} onOpenChange={setShowDeepResearchTooltip}>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={cn(
+                        "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
+                        "border-neutral-300 dark:border-neutral-700",
+                        "text-neutral-600 dark:text-neutral-400",
+                        "bg-white/80 dark:bg-neutral-900/80",
+                        "hover:bg-neutral-100 dark:hover:bg-neutral-800",
+                        isSearching && "bg-blue-500/10 border-blue-500/30 text-blue-500"
+                      )}
+                      onClick={handleDeepResearch}
+                      disabled={isSearching}
+                    >
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Researching...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileSearch className="h-3.5 w-3.5" />
+                          <span>Deep Research</span>
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">Search the web for deeper insights</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
+            
             <div className="flex items-center gap-2">
               <button
                 type="button"
