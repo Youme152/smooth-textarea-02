@@ -103,27 +103,27 @@ const ChatPage = () => {
               )}
             >
               {message.sender === "user" ? (
-                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md">
+                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none">
                   {message.content}
                 </div>
               ) : (
-                <div className="max-w-2xl">
+                <div className="max-w-2xl outline-none">
                   <div className="text-white mb-2">
                     <p className="mb-2">{message.content}</p>
                     <div className="flex items-center space-x-2 mt-4">
-                      <button className="p-1 rounded hover:bg-gray-800">
+                      <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <RotateCcw className="h-4 w-4 text-gray-400" />
                       </button>
-                      <button className="p-1 rounded hover:bg-gray-800">
+                      <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <Copy className="h-4 w-4 text-gray-400" onClick={() => copyToClipboard(message.content)} />
                       </button>
-                      <button className="p-1 rounded hover:bg-gray-800">
+                      <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <Download className="h-4 w-4 text-gray-400" />
                       </button>
-                      <button className="p-1 rounded hover:bg-gray-800">
+                      <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <ThumbsUp className="h-4 w-4 text-gray-400" />
                       </button>
-                      <button className="p-1 rounded hover:bg-gray-800">
+                      <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <ThumbsDown className="h-4 w-4 text-gray-400" />
                       </button>
                     </div>
@@ -141,7 +141,7 @@ const ChatPage = () => {
         <div className="w-full max-w-3xl relative">
           <div className={cn(
             "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
-            isInputFocused ? "ring-1 ring-gray-500" : ""
+            isInputFocused ? "ring-1 ring-gray-500" : "ring-0"
           )}>
             <Textarea
               ref={textareaRef}
@@ -175,7 +175,7 @@ const ChatPage = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors"
+                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors focus:outline-none"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
@@ -199,7 +199,7 @@ const ChatPage = () => {
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
                   className={cn(
-                    "p-1 rounded text-white transition-all",
+                    "p-1 rounded text-white transition-all focus:outline-none",
                     input.trim() ? "opacity-100" : "opacity-50 cursor-not-allowed"
                   )}
                 >
