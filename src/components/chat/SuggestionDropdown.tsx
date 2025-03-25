@@ -26,7 +26,7 @@ export function SuggestionDropdown({
           // Highlight the first character of the suggestion that matches the input
           const highlightedSuggestion = (
             <span className="text-white">
-              {firstChar}<span className="text-white/80">{suggestion.slice(1)}</span>
+              {suggestion}
             </span>
           );
           
@@ -36,9 +36,7 @@ export function SuggestionDropdown({
               className="px-4 py-2.5 text-white hover:bg-neutral-800/50 transition-colors cursor-pointer"
               onClick={() => onSuggestionClick(suggestion)}
             >
-              {suggestion.toLowerCase().startsWith(firstChar) 
-                ? highlightedSuggestion 
-                : <span className="text-white">{suggestion}</span>}
+              {highlightedSuggestion}
             </li>
           );
         })}

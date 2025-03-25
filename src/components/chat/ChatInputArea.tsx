@@ -108,6 +108,11 @@ export function ChatInputArea({
     textareaRef.current?.focus();
   };
 
+  const handleDeepSearchCategorySelect = (category: string) => {
+    setDeepSearchCategory(category);
+    toggleDeepResearch();
+  };
+
   return (
     <div className={cn(
       "relative overflow-hidden rounded-xl transition-all duration-300",
@@ -186,17 +191,17 @@ export function ChatInputArea({
                 <ChevronDown className="w-3.5 h-3.5 opacity-70" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border border-neutral-800/50 text-white shadow-xl">
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setDeepSearchCategory("Thumbnails")}>
+            <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border border-neutral-800/50 text-white shadow-xl z-50">
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => handleDeepSearchCategorySelect("Thumbnails")}>
                 <Palette className="w-4 h-4" /> Thumbnails
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setDeepSearchCategory("Titles")}>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => handleDeepSearchCategorySelect("Titles")}>
                 <Hash className="w-4 h-4" /> Titles
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setDeepSearchCategory("Channels")}>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => handleDeepSearchCategorySelect("Channels")}>
                 <Video className="w-4 h-4" /> Channels
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => setDeepSearchCategory("Topics")}>
+              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => handleDeepSearchCategorySelect("Topics")}>
                 <Eye className="w-4 h-4" /> Topics
               </DropdownMenuItem>
             </DropdownMenuContent>

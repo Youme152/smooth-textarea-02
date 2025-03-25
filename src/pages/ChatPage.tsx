@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TextGenerateEffect, MessageLoadingEffect } from "@/components/ui/text-generate-effect";
-import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 
 type Message = {
   id: string;
@@ -21,8 +21,6 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -50,45 +48,6 @@ const ChatPage = () => {
     }, 300);
   }, []);
 
-  useEffect(() => {
-    if (input.trim().length > 0) {
-      const firstChar = input.trim().toLowerCase().charAt(0);
-      const suggestionsMap: Record<string, string[]> = {
-        'h': [
-          "help me analyze Bitcoin during downturns",
-          "help me understand successful hedge fund strategies",
-          "help me predict interest rates",
-          "how can I save on grocery bills each month?"
-        ],
-        'w': [
-          "what is the best way to invest in stocks?",
-          "what programming language should I learn first?",
-          "what are the top AI trends in 2023?",
-          "where can I find reliable market data?"
-        ],
-        'c': [
-          "create a business plan for my startup",
-          "compare different investment strategies",
-          "can you explain how blockchain works?",
-          "calculate my potential retirement savings"
-        ],
-        // Add more first letters with their suggestions as needed
-      };
-      
-      const newSuggestions = suggestionsMap[firstChar] || [
-        `${input} - analysis and insights`,
-        `${input} - step by step guide`,
-        `${input} - comparison with alternatives`,
-        `${input} - best practices`
-      ];
-      
-      setSuggestions(newSuggestions);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  }, [input]);
-
   const handleSendMessage = () => {
     if (!input.trim()) return;
     
@@ -102,7 +61,6 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setInput("");
     adjustHeight();
-    setShowSuggestions(false);
     
     setIsGenerating(true);
     setTimeout(() => {
@@ -130,13 +88,6 @@ const ChatPage = () => {
       title: "Copied to clipboard",
       duration: 2000,
     });
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    setShowSuggestions(false);
-    setTimeout(adjustHeight, 0);
-    textareaRef.current?.focus();
   };
 
   return (
@@ -213,7 +164,6 @@ const ChatPage = () => {
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => {
                 setIsInputFocused(false);
-                setTimeout(() => setShowSuggestions(false), 200);
               }}
               placeholder="Reply to Ora..."
               className={cn(
@@ -231,13 +181,6 @@ const ChatPage = () => {
               style={{
                 overflow: "hidden",
               }}
-            />
-
-            <SuggestionDropdown
-              inputValue={input}
-              suggestions={suggestions}
-              visible={showSuggestions && isInputFocused}
-              onSuggestionClick={handleSuggestionClick}
             />
 
             <div className="flex items-center justify-between px-4 py-3">
