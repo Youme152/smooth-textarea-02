@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 type Message = {
   id: string;
@@ -22,6 +23,7 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [modelVersion, setModelVersion] = useState("Grok 3");
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
@@ -38,13 +40,17 @@ const ChatPage = () => {
   
   // Simulate initial assistant message
   useEffect(() => {
-    const initialMessage = {
-      id: Date.now().toString(),
-      content: "It seems like your message might be incomplete. Could you please provide more context or clarify your request? I'm here to assist!",
-      sender: "assistant" as const,
-      timestamp: new Date(),
-    };
-    setMessages([initialMessage]);
+    setIsGenerating(true);
+    setTimeout(() => {
+      const initialMessage = {
+        id: Date.now().toString(),
+        content: "It seems like your message might be incomplete. Could you please provide more context or clarify your request? I'm here to assist!",
+        sender: "assistant" as const,
+        timestamp: new Date(),
+      };
+      setMessages([initialMessage]);
+      setIsGenerating(false);
+    }, 500);
   }, []);
 
   const handleSendMessage = () => {
@@ -63,6 +69,7 @@ const ChatPage = () => {
     adjustHeight();
     
     // Simulate assistant response after a short delay
+    setIsGenerating(true);
     setTimeout(() => {
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -71,6 +78,7 @@ const ChatPage = () => {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, assistantResponse]);
+      setIsGenerating(false);
     }, 1000);
   };
 
@@ -98,19 +106,21 @@ const ChatPage = () => {
             <div 
               key={message.id} 
               className={cn(
-                "mb-10",
+                "mb-10 group",
                 message.sender === "user" ? "flex justify-end" : "flex justify-start"
               )}
             >
               {message.sender === "user" ? (
-                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none">
+                <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none shadow-md hover:shadow-lg transition-shadow duration-200">
                   {message.content}
                 </div>
               ) : (
                 <div className="max-w-2xl outline-none">
                   <div className="text-white mb-2">
-                    <p className="mb-2">{message.content}</p>
-                    <div className="flex items-center space-x-2 mt-4">
+                    <div className="mb-2">
+                      <TextGenerateEffect text={message.content} />
+                    </div>
+                    <div className="flex items-center space-x-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
                         <RotateCcw className="h-4 w-4 text-gray-400" />
                       </button>
@@ -132,6 +142,19 @@ const ChatPage = () => {
               )}
             </div>
           ))}
+          {isGenerating && (
+            <div className="flex justify-start mb-10">
+              <div className="max-w-2xl outline-none">
+                <div className="text-white mb-2">
+                  <p className="mb-2">
+                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse mr-1"></span>
+                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150 mr-1"></span>
+                    <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-300"></span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -141,7 +164,9 @@ const ChatPage = () => {
         <div className="w-full max-w-3xl relative">
           <div className={cn(
             "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
-            isInputFocused ? "ring-1 ring-gray-500" : "ring-0"
+            isInputFocused 
+              ? "ring-2 ring-gray-500/50 shadow-lg" 
+              : "ring-1 ring-gray-700/30 shadow-md"
           )}>
             <Textarea
               ref={textareaRef}
@@ -164,7 +189,7 @@ const ChatPage = () => {
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
                 "placeholder:text-gray-500 placeholder:text-base",
                 "min-h-[36px]",
-                "transition-all duration-200"
+                "transition-all duration-300"
               )}
               style={{
                 overflow: "hidden",
@@ -175,14 +200,14 @@ const ChatPage = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors focus:outline-none"
+                  className="p-1 text-gray-400 hover:text-gray-200 rounded transition-colors focus:outline-none hover:bg-gray-800/50"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
               </div>
               
               <div className="flex items-center gap-2">
-                <div className="flex items-center text-gray-400 text-sm">
+                <div className="flex items-center text-gray-400 text-sm bg-gray-800/30 px-2 py-1 rounded-full hover:bg-gray-800/50 transition-colors cursor-pointer">
                   <span>{modelVersion}</span>
                   <svg 
                     className="w-4 h-4 ml-1" 
@@ -199,8 +224,10 @@ const ChatPage = () => {
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
                   className={cn(
-                    "p-1 rounded text-white transition-all focus:outline-none",
-                    input.trim() ? "opacity-100" : "opacity-50 cursor-not-allowed"
+                    "p-1 rounded-full text-white transition-all focus:outline-none",
+                    input.trim() 
+                      ? "opacity-100 bg-blue-600 hover:bg-blue-700 transform hover:scale-105" 
+                      : "opacity-50 cursor-not-allowed bg-gray-700"
                   )}
                 >
                   <ArrowUp className="h-5 w-5" />
