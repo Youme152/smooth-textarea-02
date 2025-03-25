@@ -8,7 +8,6 @@ import {
   Figma,
   MonitorIcon,
   CircleUserRound,
-  ArrowUpIcon,
   Paperclip,
   PlusIcon,
   FileSearch,
@@ -32,8 +31,10 @@ export function VercelV0Chat() {
   const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
+  const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [showDeepResearchTooltip, setShowDeepResearchTooltip] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isFullChat, setIsFullChat] = useState(false);
   
   const { toast } = useToast();
   
@@ -47,44 +48,51 @@ export function VercelV0Chat() {
 
   // Effect for typing animation
   useEffect(() => {
-    const placeholder = placeholders[currentPlaceholderIndex];
-    
-    if (isTyping) {
-      if (placeholderText.length < placeholder.length) {
-        const timer = setTimeout(() => {
-          setPlaceholderText(placeholder.substring(0, placeholderText.length + 1));
-        }, 100);
-        return () => clearTimeout(timer);
+    if (!isFullChat) {
+      const placeholder = placeholders[currentPlaceholderIndex];
+      
+      if (isTyping) {
+        if (placeholderText.length < placeholder.length) {
+          const timer = setTimeout(() => {
+            setPlaceholderText(placeholder.substring(0, placeholderText.length + 1));
+          }, 100);
+          return () => clearTimeout(timer);
+        } else {
+          // Wait a bit before starting to delete
+          const timer = setTimeout(() => {
+            setIsTyping(false);
+          }, 1500);
+          return () => clearTimeout(timer);
+        }
       } else {
-        // Wait a bit before starting to delete
-        const timer = setTimeout(() => {
-          setIsTyping(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
-    } else {
-      if (placeholderText.length > 0) {
-        const timer = setTimeout(() => {
-          setPlaceholderText(placeholderText.substring(0, placeholderText.length - 1));
-        }, 50);
-        return () => clearTimeout(timer);
-      } else {
-        // Move to the next placeholder
-        const timer = setTimeout(() => {
-          setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % placeholders.length);
-          setIsTyping(true);
-        }, 500);
-        return () => clearTimeout(timer);
+        if (placeholderText.length > 0) {
+          const timer = setTimeout(() => {
+            setPlaceholderText(placeholderText.substring(0, placeholderText.length - 1));
+          }, 50);
+          return () => clearTimeout(timer);
+        } else {
+          // Move to the next placeholder
+          const timer = setTimeout(() => {
+            setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % placeholders.length);
+            setIsTyping(true);
+          }, 500);
+          return () => clearTimeout(timer);
+        }
       }
     }
-  }, [placeholderText, isTyping, currentPlaceholderIndex, placeholders]);
+  }, [placeholderText, isTyping, currentPlaceholderIndex, placeholders, isFullChat]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (value.trim()) {
-        setValue("");
-        adjustHeight(true);
+        // Enter full chat mode
+        setIsFullChat(true);
+        toast({
+          title: "Chat started",
+          description: "Your conversation has begun.",
+          duration: 3000,
+        });
       }
     }
   };
@@ -99,17 +107,22 @@ export function VercelV0Chat() {
       return;
     }
     
-    setIsSearching(true);
+    // Toggle deep research mode
+    setDeepResearchActive(!deepResearchActive);
     
-    // Simulate search process
-    setTimeout(() => {
-      setIsSearching(false);
-      toast({
-        title: "Deep Research Complete",
-        description: "Found detailed information about your query.",
-        duration: 3000,
-      });
-    }, 2000);
+    if (!deepResearchActive) {
+      setIsSearching(true);
+      
+      // Simulate search process
+      setTimeout(() => {
+        setIsSearching(false);
+        toast({
+          title: "Deep Research Complete",
+          description: "Found detailed information about your query.",
+          duration: 3000,
+        });
+      }, 2000);
+    }
   };
 
   return (
@@ -136,7 +149,7 @@ export function VercelV0Chat() {
               onKeyDown={handleKeyDown}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
-              placeholder={placeholderText}
+              placeholder={isFullChat ? "Continue your conversation..." : placeholderText}
               className={cn(
                 "w-full px-4 py-3",
                 "resize-none",
@@ -175,11 +188,9 @@ export function VercelV0Chat() {
                       size="sm"
                       className={cn(
                         "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
-                        isSearching ? (
-                          "bg-blue-500/10 border-blue-500/30 text-blue-500"
-                        ) : (
+                        (deepResearchActive || isSearching) ? 
+                          "bg-blue-500/10 border-blue-500/30 text-blue-500" :
                           "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                        )
                       )}
                       onClick={handleDeepResearch}
                       disabled={isSearching}
@@ -197,7 +208,7 @@ export function VercelV0Chat() {
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="z-50">
                     <p className="text-xs">Search the web for deeper insights</p>
                   </TooltipContent>
                 </Tooltip>
