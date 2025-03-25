@@ -45,8 +45,8 @@ export function ChatInputArea({
     <div className={cn(
       "relative bg-neutral-800 dark:bg-neutral-900 overflow-hidden rounded-xl border transition-all duration-300",
       isInputFocused
-        ? "border-neutral-600 shadow-md"
-        : "border-neutral-700 shadow-sm"
+        ? "border-neutral-600"
+        : "border-neutral-700"
     )}>
       <div className="overflow-y-auto">
         <Textarea
@@ -65,10 +65,10 @@ export function ChatInputArea({
             "resize-none",
             "bg-transparent",
             "border-none",
-            "text-white text-xl", // Increased font size here
+            "text-white text-xl", 
             "focus:outline-none",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
-            "placeholder:text-neutral-500 placeholder:text-xl", // Increased placeholder font size
+            "placeholder:text-neutral-500 placeholder:text-xl", 
             "min-h-[60px]",
             "transition-all duration-200"
           )}
