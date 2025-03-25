@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Paperclip, Search, ArrowsInOut, Heart, BarChart2, Code } from "lucide-react";
+import { ChevronDown, ArrowUp, Paperclip, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
@@ -92,7 +92,7 @@ const Index = () => {
                 </button>
                 
                 <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10">
-                  <ArrowsInOut className="w-[18px] h-[18px]" />
+                  <MoveHorizontal className="w-[18px] h-[18px]" />
                   Think
                 </button>
               </div>
