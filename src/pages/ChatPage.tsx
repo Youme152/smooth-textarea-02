@@ -3,10 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Send, Paperclip, RotateCcw, Download, ThumbsUp, ThumbsDown, Settings, User, Menu } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Message = {
   id: string;
@@ -18,7 +19,6 @@ type Message = {
 const ChatPage = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,6 +70,29 @@ const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1A1B1E] text-white">
+      {/* Header */}
+      <header className="border-b border-gray-800 bg-[#1A1B1E] p-3">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center">
+            <Button variant="ghost" size="icon" className="mr-2">
+              <Menu className="h-5 w-5 text-gray-400" />
+            </Button>
+            <span className="font-semibold text-white">Grok AI</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5 text-gray-400" />
+            </Button>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="" />
+              <AvatarFallback className="bg-gray-700">
+                <User className="h-4 w-4 text-gray-300" />
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      </header>
+      
       {/* Main chat area taking most of the screen with messages */}
       <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto py-8 px-4">

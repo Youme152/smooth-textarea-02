@@ -12,14 +12,12 @@ import {
   Paperclip,
   PlusIcon,
   FileSearch,
-  Loader2,
   Send,
 } from "lucide-react";
 import { ActionButton } from "./ActionButton";
 import { useAutoResizeTextarea } from "./AutoResizeTextarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
@@ -31,14 +29,10 @@ export function VercelV0Chat() {
   const [placeholderText, setPlaceholderText] = useState("");
   const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
   const [deepResearchActive, setDeepResearchActive] = useState(false);
-  const [showDeepResearchTooltip, setShowDeepResearchTooltip] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [isFullChat, setIsFullChat] = useState(false);
   
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const placeholders = [
     "Ask v0 a question...",
@@ -50,39 +44,37 @@ export function VercelV0Chat() {
 
   // Effect for typing animation
   useEffect(() => {
-    if (!isFullChat) {
-      const placeholder = placeholders[currentPlaceholderIndex];
-      
-      if (isTyping) {
-        if (placeholderText.length < placeholder.length) {
-          const timer = setTimeout(() => {
-            setPlaceholderText(placeholder.substring(0, placeholderText.length + 1));
-          }, 100);
-          return () => clearTimeout(timer);
-        } else {
-          // Wait a bit before starting to delete
-          const timer = setTimeout(() => {
-            setIsTyping(false);
-          }, 1500);
-          return () => clearTimeout(timer);
-        }
+    const placeholder = placeholders[currentPlaceholderIndex];
+    
+    if (isTyping) {
+      if (placeholderText.length < placeholder.length) {
+        const timer = setTimeout(() => {
+          setPlaceholderText(placeholder.substring(0, placeholderText.length + 1));
+        }, 100);
+        return () => clearTimeout(timer);
       } else {
-        if (placeholderText.length > 0) {
-          const timer = setTimeout(() => {
-            setPlaceholderText(placeholderText.substring(0, placeholderText.length - 1));
-          }, 50);
-          return () => clearTimeout(timer);
-        } else {
-          // Move to the next placeholder
-          const timer = setTimeout(() => {
-            setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % placeholders.length);
-            setIsTyping(true);
-          }, 500);
-          return () => clearTimeout(timer);
-        }
+        // Wait a bit before starting to delete
+        const timer = setTimeout(() => {
+          setIsTyping(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      if (placeholderText.length > 0) {
+        const timer = setTimeout(() => {
+          setPlaceholderText(placeholderText.substring(0, placeholderText.length - 1));
+        }, 50);
+        return () => clearTimeout(timer);
+      } else {
+        // Move to the next placeholder
+        const timer = setTimeout(() => {
+          setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % placeholders.length);
+          setIsTyping(true);
+        }, 500);
+        return () => clearTimeout(timer);
       }
     }
-  }, [placeholderText, isTyping, currentPlaceholderIndex, placeholders, isFullChat]);
+  }, [placeholderText, isTyping, currentPlaceholderIndex, placeholders]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -102,31 +94,8 @@ export function VercelV0Chat() {
   };
   
   const handleDeepResearch = () => {
-    if (!value.trim()) {
-      toast({
-        title: "Please enter a query first",
-        description: "Enter what you'd like to research before starting deep research.",
-        duration: 3000,
-      });
-      return;
-    }
-    
-    // Toggle deep research mode
+    // Just toggle deep research mode without toast
     setDeepResearchActive(!deepResearchActive);
-    
-    if (!deepResearchActive) {
-      setIsSearching(true);
-      
-      // Simulate search process
-      setTimeout(() => {
-        setIsSearching(false);
-        toast({
-          title: "Deep Research Complete",
-          description: "Found detailed information about your query.",
-          duration: 3000,
-        });
-      }, 2000);
-    }
   };
 
   return (
@@ -153,7 +122,7 @@ export function VercelV0Chat() {
               onKeyDown={handleKeyDown}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
-              placeholder={isFullChat ? "Continue your conversation..." : placeholderText}
+              placeholder={placeholderText}
               className={cn(
                 "w-full px-4 py-3",
                 "resize-none",
@@ -185,37 +154,20 @@ export function VercelV0Chat() {
               </button>
               
               <TooltipProvider>
-                <Tooltip open={showDeepResearchTooltip} onOpenChange={setShowDeepResearchTooltip}>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={cn(
-                        "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
-                        (deepResearchActive || isSearching) ? 
-                          "bg-blue-500/10 border-blue-500/30 text-blue-500" :
-                          "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                      )}
-                      onClick={handleDeepResearch}
-                      disabled={isSearching}
-                    >
-                      {isSearching ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          <span>Researching...</span>
-                        </>
-                      ) : (
-                        <>
-                          <FileSearch className="h-3.5 w-3.5" />
-                          <span>Deep Research</span>
-                        </>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="z-50">
-                    <p className="text-xs">Search the web for deeper insights</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className={cn(
+                    "ml-2 px-3 py-1.5 h-8 rounded-lg text-xs transition-all flex items-center gap-1",
+                    deepResearchActive ? 
+                      "bg-blue-500/10 border-blue-500/30 text-blue-500" :
+                      "border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white/80 dark:bg-neutral-900/80 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  )}
+                  onClick={handleDeepResearch}
+                >
+                  <FileSearch className="h-3.5 w-3.5" />
+                  <span>Deep Research</span>
+                </Button>
               </TooltipProvider>
             </div>
             
