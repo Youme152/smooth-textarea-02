@@ -90,8 +90,8 @@ export function ChatInputArea({
                 className={cn(
                   "px-2 py-1 rounded-lg text-sm transition-all duration-200 flex items-center justify-between gap-1",
                   deepResearchActive 
-                    ? "bg-purple-600/30 text-purple-300 border border-purple-500/50 shadow-sm shadow-purple-500/20"
-                    : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700 active:bg-purple-600/20 active:text-purple-200"
+                    ? "bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm shadow-blue-500/20"
+                    : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-700 active:bg-blue-600/20 active:text-blue-200"
                 )}
                 onClick={toggleDeepResearch}
               >
@@ -113,7 +113,7 @@ export function ChatInputArea({
           className={cn(
             "px-3 py-2 rounded-lg text-sm transition-all duration-200 border flex items-center justify-between gap-1",
             value.trim() ? (
-              "bg-neutral-700 text-white border-neutral-600 cursor-pointer hover:bg-neutral-600 active:bg-neutral-500 active:scale-95 shadow-sm"
+              "bg-white text-black border-gray-300 cursor-pointer hover:bg-gray-100 active:bg-gray-200 active:scale-95 shadow-sm"
             ) : (
               "text-neutral-500 border-neutral-700 hover:border-neutral-600 hover:bg-neutral-800 cursor-not-allowed"
             )
@@ -123,7 +123,7 @@ export function ChatInputArea({
           <Send
             className={cn(
               "w-4 h-4",
-              value.trim() ? "text-white" : "text-neutral-500"
+              value.trim() ? "text-black" : "text-neutral-500"
             )}
           />
           <span>Send</span>
@@ -132,3 +132,4 @@ export function ChatInputArea({
     </div>
   );
 }
+

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Paperclip, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
+import { ChevronDown, ArrowUp, Search, MoveHorizontal, Heart, BarChart2, Code } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
@@ -102,36 +102,21 @@ const Index = () => {
             {/* Controls */}
             <div className="flex items-center justify-between px-2.5 py-2">
               <div className="flex items-center gap-3">
-                <button className="p-2 text-[#9ca3af] rounded-full hover:bg-white/10 active:scale-95 transition-all">
-                  <Paperclip className="w-[18px] h-[18px]" />
-                </button>
-                
                 <button 
                   onClick={handleDeepResearch}
                   className={cn(
                     "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm transition-all",
                     deepResearchActive 
-                      ? "bg-purple-600/30 text-purple-300 shadow-sm shadow-purple-500/20"
-                      : "text-[#9ca3af] hover:bg-white/10 active:bg-purple-600/20 active:text-purple-200"
+                      ? "bg-blue-600/30 text-blue-300 shadow-sm shadow-blue-500/20"
+                      : "text-[#9ca3af] hover:bg-white/10 active:bg-blue-600/20 active:text-blue-200"
                   )}
                 >
                   <Search className="w-[18px] h-[18px]" />
                   DeepSearch
-                  <ChevronDown className="w-[14px] h-[14px]" />
-                </button>
-                
-                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10 active:scale-95 transition-all">
-                  <MoveHorizontal className="w-[18px] h-[18px]" />
-                  Think
                 </button>
               </div>
 
               <div className="flex items-center gap-2">
-                <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm text-[#9ca3af] hover:bg-white/10 active:scale-95 transition-all">
-                  Grok 3
-                  <ChevronDown className="w-[14px] h-[14px]" />
-                </button>
-                
                 <button
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
@@ -182,14 +167,6 @@ const Index = () => {
             Code
           </button>
         </div>
-
-        <button className="mt-5 mb-2.5 text-sm text-[#9ca3af] bg-transparent border-none cursor-pointer hover:text-white hover:underline transition-colors">
-          Switch to Personas
-        </button>
-
-        <div className="text-xs text-[#6b7280] text-center mt-2.5">
-          By messaging Grok, you agree to our <a href="#" className="text-[#9ca3af] no-underline hover:underline transition-colors">Terms</a> and <a href="#" className="text-[#9ca3af] no-underline hover:underline transition-colors">Privacy Policy</a>.
-        </div>
       </div>
       <Toaster />
     </div>
@@ -197,3 +174,4 @@ const Index = () => {
 };
 
 export default Index;
+
