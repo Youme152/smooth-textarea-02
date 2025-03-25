@@ -105,8 +105,8 @@ export function ChatInputArea({
     <div className={cn(
       "relative overflow-hidden rounded-xl transition-all duration-300",
       isInputFocused
-        ? "bg-neutral-800 dark:bg-neutral-900 shadow-lg border border-neutral-700 shadow-neutral-900/20"
-        : "bg-neutral-800 dark:bg-neutral-900 border border-neutral-700 shadow-md"
+        ? "bg-neutral-900/90 shadow-lg border border-neutral-800"
+        : "bg-neutral-900/90 border border-neutral-800"
     )}>
       <div className="overflow-y-auto">
         <Textarea
@@ -132,10 +132,10 @@ export function ChatInputArea({
             "w-full px-4 py-3",
             "resize-none",
             "bg-transparent",
-            "border-none outline-none",
+            "border-none",
             "text-white text-xl", 
             "focus:outline-none",
-            "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
+            "focus-visible:ring-0 focus-visible:ring-offset-0",
             "placeholder:text-neutral-500 placeholder:text-xl",
             "placeholder:transition-opacity placeholder:duration-200",
             isInputFocused ? "placeholder:opacity-80" : "placeholder:text-neutral-500",
