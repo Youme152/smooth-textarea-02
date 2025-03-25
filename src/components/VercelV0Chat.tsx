@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -36,6 +37,7 @@ export function VercelV0Chat() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isFullChat, setIsFullChat] = useState(false);
   
+  const navigate = useNavigate();
   const { toast } = useToast();
   
   const placeholders = [
@@ -86,14 +88,16 @@ export function VercelV0Chat() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (value.trim()) {
-        // Enter full chat mode
-        setIsFullChat(true);
-        toast({
-          title: "Chat started",
-          description: "Your conversation has begun.",
-          duration: 3000,
-        });
+        // Navigate to the chat page
+        navigate("/chat");
       }
+    }
+  };
+  
+  const handleSendClick = () => {
+    if (value.trim()) {
+      // Navigate to the chat page
+      navigate("/chat");
     }
   };
   
@@ -218,7 +222,9 @@ export function VercelV0Chat() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="px-2 py-1 rounded-lg text-sm text-neutral-500 dark:text-zinc-400 transition-colors border border-dashed border-neutral-300 dark:border-zinc-700 hover:border-neutral-400 dark:hover:border-zinc-600 hover:bg-neutral-50 dark:hover:bg-zinc-800 flex items-center justify-between gap-1"
+                className={cn(
+                  "px-2 py-1 rounded-lg text-sm text-neutral-500 dark:text-zinc-400 transition-colors border border-dashed border-neutral-300 dark:border-zinc-700 hover:border-neutral-400 dark:hover:border-zinc-600 hover:bg-neutral-50 dark:hover:bg-zinc-800 flex items-center justify-between gap-1"
+                )}
               >
                 <PlusIcon className="w-4 h-4" />
                 Project
@@ -229,11 +235,12 @@ export function VercelV0Chat() {
                 className={cn(
                   "px-1.5 py-1.5 rounded-lg text-sm transition-all border flex items-center justify-between gap-1",
                   value.trim() ? (
-                    "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                    "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white cursor-pointer"
                   ) : (
                     "text-neutral-500 dark:text-zinc-400 border-neutral-300 dark:border-zinc-700 hover:border-neutral-400 dark:hover:border-zinc-600 hover:bg-neutral-50 dark:hover:bg-zinc-800"
                   )
                 )}
+                onClick={handleSendClick}
               >
                 <Send
                   className={cn(
