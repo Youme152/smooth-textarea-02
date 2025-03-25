@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +21,52 @@ export function VercelV0Chat() {
     minHeight: 60,
     maxHeight: 200,
   });
+  
+  const [placeholderText, setPlaceholderText] = useState("");
+  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  
+  const placeholders = [
+    "Ask v0 a question...",
+    "Help me create a landing page...",
+    "Design a sign-up form...",
+    "Build me a portfolio site...",
+    "Create a responsive dashboard...",
+  ];
+
+  // Effect for typing animation
+  useEffect(() => {
+    const placeholder = placeholders[currentPlaceholderIndex];
+    
+    if (isTyping) {
+      if (placeholderText.length < placeholder.length) {
+        const timer = setTimeout(() => {
+          setPlaceholderText(placeholder.substring(0, placeholderText.length + 1));
+        }, 100);
+        return () => clearTimeout(timer);
+      } else {
+        // Wait a bit before starting to delete
+        const timer = setTimeout(() => {
+          setIsTyping(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      if (placeholderText.length > 0) {
+        const timer = setTimeout(() => {
+          setPlaceholderText(placeholderText.substring(0, placeholderText.length - 1));
+        }, 50);
+        return () => clearTimeout(timer);
+      } else {
+        // Move to the next placeholder
+        const timer = setTimeout(() => {
+          setCurrentPlaceholderIndex((currentPlaceholderIndex + 1) % placeholders.length);
+          setIsTyping(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [placeholderText, isTyping, currentPlaceholderIndex, placeholders]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -49,7 +95,7 @@ export function VercelV0Chat() {
                 adjustHeight();
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Ask v0 a question..."
+              placeholder={placeholderText}
               className={cn(
                 "w-full px-4 py-3",
                 "resize-none",
@@ -59,7 +105,8 @@ export function VercelV0Chat() {
                 "focus:outline-none",
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
                 "placeholder:text-neutral-500 placeholder:text-sm",
-                "min-h-[60px]"
+                "min-h-[60px]",
+                "transition-all duration-200"
               )}
               style={{
                 overflow: "hidden",
