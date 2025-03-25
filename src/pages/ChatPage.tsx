@@ -91,51 +91,6 @@ const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#131314] text-white overflow-hidden">
-      {/* Header */}
-      <header className="bg-[#131314] p-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" className="mr-2">
-              <Menu className="h-5 w-5 text-gray-400" />
-            </Button>
-            <span className="font-semibold text-white">Grok</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-              </svg>
-            </Button>
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2v8" />
-                <path d="m16 6-4 4-4-4" />
-                <path d="M8 14h8" />
-                <path d="M15 18H9" />
-                <path d="M12 22v-4" />
-              </svg>
-            </Button>
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z" />
-                <line x1="18" x2="12" y1="9" y2="15" />
-                <line x1="12" x2="18" y1="9" y2="15" />
-              </svg>
-            </Button>
-            <Button variant="ghost" size="icon" className="text-gray-400">
-              <Settings className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" className="rounded-full px-3 py-1 h-8 text-sm bg-transparent border-gray-700 text-white hover:bg-gray-800">
-              Sign up
-            </Button>
-            <Button variant="ghost" className="text-sm px-3 py-1 h-8">
-              Sign in
-            </Button>
-          </div>
-        </div>
-      </header>
-      
       {/* Main chat area */}
       <ScrollArea className="flex-1">
         <div className="max-w-3xl mx-auto py-8 px-4">
