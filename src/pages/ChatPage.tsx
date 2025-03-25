@@ -1,9 +1,9 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowUp, RotateCcw, Download, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -150,8 +150,8 @@ const ChatPage = () => {
           <div className={cn(
             "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
             isInputFocused 
-              ? "ring-1 ring-gray-500/50 shadow-lg" 
-              : "ring-1 ring-gray-700/30 shadow-md"
+              ? "border border-neutral-700 shadow-lg" 
+              : "border border-neutral-800 shadow-md"
           )}>
             <Textarea
               ref={textareaRef}
@@ -189,10 +189,10 @@ const ChatPage = () => {
                   onClick={handleSendMessage}
                   disabled={!input.trim()}
                   className={cn(
-                    "p-1 rounded-full text-white transition-all focus:outline-none",
+                    "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
                     input.trim() 
-                      ? "opacity-100 bg-blue-600 hover:bg-blue-700 transform hover:scale-105" 
-                      : "opacity-50 cursor-not-allowed bg-gray-700"
+                      ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
+                      : "bg-[#555] text-white opacity-80 cursor-not-allowed"
                   )}
                 >
                   <ArrowUp className="h-5 w-5" />

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -74,7 +73,7 @@ const Index = () => {
           <div className={cn(
             "w-full rounded-2xl overflow-hidden transition-all duration-300",
             isInputFocused
-              ? "bg-[rgba(39,39,42,0.6)] shadow-lg ring-2 ring-purple-500/40"
+              ? "bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700"
               : "bg-[rgba(39,39,42,0.5)] shadow-md"
           )}>
             {/* Input Area */}
@@ -93,7 +92,7 @@ const Index = () => {
                 className={cn(
                   "w-full bg-transparent border-none text-white text-base outline-none resize-none p-0",
                   "placeholder:text-neutral-500 placeholder:opacity-70 transition-all duration-300",
-                  isInputFocused && "placeholder:text-purple-300 placeholder:opacity-50"
+                  isInputFocused && "placeholder:opacity-50"
                 )}
                 style={{ overflow: "hidden" }}
               />
@@ -174,4 +173,3 @@ const Index = () => {
 };
 
 export default Index;
-
