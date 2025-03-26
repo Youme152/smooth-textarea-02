@@ -74,7 +74,10 @@ const Index = () => {
         </div>
 
         <div className="w-full mb-5 relative">
-          <div className="w-full rounded-2xl overflow-hidden transition-all duration-300 bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700">
+          <div className={cn(
+            "w-full rounded-2xl overflow-hidden transition-all duration-300 bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700",
+            isInputFocused ? "rainbow-glow-active" : "rainbow-glow"
+          )}>
             <div className="p-3.5 sm:p-4">
               <textarea
                 ref={textareaRef}
