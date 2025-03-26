@@ -30,12 +30,11 @@ export function DeepSearchDropdown({
               : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 active:bg-blue-600/20 active:text-blue-200"
           )}
         >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn(
-            deepResearchActive && "animate-pulse"
-          )}>
-            <path d="M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M21 21l-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img 
+            src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
+            alt="DeepSearch" 
+            className="w-4 h-4" 
+          />
           <span>DeepSearch</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-70" />
         </button>

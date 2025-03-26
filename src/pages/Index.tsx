@@ -1,12 +1,14 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Search, Brain, BarChart2, Youtube, Image, LineChart, DollarSign, Instagram } from "lucide-react";
+import { ChevronDown, ArrowUp, Brain, BarChart2, Youtube, Image, LineChart, DollarSign, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
+import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -99,8 +101,10 @@ const Index = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5">
       <div className="flex flex-col items-center w-full max-w-[800px]">
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Welcome to Grok.</h1>
-          <p className="text-xl md:text-2xl text-[#9ca3af]">How can I help you today?</p>
+          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Welcome to Timeline.</h1>
+          <p className="text-xl md:text-2xl text-[#9ca3af]">
+            <AnimatedGradientText text="What will you make viral today?" />
+          </p>
         </div>
 
         <div className="w-full mb-5 relative">
@@ -139,7 +143,11 @@ const Index = () => {
                       : "text-[#9ca3af] hover:bg-white/10 active:bg-blue-600/20 active:text-blue-200"
                   )}
                 >
-                  <Search className="w-[18px] h-[18px]" />
+                  <img 
+                    src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
+                    alt="DeepSearch" 
+                    className="w-[18px] h-[18px]" 
+                  />
                   DeepSearch
                 </button>
               </div>
@@ -182,7 +190,7 @@ const Index = () => {
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Youtube className="w-4 h-4" />
-            Create Youtube Channel
+            Create YouTube Channel
           </button>
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
