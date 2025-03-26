@@ -1,9 +1,8 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Brain, BarChart2, Youtube, Image, LineChart, DollarSign, Instagram } from "lucide-react";
+import { ChevronDown, ArrowUp, Brain, Youtube, Image, LineChart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
@@ -37,44 +36,6 @@ const Index = () => {
     deletingSpeed: 40,
     pauseDuration: 2000
   });
-
-  useEffect(() => {
-    if (input.trim().length > 0) {
-      const firstChar = input.trim().toLowerCase().charAt(0);
-      const suggestionsMap: Record<string, string[]> = {
-        'h': [
-          "help me analyze Bitcoin during downturns",
-          "help me understand successful hedge fund strategies",
-          "help me predict interest rates",
-          "how can I save on grocery bills each month?"
-        ],
-        'w': [
-          "what is the best way to invest in stocks?",
-          "what programming language should I learn first?",
-          "what are the top AI trends in 2023?",
-          "where can I find reliable market data?"
-        ],
-        'c': [
-          "create a business plan for my startup",
-          "compare different investment strategies",
-          "can you explain how blockchain works?",
-          "calculate my potential retirement savings"
-        ],
-      };
-      
-      const newSuggestions = suggestionsMap[firstChar] || [
-        `${input} - analysis and insights`,
-        `${input} - step by step guide`,
-        `${input} - comparison with alternatives`,
-        `${input} - best practices`
-      ];
-      
-      setSuggestions(newSuggestions);
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -188,11 +149,6 @@ const Index = () => {
           </button>
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
-            <BarChart2 className="w-4 h-4" />
-            Top Trends This Week
-          </button>
-          
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Youtube className="w-4 h-4" />
             Create a YouTube Channel
           </button>
@@ -205,16 +161,6 @@ const Index = () => {
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <LineChart className="w-4 h-4" />
             Market Research
-          </button>
-          
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
-            <DollarSign className="w-4 h-4" />
-            Earn $100 Challenge
-          </button>
-          
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
-            <Instagram className="w-4 h-4" />
-            Plan IG Content For mY tRIP
           </button>
         </div>
       </div>

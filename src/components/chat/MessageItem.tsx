@@ -23,15 +23,17 @@ export function MessageItem({ id, content, sender }: MessageItemProps) {
 
   if (sender === "user") {
     return (
-      <div className="bg-[#1E1E1E] text-white px-4 py-2 rounded-md max-w-md outline-none shadow-md hover:shadow-lg transition-shadow duration-200 focus:outline-none ring-0">
-        {content}
+      <div className="flex justify-end">
+        <div className="bg-[#1E1E1E] text-white px-4 py-3 rounded-md max-w-md shadow-md">
+          {content}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl outline-none focus:outline-none ring-0">
-      <div className="text-white mb-2">
+    <div className="max-w-2xl">
+      <div className="text-white mb-4">
         <div className="mb-2">
           <TextGenerateEffect text={content} typingSpeed={1} />
         </div>

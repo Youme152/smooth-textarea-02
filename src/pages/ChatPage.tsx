@@ -17,17 +17,22 @@ const ChatPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   
   useEffect(() => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      const initialMessage = {
-        id: Date.now().toString(),
-        content: "Hello! How can I assist you today?",
+    // Initialize with a user greeting and AI response
+    const initialMessages = [
+      {
+        id: "user-init",
+        content: "hi",
+        sender: "user" as const,
+        timestamp: new Date(),
+      },
+      {
+        id: "ai-init",
+        content: "Hey hey! 😊 What's up?",
         sender: "assistant" as const,
         timestamp: new Date(),
-      };
-      setMessages([initialMessage]);
-      setIsGenerating(false);
-    }, 300);
+      }
+    ];
+    setMessages(initialMessages);
   }, []);
 
   const fetchAIResponse = async (userMessage: string): Promise<string> => {
