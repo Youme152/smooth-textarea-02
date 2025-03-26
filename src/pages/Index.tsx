@@ -8,6 +8,8 @@ import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
+import SquaresBackground from "@/components/SquaresBackground";
+import { HighlightedText, StylizedHeading } from "@/components/ui/highlighted-text";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -59,17 +61,16 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5">
-      <div className="flex flex-col items-center w-full max-w-[800px]">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl mb-2">
-            <span className="font-baskervville italic font-normal">Welcome to </span>
-            <span className="font-inter font-bold tracking-tight">Ora</span>
-            <span className="text-sm align-top">®</span>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative">
+      <SquaresBackground />
+      
+      <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">
+        <div className="text-center mb-12">
+          <h1 className="font-playfair text-4xl md:text-6xl text-white tracking-tight leading-tight mb-0">
+            What will you make{" "}
+            <HighlightedText color="magenta" className="font-bold">viral</HighlightedText>{" "}
+            <HighlightedText color="blue" className="font-bold">today</HighlightedText>?
           </h1>
-          <p className="text-xl md:text-2xl text-[#9ca3af]">
-            <AnimatedGradientText text="What will you make viral today?" />
-          </p>
         </div>
 
         <div className="w-full mb-5 relative">
