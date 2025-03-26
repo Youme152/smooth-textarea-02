@@ -2,8 +2,6 @@
 import { useState, useEffect } from "react";
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -114,19 +112,14 @@ const ChatPage = () => {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex flex-col h-screen w-full bg-[#131314] text-white overflow-hidden">
-        <ChatSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden ml-0 md:ml-[16rem]">
-          <MessageList 
-            messages={messages}
-            isGenerating={isGenerating}
-          />
-          
-          <ChatInput onSendMessage={handleSendMessage} />
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <MessageList 
+        messages={messages}
+        isGenerating={isGenerating}
+      />
+      
+      <ChatInput onSendMessage={handleSendMessage} />
+    </div>
   );
 };
 
