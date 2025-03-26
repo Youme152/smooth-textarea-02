@@ -146,7 +146,7 @@ const Index = () => {
                   <img 
                     src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
                     alt="DeepSearch" 
-                    className="w-[18px] h-[18px]" 
+                    className="w-5 h-5" 
                   />
                   DeepSearch
                 </button>
@@ -190,7 +190,7 @@ const Index = () => {
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Youtube className="w-4 h-4" />
-            Create YouTube Channel
+            Create a YouTube Channel
           </button>
           
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
