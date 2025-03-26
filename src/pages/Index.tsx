@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -186,37 +187,37 @@ const Index = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-2.5 mt-3.5">
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Brain className="w-4 h-4" />
             Brainstorm
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <BarChart2 className="w-4 h-4" />
             Top Trends This Week
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Youtube className="w-4 h-4" />
             Create Youtube Channel
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Image className="w-4 h-4" />
             Make me a Thumbnail
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <LineChart className="w-4 h-4" />
             Market Research
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <DollarSign className="w-4 h-4" />
             Earn $100 Challenge
           </button>
           
-          <button className="flex items-center gap-2 px-3.5 py-2 bg-[rgba(39,39,42,0.7)] text-[#9ca3af] rounded-full hover:bg-[rgba(55,55,60,0.7)] hover:text-white active:scale-95 transition-all">
+          <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Instagram className="w-4 h-4" />
             Plan IG Content For mY tRIP
           </button>
