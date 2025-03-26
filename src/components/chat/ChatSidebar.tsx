@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { User, MessageSquare, Settings, LogOut, Plus, Clock, Folder } from 'lucide-react';
+import { User, MessageSquare, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '@/components/auth/AuthContext';
 import {
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
 
 type ChatEntry = {
   id: string;
@@ -34,25 +33,15 @@ export function ChatSidebar() {
     { id: 'chat-1', title: 'My first chat', date: new Date() },
     { id: 'chat-2', title: 'AI assistant help', date: new Date(Date.now() - 86400000) },
     { id: 'chat-3', title: 'Web design ideas', date: new Date(Date.now() - 172800000) },
-    { id: 'chat-4', title: 'Marketing strategy', date: new Date(Date.now() - 259200000) },
-    { id: 'chat-5', title: 'Content planning', date: new Date(Date.now() - 345600000) },
   ]);
 
-  const createNewChat = () => {
-    toast({
-      title: "New chat created",
-      description: "Starting a fresh conversation...",
-    });
-    // In a real app, you would create a new chat in the database here
-    navigate('/chat');
-  };
-
   const handleChatSelect = (chatId: string) => {
+    // In a real implementation, this would navigate to the specific chat
     toast({
       title: "Chat selected",
       description: `Loading chat ${chatId}...`,
     });
-    // In a real app, you would load the selected chat from the database
+    // Navigate to chat page with id as parameter
     navigate(`/chat?id=${chatId}`);
   };
 
@@ -80,18 +69,11 @@ export function ChatSidebar() {
             <span className="text-xs text-neutral-400">{user?.email}</span>
           </div>
         </div>
-        <Button 
-          onClick={createNewChat}
-          className="w-full mt-4 flex items-center justify-center gap-2 bg-neutral-800 hover:bg-neutral-700"
-        >
-          <Plus size={16} />
-          <span>New Chat</span>
-        </Button>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Recent Chats</SidebarGroupLabel>
+          <SidebarGroupLabel>Your Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {savedChats.map((chat) => (
@@ -105,26 +87,6 @@ export function ChatSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        
-        <SidebarGroup>
-          <SidebarGroupLabel>Collections</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Recent">
-                  <Clock className="text-neutral-400" />
-                  <span>Recent</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Saved">
-                  <Folder className="text-neutral-400" />
-                  <span>Saved</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
