@@ -1,15 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import { ChevronDown, ArrowUp, Brain, Youtube, Image, LineChart } from "lucide-react";
+import { ArrowUp, Brain, Youtube, Image, LineChart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
-import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
 import SquaresBackground from "@/components/SquaresBackground";
-import { HighlightedText, StylizedHeading } from "@/components/ui/highlighted-text";
+import { HighlightedText } from "@/components/ui/highlighted-text";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -61,7 +60,8 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative overflow-hidden">
+      {/* Add SquaresBackground before any content for proper z-index layering */}
       <SquaresBackground />
       
       <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">

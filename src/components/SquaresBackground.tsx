@@ -36,7 +36,7 @@ export function Squares({
     if (!ctx) return;
 
     // Set canvas background
-    canvas.style.background = "#060606";
+    canvas.style.background = "#0a0a0a";
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
@@ -54,7 +54,7 @@ export function Squares({
       const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
       const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
 
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 1; // Increase line width for better visibility
 
       for (let x = startX; x < canvas.width + squareSize; x += squareSize) {
         for (let y = startY; y < canvas.height + squareSize; y += squareSize) {
@@ -75,6 +75,7 @@ export function Squares({
         }
       }
 
+      // Make the vignette effect less intense
       const gradient = ctx.createRadialGradient(
         canvas.width / 2,
         canvas.height / 2,
@@ -83,8 +84,8 @@ export function Squares({
         canvas.height / 2,
         Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2)) / 2
       );
-      gradient.addColorStop(0, "rgba(6, 6, 6, 0)");
-      gradient.addColorStop(1, "#060606");
+      gradient.addColorStop(0, "rgba(10, 10, 10, 0)");
+      gradient.addColorStop(1, "rgba(10, 10, 10, 0.7)"); // Less opaque for better visibility
 
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -188,10 +189,10 @@ export default function SquaresBackground() {
     <div className="fixed inset-0 w-full h-full -z-10">
       <Squares
         direction="diagonal"
-        speed={0} // Static background (no movement)
-        squareSize={60}
-        borderColor="#333" 
-        hoverFillColor="#444"
+        speed={0.05} // Add slight movement to make it more noticeable
+        squareSize={50} // Slightly smaller squares for more grid lines
+        borderColor="#444" // Brighter border color for better visibility
+        hoverFillColor="#555" // Brighter hover color
       />
     </div>
   );
