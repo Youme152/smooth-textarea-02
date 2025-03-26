@@ -25,8 +25,14 @@ export function MessageList({ messages, isGenerating }: MessageListProps) {
   }, [messages, isGenerating]);
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1 h-full">
       <div className="max-w-3xl mx-auto py-8 px-4">
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-neutral-400">No messages yet</p>
+          </div>
+        )}
+        
         {messages.map((message) => (
           <div 
             key={message.id} 

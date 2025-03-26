@@ -112,13 +112,17 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <MessageList 
-        messages={messages}
-        isGenerating={isGenerating}
-      />
+    <div className="flex flex-col h-full w-full">
+      <div className="flex-1 overflow-hidden">
+        <MessageList 
+          messages={messages}
+          isGenerating={isGenerating}
+        />
+      </div>
       
-      <ChatInput onSendMessage={handleSendMessage} />
+      <div className="mt-auto border-t border-neutral-800">
+        <ChatInput onSendMessage={handleSendMessage} />
+      </div>
     </div>
   );
 };
