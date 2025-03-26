@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ import { useAutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
+import SquaresBackground from "@/components/SquaresBackground";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -59,8 +61,10 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5">
-      <div className="flex flex-col items-center w-full max-w-[800px]">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative">
+      <SquaresBackground />
+      
+      <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl mb-2">
             <span className="font-baskervville italic font-normal">Welcome to </span>
