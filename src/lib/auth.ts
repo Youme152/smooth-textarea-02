@@ -39,6 +39,11 @@ export const useAuth = (): AuthState => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Helper function to get the current site URL
+  const getSiteUrl = () => {
+    return window.location.origin;
+  };
+
   const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
     try {
       setLoading(true);
@@ -48,7 +53,8 @@ export const useAuth = (): AuthState => {
         options: {
           data: {
             full_name: fullName
-          }
+          },
+          emailRedirectTo: `${getSiteUrl()}/auth`
         }
       });
 
@@ -126,7 +132,7 @@ export const useAuth = (): AuthState => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${getSiteUrl()}/reset-password`,
       });
       if (error) {
         throw error;
