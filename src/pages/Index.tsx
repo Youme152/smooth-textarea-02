@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,6 +8,7 @@ import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 import SquaresBackground from "@/components/SquaresBackground";
 import { HighlightedText } from "@/components/ui/highlighted-text";
+import { useAuthContext } from "@/components/auth/AuthContext";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -20,6 +20,7 @@ const Index = () => {
   const { toast } = useToast();
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { user } = useAuthContext();
 
   const placeholders = [
     "What do you want to know?",
@@ -60,8 +61,7 @@ const Index = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative overflow-hidden">
-      {/* Add SquaresBackground before any content for proper z-index layering */}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative overflow-hidden pt-24">
       <SquaresBackground />
       
       <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">
@@ -71,6 +71,12 @@ const Index = () => {
             <HighlightedText color="magenta" className="font-bold">viral</HighlightedText>{" "}
             <HighlightedText color="blue" className="font-bold">today</HighlightedText>?
           </h1>
+          
+          {!user && (
+            <p className="mt-4 text-lg text-neutral-400">
+              <a href="/auth" className="text-blue-400 hover:text-blue-300 underline">Sign in</a> or <a href="/auth" className="text-blue-400 hover:text-blue-300 underline">create an account</a> to save your work
+            </p>
+          )}
         </div>
 
         <div className="w-full mb-5 relative">
