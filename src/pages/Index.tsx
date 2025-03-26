@@ -9,6 +9,7 @@ import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { SuggestionDropdown } from "@/components/chat/SuggestionDropdown";
 import SquaresBackground from "@/components/SquaresBackground";
 import { HighlightedText } from "@/components/ui/highlighted-text";
+import { ProcessingAnimation } from "@/components/chat/ProcessingAnimation";
 
 const Index = () => {
   const [input, setInput] = useState("");
@@ -16,6 +17,7 @@ const Index = () => {
   const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -51,7 +53,30 @@ const Index = () => {
 
   const handleSendMessage = () => {
     if (!input.trim()) return;
-    navigate("/chat");
+    
+    if (deepResearchActive) {
+      // Show processing animation for deep research
+      setIsProcessing(true);
+      
+      // Simulate processing time then navigate to chat
+      setTimeout(() => {
+        setIsProcessing(false);
+        navigate("/chat", { 
+          state: { 
+            initialMessage: input, 
+            deepResearch: deepResearchActive 
+          } 
+        });
+      }, 5000);
+    } else {
+      // Navigate immediately for regular chat
+      navigate("/chat", { 
+        state: { 
+          initialMessage: input, 
+          deepResearch: false 
+        } 
+      });
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -63,6 +88,13 @@ const Index = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5 relative overflow-hidden">
       {/* Add SquaresBackground before any content for proper z-index layering */}
       <SquaresBackground />
+      
+      {/* Processing overlay */}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <ProcessingAnimation isVisible={true} />
+        </div>
+      )}
       
       <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">
         <div className="text-center mb-12">
@@ -93,7 +125,8 @@ const Index = () => {
                   "w-full bg-transparent border-none text-white text-base outline-none resize-none p-0",
                   "placeholder:text-neutral-500 placeholder:opacity-70 transition-all duration-300",
                   "h-[24px] min-h-[24px] max-h-[24px]",
-                  "overflow-hidden"
+                  "overflow-hidden",
+                  isInputFocused && "rainbow-glow"
                 )}
               />
             </div>

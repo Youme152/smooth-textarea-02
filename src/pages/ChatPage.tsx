@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { ProcessingAnimation } from "@/components/chat/ProcessingAnimation";
 
 type Message = {
   id: string;
@@ -15,6 +16,7 @@ const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [deepResearchMode, setDeepResearchMode] = useState(false);
   
   useEffect(() => {
     // Initialize with a user greeting and AI response
@@ -44,7 +46,8 @@ const ChatPage = () => {
         },
         body: JSON.stringify({ 
           message: userMessage,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          deepResearch: deepResearchMode
         }),
       });
       
@@ -61,8 +64,10 @@ const ChatPage = () => {
     }
   };
 
-  const handleSendMessage = async (input: string) => {
+  const handleSendMessage = async (input: string, isDeepResearch = false) => {
     if (!input.trim()) return;
+    
+    setDeepResearchMode(isDeepResearch);
     
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -74,7 +79,15 @@ const ChatPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setIsGenerating(true);
     
+    // If using deep research, simulate a longer processing time to show the animation
+    const processingDelay = isDeepResearch ? 5000 : 0;
+    
     try {
+      // Add artificial delay if in deep research mode to show the animation
+      if (isDeepResearch) {
+        await new Promise(resolve => setTimeout(resolve, processingDelay));
+      }
+      
       const aiResponse = await fetchAIResponse(input);
       
       const assistantResponse: Message = {
@@ -98,6 +111,7 @@ const ChatPage = () => {
       setMessages(prev => [...prev, errorResponse]);
     } finally {
       setIsGenerating(false);
+      setDeepResearchMode(false);
     }
   };
 
@@ -108,7 +122,15 @@ const ChatPage = () => {
         isGenerating={isGenerating}
       />
       
-      <ChatInput onSendMessage={handleSendMessage} />
+      {isGenerating && deepResearchMode && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center">
+          <ProcessingAnimation isVisible={true} />
+        </div>
+      )}
+      
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+      />
     </div>
   );
 };
