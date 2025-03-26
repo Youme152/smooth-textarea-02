@@ -39,10 +39,10 @@ export const useAuth = (): AuthState => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
     try {
       setLoading(true);
-      const { error, data } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -60,8 +60,6 @@ export const useAuth = (): AuthState => {
         title: "Success!",
         description: "Please check your email to confirm your account.",
       });
-      
-      return data;
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -74,7 +72,7 @@ export const useAuth = (): AuthState => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<void> => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
@@ -102,7 +100,7 @@ export const useAuth = (): AuthState => {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
@@ -124,7 +122,7 @@ export const useAuth = (): AuthState => {
     }
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): Promise<void> => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {

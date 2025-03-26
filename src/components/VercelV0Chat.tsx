@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatInputArea } from "./chat/ChatInputArea";
 import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { toast } from "@/components/ui/use-toast";
@@ -58,18 +57,16 @@ export function VercelV0Chat() {
       </h1>
 
       <div className="w-full max-w-xl">
-        <TooltipProvider>
-          <ChatInputArea 
-            value={value}
-            setValue={setValue}
-            onSend={handleSendClick}
-            isInputFocused={isInputFocused}
-            setIsInputFocused={setIsInputFocused}
-            deepResearchActive={deepResearchActive}
-            toggleDeepResearch={handleDeepResearch}
-            placeholderText={placeholderText}
-          />
-        </TooltipProvider>
+        <ChatInputArea 
+          value={value}
+          setValue={setValue}
+          onSend={handleSendClick}
+          isInputFocused={isInputFocused}
+          setIsInputFocused={setIsInputFocused}
+          deepResearchActive={deepResearchActive}
+          toggleDeepResearch={handleDeepResearch}
+          placeholderText={placeholderText}
+        />
       </div>
     </div>
   );
