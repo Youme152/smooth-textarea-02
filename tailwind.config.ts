@@ -21,6 +21,8 @@ export default {
 		extend: {
 			fontFamily: {
 				'playfair': ['"Playfair Display"', 'serif'],
+				'inter': ['Inter', 'sans-serif'],
+				'baskervville': ['Baskervville', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

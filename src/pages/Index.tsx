@@ -101,7 +101,11 @@ const Index = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5">
       <div className="flex flex-col items-center w-full max-w-[800px]">
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Welcome to Timeline.</h1>
+          <h1 className="text-4xl md:text-5xl mb-2">
+            <span className="font-baskervville italic font-normal">Welcome to </span>
+            <span className="font-inter font-bold tracking-tight">Ora</span>
+            <span className="text-sm align-top">®</span>
+          </h1>
           <p className="text-xl md:text-2xl text-[#9ca3af]">
             <AnimatedGradientText text="What will you make viral today?" />
           </p>
@@ -146,7 +150,7 @@ const Index = () => {
                   <img 
                     src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
                     alt="DeepSearch" 
-                    className="w-5 h-5" 
+                    className="w-6 h-6" 
                   />
                   DeepSearch
                 </button>

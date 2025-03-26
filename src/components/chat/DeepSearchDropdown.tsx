@@ -33,7 +33,7 @@ export function DeepSearchDropdown({
           <img 
             src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
             alt="DeepSearch" 
-            className="w-5 h-5" 
+            className="w-6 h-6" 
           />
           <span>DeepSearch</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-70" />
