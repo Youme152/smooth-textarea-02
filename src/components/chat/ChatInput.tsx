@@ -1,121 +1,88 @@
 
 import { useState, useRef } from "react";
-import { Send, Brain, Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { ActionButtonsRow } from "./ActionButtonsRow";
-import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
-import { DeepSearchDropdown } from "./DeepSearchDropdown";
+import { ArrowUp } from "lucide-react";
 
 interface ChatInputProps {
-  onSendMessage: (message: string, isDeepResearch?: boolean) => void;
+  onSendMessage: (message: string) => void;
 }
 
 export function ChatInput({ onSendMessage }: ChatInputProps) {
-  const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [deepResearchActive, setDeepResearchActive] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [input, setInput] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const placeholders = [
-    "Ask anything...",
-    "What do you want to know?",
-    "How can I help you?",
-    "Ask about creating viral content...",
-    "Looking for YouTube ideas?",
-    "Need help with a thumbnail design?",
-  ];
-
-  const { placeholderText } = usePlaceholderTyping({
-    placeholders,
-    typingSpeed: 70,
-    deletingSpeed: 40,
-    pauseDuration: 2000,
-  });
+  const handleSendMessage = () => {
+    if (!input.trim()) return;
+    onSendMessage(input);
+    setInput("");
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSendMessage();
     }
-  };
-
-  const handleSend = async () => {
-    if (inputValue.trim() === "" || isLoading) return;
-
-    setIsLoading(true);
-    
-    try {
-      await onSendMessage(inputValue, deepResearchActive);
-      setInputValue("");
-    } finally {
-      setIsLoading(false);
-      setDeepResearchActive(false);
-    }
-    
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
-  const handleDeepSearchCategorySelect = (category: string) => {
-    setDeepResearchActive(true);
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-4">
-      <div className={cn(
-        "relative rounded-xl",
-        "bg-black/80 border border-neutral-800/50",
-      )}>
-        <textarea
-          ref={inputRef}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholderText}
-          rows={1}
-          className={cn(
-            "w-full px-4 py-3.5",
-            "resize-none",
-            "bg-transparent",
-            "border-none",
-            "text-white",
-            "focus:outline-none focus:ring-0",
-            "placeholder:text-neutral-500"
-          )}
-        />
+    <div className="bg-[#131314] p-4 pb-8 flex justify-center">
+      <div className="w-full max-w-3xl relative">
+        <div className={cn(
+          "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
+          isInputFocused 
+            ? "border border-neutral-700 shadow-lg" 
+            : "border border-neutral-800 shadow-md"
+        )}>
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+            }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => {
+              setIsInputFocused(false);
+            }}
+            placeholder="Reply to Ora..."
+            className={cn(
+              "w-full px-5 py-4",
+              "resize-none",
+              "bg-transparent",
+              "border-none outline-none",
+              "text-white text-base",
+              "focus:outline-none",
+              "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
+              "placeholder:text-gray-500 placeholder:text-base",
+              "h-[36px] min-h-[36px] max-h-[36px]", // Fixed height
+              "transition-all duration-300",
+              "overflow-hidden" // Changed from overflow-y-auto to overflow-hidden
+            )}
+          />
 
-        <div className="flex items-center justify-between p-2 border-t border-neutral-800/50">
-          <div className="flex items-center">
-            <DeepSearchDropdown 
-              deepResearchActive={deepResearchActive}
-              onCategorySelect={handleDeepSearchCategorySelect}
-            />
-          </div>
-          
-          <div>
-            <button
-              onClick={handleSend}
-              disabled={!inputValue.trim() || isLoading}
-              className={cn(
-                "p-2 rounded-lg",
-                "transition-all duration-200",
-                inputValue.trim() && !isLoading
-                  ? "bg-white text-black hover:bg-neutral-200"
-                  : "bg-neutral-800 text-neutral-400 cursor-not-allowed"
-              )}
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </button>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div></div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSendMessage}
+                disabled={!input.trim()}
+                className={cn(
+                  "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
+                  input.trim() 
+                    ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
+                    : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
+                )}
+              >
+                <ArrowUp className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-      
-      <ActionButtonsRow />
     </div>
   );
 }
