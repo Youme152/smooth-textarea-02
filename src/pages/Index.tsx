@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -66,17 +65,12 @@ const Index = () => {
       <SquaresBackground />
       
       <div className="flex flex-col items-center w-full max-w-[800px] relative z-10">
-        <div className="text-center mb-10">
-          <StylizedHeading className="mb-4">
-            Welcome to <span className="font-bold">Ora</span>
-            <span className="text-sm align-top">®</span>
-          </StylizedHeading>
-          
-          <p className="font-playfair text-2xl md:text-3xl text-[#e5e5e5] tracking-tight leading-relaxed">
+        <div className="text-center mb-12">
+          <h1 className="font-playfair text-4xl md:text-6xl text-white tracking-tight leading-tight mb-0">
             What will you make{" "}
-            <HighlightedText color="pink">viral</HighlightedText>{" "}
-            <HighlightedText color="blue">today</HighlightedText>?
-          </p>
+            <HighlightedText color="magenta" className="font-bold">viral</HighlightedText>{" "}
+            <HighlightedText color="blue" className="font-bold">today</HighlightedText>?
+          </h1>
         </div>
 
         <div className="w-full mb-5 relative">

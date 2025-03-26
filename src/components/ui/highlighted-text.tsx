@@ -2,15 +2,17 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-type HighlightColor = "blue" | "green" | "pink" | "yellow" | "orange" | "teal";
+type HighlightColor = "blue" | "green" | "pink" | "yellow" | "orange" | "teal" | "purple" | "magenta";
 
 const colorMap: Record<HighlightColor, string> = {
-  blue: "bg-blue-400/90",
-  green: "bg-green-400/90",
-  pink: "bg-pink-400/90",
-  yellow: "bg-yellow-300/90",
-  orange: "bg-orange-400/90",
-  teal: "bg-teal-400/90"
+  blue: "bg-blue-500/90",
+  green: "bg-green-500/90",
+  pink: "bg-pink-500/90",
+  yellow: "bg-yellow-400/90",
+  orange: "bg-orange-500/90",
+  teal: "bg-teal-500/90",
+  purple: "bg-purple-500/90",
+  magenta: "bg-fuchsia-500/90"
 };
 
 interface HighlightedTextProps {
