@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -37,7 +36,6 @@ const Index = () => {
     pauseDuration: 2000
   });
 
-  // Generate suggestions based on input
   useEffect(() => {
     if (input.trim().length > 0) {
       const firstChar = input.trim().toLowerCase().charAt(0);
@@ -60,10 +58,8 @@ const Index = () => {
           "can you explain how blockchain works?",
           "calculate my potential retirement savings"
         ],
-        // Add more first letters with their suggestions as needed
       };
       
-      // Get suggestions for the first character, or provide generic ones
       const newSuggestions = suggestionsMap[firstChar] || [
         `${input} - analysis and insights`,
         `${input} - step by step guide`,
@@ -102,21 +98,13 @@ const Index = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-[#e5e5e5] p-5">
       <div className="flex flex-col items-center w-full max-w-[800px]">
-        {/* Welcome Text */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-semibold text-white mb-2">Welcome to Grok.</h1>
           <p className="text-xl md:text-2xl text-[#9ca3af]">How can I help you today?</p>
         </div>
 
-        {/* Chat Input Container */}
         <div className="w-full mb-5 relative">
-          <div className={cn(
-            "w-full rounded-2xl overflow-hidden transition-all duration-300",
-            isInputFocused
-              ? "bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700"
-              : "bg-[rgba(39,39,42,0.5)] shadow-md"
-          )}>
-            {/* Input Area */}
+          <div className="w-full rounded-2xl overflow-hidden transition-all duration-300 bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700">
             <div className="p-3.5 sm:p-4">
               <textarea
                 ref={textareaRef}
@@ -128,21 +116,18 @@ const Index = () => {
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => {
                   setIsInputFocused(false);
-                  // Small delay before hiding suggestions to allow for clicking them
                   setTimeout(() => setShowSuggestions(false), 200);
                 }}
                 placeholder={placeholderText}
                 className={cn(
                   "w-full bg-transparent border-none text-white text-base outline-none resize-none p-0",
                   "placeholder:text-neutral-500 placeholder:opacity-70 transition-all duration-300",
-                  isInputFocused && "placeholder:opacity-50",
-                  "h-[24px] min-h-[24px] max-h-[24px]", // Fixed height
-                  "overflow-y-auto" // Allow scrolling within the fixed height
+                  "h-[24px] min-h-[24px] max-h-[24px]",
+                  "overflow-hidden"
                 )}
               />
             </div>
 
-            {/* Controls */}
             <div className="flex items-center justify-between px-2.5 py-2">
               <div className="flex items-center gap-3">
                 <button 
@@ -176,7 +161,6 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Suggestions Dropdown */}
           <SuggestionDropdown
             inputValue={input}
             suggestions={suggestions}
@@ -185,7 +169,6 @@ const Index = () => {
           />
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-2.5 mt-3.5">
           <button className="flex items-center gap-2 px-3.5 py-2 bg-[#1e1e1e] text-[#e5e5e5] rounded-full hover:bg-[#2a2a2a] active:scale-95 transition-all">
             <Brain className="w-4 h-4" />
