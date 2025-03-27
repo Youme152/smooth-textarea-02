@@ -109,6 +109,7 @@ export function ChatInput({
               "caret-white", // Set the cursor color to white
               (isGenerating || isSending) && "opacity-70"
             )}
+            spellCheck={false} // Disable spellcheck to avoid the cancel button
           />
 
           <div className="flex items-center justify-end px-4 py-3">

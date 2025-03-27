@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +31,13 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Debug initial message
+  useEffect(() => {
+    if (initialMessage) {
+      console.log("useChatMessages received initial message:", initialMessage);
+    }
+  }, [initialMessage]);
 
   // Reset state function that can be called when returning to the page
   const resetChatState = useCallback(() => {
@@ -71,16 +77,21 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   useEffect(() => {
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
       console.log("Processing initial message:", initialMessage);
-      // Process initial message once per conversation load
-      if (!isDuplicateMessage(initialMessage)) {
+      
+      // Check if the messages list is empty or the first message doesn't match our initial message
+      const shouldProcessInitialMessage = messages.length === 0 || 
+        (messages.length > 0 && messages[0].content !== initialMessage);
+      
+      if (shouldProcessInitialMessage && !isDuplicateMessage(initialMessage)) {
+        console.log("Sending initial message as it's not already in the chat");
         handleSendMessage(initialMessage);
       } else {
-        console.log("Skipping duplicate initial message");
+        console.log("Initial message already exists in chat or is a duplicate");
       }
       
       setInitialMessageProcessed(true);
     }
-  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete]);
+  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete, messages]);
 
   // Check if a message is a duplicate (sent recently)
   const isDuplicateMessage = (content: string) => {
@@ -280,6 +291,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
 
   const handleSendMessage = async (input: string) => {
     if (!input.trim() || isGenerating) return;
+    
+    console.log("Handling send message:", input);
     
     // Check for duplicate message
     if (isDuplicateMessage(input)) {

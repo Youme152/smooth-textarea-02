@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ export function VercelV0Chat() {
     return false;
   };
   
-  const createNewConversation = async (initialMessage) => {
+  const createNewConversation = async (initialMessage: string) => {
     if (!user) {
       navigate("/auth");
       return;
@@ -93,8 +94,9 @@ export function VercelV0Chat() {
       
       if (error) throw error;
       
-      // Store the message in our temporary store
-      tempMessageStore.pendingMessage = initialMessage;
+      // Explicitly set the message in our temporary store
+      tempMessageStore.setPendingMessage(initialMessage);
+      console.log("Setting pending message from VercelV0Chat:", initialMessage);
       
       // Clear the input BEFORE navigating
       setValue("");
@@ -123,7 +125,7 @@ export function VercelV0Chat() {
   };
   
   // Handle key press to create chat immediately
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: any) => {
     // If Enter is pressed and not with Shift, create the chat
     if (e.key === "Enter" && !e.shiftKey && value.trim() && !isCreatingChat) {
       e.preventDefault();

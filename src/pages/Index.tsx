@@ -20,6 +20,9 @@ export const tempMessageStore = {
     const message = this.pendingMessage;
     this.pendingMessage = null;
     return message;
+  },
+  setPendingMessage: function(message: string | null) {
+    this.pendingMessage = message;
   }
 };
 
@@ -59,7 +62,7 @@ const Index = () => {
     }
   };
 
-  // Simplified chat creation function - no more URL parameter approach
+  // Improved chat creation function with better initial message handling
   const createNewConversation = async () => {
     if (!user) {
       navigate("/auth");
@@ -94,11 +97,12 @@ const Index = () => {
         return;
       }
       
-      // Store the message in our temporary store instead of URL
-      tempMessageStore.pendingMessage = input;
+      // Store the message in our temporary store
+      const messageToSend = input.trim();
+      tempMessageStore.setPendingMessage(messageToSend);
+      console.log("Setting pending message:", messageToSend);
       
       // Clear the input BEFORE navigating
-      const messageToSend = input.trim();
       setInput("");
       
       // Navigate directly to chat without URL parameters

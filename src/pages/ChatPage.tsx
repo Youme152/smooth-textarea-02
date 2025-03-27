@@ -15,8 +15,17 @@ const ChatPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
   
-  // Use the pending message from our store instead of URL
-  const initialMessage = tempMessageStore.consumeMessage();
+  // Get the pending message from our store
+  const [initialMessage, setInitialMessage] = useState<string | null>(null);
+  
+  // Initialize the initialMessage state with the pending message once
+  useEffect(() => {
+    const pendingMessage = tempMessageStore.consumeMessage();
+    if (pendingMessage) {
+      console.log("Retrieved pending message:", pendingMessage);
+      setInitialMessage(pendingMessage);
+    }
+  }, []);
 
   // Use the custom hook to manage chat messages and state
   const {
@@ -29,13 +38,6 @@ const ChatPage = () => {
     handleSendMessage,
     resetChatState
   } = useChatMessages(conversationId, user, initialMessage);
-
-  // Log for debugging
-  useEffect(() => {
-    if (initialMessage) {
-      console.log("Initial message detected:", initialMessage);
-    }
-  }, [initialMessage]);
 
   // Handle page visibility changes to prevent unnecessary reloads
   useEffect(() => {
