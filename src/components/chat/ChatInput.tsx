@@ -2,20 +2,21 @@
 import { useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
+  isGenerating?: boolean;
 }
 
-export function ChatInput({ onSendMessage }: ChatInputProps) {
+export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSendMessage = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isGenerating) return;
     onSendMessage(input);
     setInput("");
   };
@@ -48,6 +49,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               setIsInputFocused(false);
             }}
             placeholder="Reply to Ora..."
+            disabled={isGenerating}
             className={cn(
               "w-full px-5 py-4",
               "resize-none",
@@ -57,9 +59,10 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               "focus:outline-none",
               "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
               "placeholder:text-gray-500 placeholder:text-base",
-              "h-[36px] min-h-[36px] max-h-[36px]", // Fixed height
+              "h-[36px] min-h-[36px] max-h-[36px]",
               "transition-all duration-300",
-              "overflow-hidden" // Changed from overflow-y-auto to overflow-hidden
+              "overflow-hidden",
+              isGenerating && "opacity-70"
             )}
           />
 
@@ -69,15 +72,19 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSendMessage}
-                disabled={!input.trim()}
+                disabled={!input.trim() || isGenerating}
                 className={cn(
                   "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
-                  input.trim() 
+                  input.trim() && !isGenerating
                     ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
                     : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
                 )}
               >
-                <ArrowUp className="h-5 w-5" />
+                {isGenerating ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>

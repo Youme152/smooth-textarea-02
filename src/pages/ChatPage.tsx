@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -14,9 +15,29 @@ type Message = {
   timestamp: Date;
 };
 
+// This mock function provides responses when the webhook is unavailable
+const getMockResponse = (userMessage: string) => {
+  const lowercaseMessage = userMessage.toLowerCase();
+  
+  if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi")) {
+    return "Hello! I'm a local AI assistant. How can I help you today?";
+  }
+  
+  if (lowercaseMessage.includes("help")) {
+    return "I can help answer questions, provide information, or just chat. What would you like to know?";
+  }
+  
+  if (lowercaseMessage.includes("weather")) {
+    return "I don't have access to real-time weather data in this local mode. Please check a weather service for current conditions.";
+  }
+  
+  return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
+};
+
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
+const USE_MOCK_RESPONSES = true; // Set to true to use mock responses when webhook fails
 const MESSAGES_PER_PAGE = 20;
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 1; // Reduced from 3 to 1 to prevent multiple failed attempts
 const RETRY_DELAY = 1000; // 1 second
 
 const ChatPage = () => {
@@ -27,6 +48,7 @@ const ChatPage = () => {
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
+  const [pendingMessageIds, setPendingMessageIds] = useState<string[]>([]); // Track message IDs to prevent duplicates
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -50,6 +72,7 @@ const ChatPage = () => {
     setCurrentPage(0);
     setMessages([]);
     setInitialMessageProcessed(false);
+    setPendingMessageIds([]);
     
     fetchMessages(0);
     fetchConversationTitle();
@@ -204,7 +227,7 @@ const ChatPage = () => {
           return data.message;
         }
         console.error("Unexpected response format:", data);
-        return "Webhook test successful! The connection works but the response format might be different than expected.";
+        throw new Error("Unexpected response format");
       }
     } catch (error) {
       console.error(`Attempt ${retryCount + 1} failed:`, error);
@@ -215,7 +238,11 @@ const ChatPage = () => {
         return fetchAIResponse(userMessage, retryCount + 1);
       }
       
-      return `Webhook test completed. There might be issues with the connection: ${error.message}. Please check the console logs for details.`;
+      if (USE_MOCK_RESPONSES) {
+        return getMockResponse(userMessage);
+      }
+      
+      return `I'm sorry, I couldn't connect to the AI service. The message has been saved, but I'm unable to generate a response at this time.`;
     }
   };
 
@@ -244,41 +271,67 @@ const ChatPage = () => {
     if (!conversationId || !user) return;
     
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("chat_messages")
         .insert([{ 
           chat_id: conversationId,
           user_id: user.id,
           content: content,
           is_user_message: isUserMessage
-        }]);
+        }])
+        .select("id")
+        .single();
       
       if (error) throw error;
       
       if (isUserMessage) {
         await updateConversationTitle(content);
       }
+      
+      return data.id;
     } catch (error) {
       console.error("Error saving message:", error);
+      return null;
     }
   };
 
   const handleSendMessage = async (input: string) => {
-    if (!input.trim()) return;
+    if (!input.trim() || isGenerating) return;
     
-    const newMessage: Message = {
-      id: Date.now().toString(),
+    // Generate a temporary ID for the message
+    const tempId = Date.now().toString();
+    
+    // Check if this message has already been processed
+    if (pendingMessageIds.includes(tempId)) {
+      return;
+    }
+    
+    // Add to pending messages to prevent duplicates
+    setPendingMessageIds(prev => [...prev, tempId]);
+    
+    setIsGenerating(true);
+    
+    // Add user message to UI immediately
+    const userMessage: Message = {
+      id: tempId,
       content: input,
       sender: "user",
       timestamp: new Date(),
     };
     
-    setMessages(prev => [...prev, newMessage]);
-    saveMessageToSupabase(input, true);
-    
-    setIsGenerating(true);
+    setMessages(prev => [...prev, userMessage]);
     
     try {
+      // Save user message to database
+      const savedMsgId = await saveMessageToSupabase(input, true);
+      if (savedMsgId) {
+        // Update the temporary message with the real ID
+        setMessages(prev => 
+          prev.map(msg => msg.id === tempId ? {...msg, id: savedMsgId} : msg)
+        );
+      }
+      
+      // Get AI response
       const aiResponse = await fetchAIResponse(input);
       
       const assistantResponse: Message = {
@@ -289,9 +342,9 @@ const ChatPage = () => {
       };
       
       setMessages(prev => [...prev, assistantResponse]);
-      saveMessageToSupabase(aiResponse, false);
+      await saveMessageToSupabase(aiResponse, false);
     } catch (error: any) {
-      console.error("Error getting AI response:", error);
+      console.error("Error in message flow:", error);
       
       const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -301,9 +354,11 @@ const ChatPage = () => {
       };
       
       setMessages(prev => [...prev, errorResponse]);
-      saveMessageToSupabase(errorResponse.content, false);
+      await saveMessageToSupabase(errorResponse.content, false);
     } finally {
       setIsGenerating(false);
+      // Remove from pending messages
+      setPendingMessageIds(prev => prev.filter(id => id !== tempId));
     }
   };
 
@@ -324,7 +379,7 @@ const ChatPage = () => {
           hasMore={hasMoreMessages}
         />
         
-        <ChatInput onSendMessage={handleSendMessage} />
+        <ChatInput onSendMessage={handleSendMessage} isGenerating={isGenerating} />
       </div>
     </div>
   );
