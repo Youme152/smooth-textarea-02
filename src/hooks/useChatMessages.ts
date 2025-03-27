@@ -28,6 +28,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
   const [deepSearchActive, setDeepSearchActive] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     setProcessedMessageIds(new Set());
     setRecentMessages(new Map());
     setInitialLoadComplete(false);
+    setIsFirstLoad(true);
     
     fetchMessages(0);
     fetchConversationTitle();
@@ -58,8 +60,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   // Handle initial message with better duplicate protection
   useEffect(() => {
     // Only proceed if we have completed the initial data loading
-    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
+    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete && isFirstLoad) {
       const decodedMessage = decodeURIComponent(initialMessage);
+      setIsFirstLoad(false);
       
       // Only process if not already processed and not a duplicate
       if (!isDuplicateMessage(decodedMessage)) {
@@ -76,7 +79,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         setInitialMessageProcessed(true);
       }
     }
-  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete]);
+  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete, isFirstLoad]);
 
   // Check if a message is a duplicate (sent recently)
   const isDuplicateMessage = (content: string) => {

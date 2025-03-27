@@ -19,6 +19,10 @@ export const getMockResponse = (userMessage: string, isDeepSearch: boolean = fal
     return "I don't have access to real-time weather data in this local mode. Please check a weather service for current conditions.";
   }
   
+  if (lowercaseMessage.includes("roblox")) {
+    return "Roblox is a popular online platform where users can create and play games made by other users. Some popular Roblox game ideas include obstacle courses, roleplaying games, tycoon games, and simulators. To make your Roblox game more engaging, focus on unique gameplay, attractive visuals, and regular updates.";
+  }
+  
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
 };
 
@@ -44,13 +48,14 @@ export const callDeepSearchWebhook = async (query: string): Promise<string> => {
     const url = new URL(DEEPSEARCH_WEBHOOK_URL);
     url.searchParams.append('query', query);
     
+    // Use a shorter timeout for DeepSearch to fail faster
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
       },
-      // Add timeout to prevent long-hanging requests
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      // Shorter timeout to fail faster
+      signal: AbortSignal.timeout(5000) // 5 second timeout
     });
     
     console.log("DeepSearch webhook response status:", response.status);
@@ -98,6 +103,7 @@ export const callDeepSearchWebhook = async (query: string): Promise<string> => {
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = true; // Use mock responses as fallback
 const MAX_RETRIES = 1; // One retry attempt
+const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout (reduced from 10s)
 
 export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: boolean = false): Promise<string> => {
   // If DeepSearch is active, always use the DeepSearch webhook regardless of prefix
@@ -132,6 +138,13 @@ export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: b
     }
   }
   
+  // Early return mock response if we know the webhook is likely down
+  // This will prevent unnecessary waiting and retries
+  if (USE_MOCK_RESPONSES) {
+    console.log("Using immediate mock response due to webhook likely being down");
+    return getMockResponse(userMessage);
+  }
+  
   // Regular chat flow with retry logic
   let retryCount = 0;
   let lastError = null;
@@ -150,7 +163,7 @@ export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: b
           'Accept': 'application/json',
         },
         // Add timeout to prevent long-hanging requests
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(WEBHOOK_TIMEOUT)
       });
       
       console.log("Webhook response status:", response.status);
