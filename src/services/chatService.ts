@@ -28,12 +28,87 @@ const formatViews = (viewCount: number): string => {
   return viewCount.toString();
 };
 
+// DeepSearch webhook URL
+const DEEPSEARCH_WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/a59d2e26-06ce-48cc-b8f7-cdba88f1996c";
+
+// Function to call DeepSearch webhook
+export const callDeepSearchWebhook = async (query: string, category: string): Promise<string> => {
+  try {
+    console.log("Calling DeepSearch webhook with:", query, "Category:", category);
+    
+    // Using GET method as required by the webhook
+    const url = new URL(DEEPSEARCH_WEBHOOK_URL);
+    url.searchParams.append('query', query);
+    url.searchParams.append('category', category);
+    
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    
+    console.log("DeepSearch webhook response status:", response.status);
+    
+    if (!response.ok) {
+      throw new Error(`DeepSearch webhook responded with status code ${response.status}`);
+    }
+    
+    // Try to parse the response as text first
+    const responseText = await response.text();
+    console.log("Raw DeepSearch webhook response:", responseText);
+    
+    try {
+      // Try to parse as JSON if possible
+      const data = JSON.parse(responseText);
+      console.log("Parsed JSON response from DeepSearch:", data);
+      
+      // Handle various response formats
+      if (typeof data === 'object') {
+        if (data.output) return data.output;
+        if (data.response) return data.response;
+        if (data.message) return data.message;
+        if (data.result) return data.result;
+      }
+      
+      // If it's a string directly
+      if (typeof data === 'string') {
+        return data;
+      }
+      
+      // Fallback to stringified JSON
+      return "DeepSearch results: " + JSON.stringify(data);
+    } catch (jsonError) {
+      // If it's not valid JSON, just return the raw text
+      console.log("Not valid JSON from DeepSearch, using text response");
+      return responseText;
+    }
+  } catch (error) {
+    console.error("DeepSearch webhook error:", error);
+    return `I'm sorry, there was an error processing your DeepSearch request. Please try again later.`;
+  }
+};
+
 // Using GET method based on webhook requirements
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = false; // Changed to false to try to use the webhook first
 const MAX_RETRIES = 0; // No retries to prevent duplicate messages
 
 export const fetchAIResponse = async (userMessage: string): Promise<string> => {
+  // Check if this is a DeepSearch query
+  if (userMessage.startsWith("DeepSearch:")) {
+    const parts = userMessage.split(" ");
+    const category = parts[0].trim(); // "DeepSearch:Category"
+    const query = parts.slice(1).join(" ").trim(); // Everything after the category
+    
+    if (query) {
+      return await callDeepSearchWebhook(query, category);
+    } else {
+      return "Please provide a search query after the DeepSearch category.";
+    }
+  }
+  
+  // Regular chat flow
   try {
     console.log("Sending message to webhook:", userMessage);
     
