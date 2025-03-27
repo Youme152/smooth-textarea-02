@@ -23,7 +23,15 @@ export const getMockResponse = (userMessage: string, isDeepSearch: boolean = fal
     return "Roblox is a popular online platform where users can create and play games made by other users. Some popular Roblox game ideas include obstacle courses, roleplaying games, tycoon games, and simulators. To make your Roblox game more engaging, focus on unique gameplay, attractive visuals, and regular updates.";
   }
   
-  return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
+  if (lowercaseMessage.includes("viral") || lowercaseMessage.includes("trending")) {
+    return "To create viral content, focus on emotional impact, relatability, and timing. Keep content short, engaging, and shareable. Use trending sounds, challenges, or formats, but add your unique twist. Consistency is key - post regularly and engage with your audience.";
+  }
+  
+  if (lowercaseMessage.includes("search") || lowercaseMessage.includes("find")) {
+    return "I'm currently in offline mode and cannot perform search operations. My responses are limited to pre-programmed information. Please try again when online connectivity is restored.";
+  }
+  
+  return "I'm currently operating in offline mode. The webhook service appears to be unavailable. I can still chat with you using my local knowledge, but my responses will be limited. What would you like to talk about?";
 };
 
 // Format view counts to be more readable (e.g., 1.2M instead of 1200000)
@@ -104,6 +112,43 @@ const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f5
 const USE_MOCK_RESPONSES = true; // Use mock responses as fallback
 const MAX_RETRIES = 1; // One retry attempt
 const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout (reduced from 10s)
+const ONLINE_STATUS_CHECK_INTERVAL = 60000; // Check online status every minute
+
+// Status tracking for webhook availability
+let isWebhookAvailable = false;
+let lastWebhookCheckTime = 0;
+
+// Function to check if the webhook is available
+const checkWebhookAvailability = async (): Promise<boolean> => {
+  // Only check once per minute to avoid excessive requests
+  const now = Date.now();
+  if (now - lastWebhookCheckTime < ONLINE_STATUS_CHECK_INTERVAL) {
+    return isWebhookAvailable;
+  }
+  
+  lastWebhookCheckTime = now;
+  
+  try {
+    // Simple HEAD request to check if the webhook is responding
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout for availability check
+    
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'HEAD',
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    isWebhookAvailable = response.ok;
+    console.log(`Webhook availability check: ${isWebhookAvailable ? 'ONLINE' : 'OFFLINE'}`);
+    return isWebhookAvailable;
+  } catch (error) {
+    console.log("Webhook availability check failed:", error);
+    isWebhookAvailable = false;
+    return false;
+  }
+};
 
 export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: boolean = false): Promise<string> => {
   // If DeepSearch is active, always use the DeepSearch webhook regardless of prefix
@@ -138,9 +183,8 @@ export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: b
     }
   }
   
-  // Early return mock response if we know the webhook is likely down
-  // This will prevent unnecessary waiting and retries
-  if (USE_MOCK_RESPONSES) {
+  // Check if we're in forced mock mode or the webhook is known to be down
+  if (USE_MOCK_RESPONSES || !(await checkWebhookAvailability())) {
     console.log("Using immediate mock response due to webhook likely being down");
     return getMockResponse(userMessage);
   }
