@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -158,16 +159,26 @@ const ChatPage = () => {
     try {
       console.log("Sending message to webhook:", userMessage);
       
+      // Adding a timeout to the fetch to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
         body: JSON.stringify({ 
           message: userMessage,
           timestamp: new Date().toISOString()
         }),
+        signal: controller.signal,
+        mode: 'cors', // Try with CORS mode
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         console.error('Error from webhook:', response.status);
@@ -184,7 +195,8 @@ const ChatPage = () => {
       return data.output;
     } catch (error) {
       console.error('Error calling webhook:', error);
-      throw error;
+      // Return a fallback response instead of throwing
+      return "I'm sorry, I couldn't connect to my backend services right now. Please try again in a moment.";
     }
   };
 
