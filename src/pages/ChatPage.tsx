@@ -34,7 +34,7 @@ const getMockResponse = (userMessage: string) => {
 };
 
 // Using GET method based on webhook requirements
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = false; // Changed to false to try to use the webhook first
 const MESSAGES_PER_PAGE = 20;
 const MAX_RETRIES = 0; // No retries to prevent duplicate messages
