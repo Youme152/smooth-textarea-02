@@ -23,10 +23,10 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
     onSendMessage(input);
     setInput("");
     
-    // Reset the sending state after a short delay
+    // Reset the sending state after a short delay to prevent multiple submissions
     setTimeout(() => {
       setIsSending(false);
-    }, 1000);
+    }, 1500); // Increased to 1.5 seconds to prevent rapid clicking
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

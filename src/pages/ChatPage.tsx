@@ -34,10 +34,11 @@ const getMockResponse = (userMessage: string) => {
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
 };
 
+// Change from POST to GET based on error message
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = true; // Set to true to use mock responses when webhook fails
 const MESSAGES_PER_PAGE = 20;
-const MAX_RETRIES = 1; // Reduced from 3 to 1 to prevent multiple failed attempts
+const MAX_RETRIES = 0; // No retries to prevent duplicate messages
 const RETRY_DELAY = 1000; // 1 second
 
 const ChatPage = () => {
@@ -48,7 +49,7 @@ const ChatPage = () => {
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
-  const [pendingMessageIds, setPendingMessageIds] = useState<string[]>([]); // Track message IDs to prevent duplicates
+  const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const ChatPage = () => {
     setCurrentPage(0);
     setMessages([]);
     setInitialMessageProcessed(false);
-    setPendingMessageIds([]);
+    setProcessedMessageIds(new Set());
     
     fetchMessages(0);
     fetchConversationTitle();
@@ -191,16 +192,16 @@ const ChatPage = () => {
     try {
       console.log(`Attempt ${retryCount + 1}: Sending message to webhook:`, userMessage);
       
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
+      // Using GET instead of POST based on the webhook error message
+      const url = new URL(WEBHOOK_URL);
+      url.searchParams.append('message', userMessage);
+      url.searchParams.append('timestamp', new Date().toISOString());
+      
+      const response = await fetch(url.toString(), {
+        method: 'GET', // Changed from POST to GET
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ 
-          message: userMessage,
-          timestamp: new Date().toISOString()
-        }),
         mode: 'cors',
         credentials: 'omit'
       });
@@ -239,6 +240,7 @@ const ChatPage = () => {
       }
       
       if (USE_MOCK_RESPONSES) {
+        console.log("Using mock response due to webhook failure");
         return getMockResponse(userMessage);
       }
       
@@ -302,12 +304,13 @@ const ChatPage = () => {
     const tempId = Date.now().toString();
     
     // Check if this message has already been processed
-    if (pendingMessageIds.includes(tempId)) {
+    if (processedMessageIds.has(tempId)) {
+      console.log("Preventing duplicate message with ID:", tempId);
       return;
     }
     
-    // Add to pending messages to prevent duplicates
-    setPendingMessageIds(prev => [...prev, tempId]);
+    // Add to processed messages to prevent duplicates
+    setProcessedMessageIds(prev => new Set(prev).add(tempId));
     
     setIsGenerating(true);
     
@@ -357,8 +360,7 @@ const ChatPage = () => {
       await saveMessageToSupabase(errorResponse.content, false);
     } finally {
       setIsGenerating(false);
-      // Remove from pending messages
-      setPendingMessageIds(prev => prev.filter(id => id !== tempId));
+      // We don't remove from processedMessageIds to ensure this temp ID is never processed again
     }
   };
 
