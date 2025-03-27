@@ -27,6 +27,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
   const [deepSearchActive, setDeepSearchActive] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     setInitialMessageProcessed(false);
     setProcessedMessageIds(new Set());
     setRecentMessages(new Map());
+    setInitialLoadComplete(false);
     
     fetchMessages(0);
     fetchConversationTitle();
@@ -55,19 +57,18 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
 
   // Handle initial message with better duplicate protection
   useEffect(() => {
-    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating) {
+    // Only proceed if we have completed the initial data loading
+    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
       const decodedMessage = decodeURIComponent(initialMessage);
       
       // Only process if not already processed and not a duplicate
       if (!isDuplicateMessage(decodedMessage)) {
-        const timer = setTimeout(() => {
-          handleSendMessage(decodedMessage);
-          const newUrl = `/chat?id=${conversationId}`;
-          window.history.replaceState({}, document.title, newUrl);
-          setInitialMessageProcessed(true);
-        }, 500);
+        handleSendMessage(decodedMessage);
         
-        return () => clearTimeout(timer);
+        // Clear the initial message from the URL to prevent re-processing on refresh
+        const newUrl = `/chat?id=${conversationId}`;
+        window.history.replaceState({}, document.title, newUrl);
+        setInitialMessageProcessed(true);
       } else {
         // If it's a duplicate, mark as processed without sending
         const newUrl = `/chat?id=${conversationId}`;
@@ -75,7 +76,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         setInitialMessageProcessed(true);
       }
     }
-  }, [conversationId, initialMessage, initialMessageProcessed, messages, isGenerating]);
+  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete]);
 
   // Check if a message is a duplicate (sent recently)
   const isDuplicateMessage = (content: string) => {
@@ -201,6 +202,11 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       }
       
       setCurrentPage(page);
+      
+      // Mark initial load as complete after first page is loaded
+      if (page === 0) {
+        setInitialLoadComplete(true);
+      }
     } catch (error) {
       console.error("Error fetching messages:", error);
     } finally {
