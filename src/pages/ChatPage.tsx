@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -15,7 +14,7 @@ type Message = {
   timestamp: Date;
 };
 
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
 const MESSAGES_PER_PAGE = 20;
 
 const ChatPage = () => {
@@ -30,7 +29,6 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   
-  // Get conversation ID from URL query parameters
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
 
@@ -41,18 +39,14 @@ const ChatPage = () => {
     }
 
     if (!conversationId) {
-      // Create a new conversation if none is specified
       createNewConversation();
       return;
     }
 
-    // Reset pagination when conversation changes
     setCurrentPage(0);
     setMessages([]);
     
-    // Fetch conversation messages
     fetchMessages(0);
-    // Fetch conversation details
     fetchConversationTitle();
   }, [conversationId, user]);
 
@@ -107,7 +101,6 @@ const ChatPage = () => {
       const from = page * MESSAGES_PER_PAGE;
       const to = from + MESSAGES_PER_PAGE - 1;
       
-      // First, count total messages to know if there are more
       const { count, error: countError } = await supabase
         .from("chat_messages")
         .select("*", { count: "exact", head: true })
@@ -115,7 +108,6 @@ const ChatPage = () => {
       
       if (countError) throw countError;
       
-      // Then fetch the actual messages
       const { data, error } = await supabase
         .from("chat_messages")
         .select("*")
@@ -125,7 +117,6 @@ const ChatPage = () => {
       
       if (error) throw error;
       
-      // Check if there are more messages
       setHasMoreMessages(count !== null && from + data.length < count);
       
       const formattedMessages = data.map(msg => ({
@@ -136,7 +127,6 @@ const ChatPage = () => {
       })).reverse();
       
       if (page === 0 && formattedMessages.length === 0) {
-        // If no messages, initialize with a greeting
         const initialMessages = [
           {
             id: "assistant-init",
@@ -147,7 +137,6 @@ const ChatPage = () => {
         ];
         setMessages(initialMessages);
       } else {
-        // Append messages if paginating, otherwise replace
         setMessages(prev => (page === 0 ? formattedMessages : [...formattedMessages, ...prev]));
       }
       
@@ -167,6 +156,8 @@ const ChatPage = () => {
 
   const fetchAIResponse = async (userMessage: string): Promise<string> => {
     try {
+      console.log("Sending message to webhook:", userMessage);
+      
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
@@ -180,14 +171,20 @@ const ChatPage = () => {
       
       if (!response.ok) {
         console.error('Error from webhook:', response.status);
-        return "I'm sorry, I couldn't process your request at the moment. Please try again later.";
+        throw new Error(`Webhook responded with status code ${response.status}`);
       }
       
       const data = await response.json();
-      return data.response || "I understand your message. Is there anything specific you'd like me to help you with?";
+      console.log("Received response from webhook:", data);
+      
+      if (!data.output) {
+        throw new Error("No output received from webhook");
+      }
+      
+      return data.output;
     } catch (error) {
       console.error('Error calling webhook:', error);
-      return "I'm having trouble connecting to my services. Please try again in a moment.";
+      throw error;
     }
   };
 
@@ -206,7 +203,6 @@ const ChatPage = () => {
       
       if (error) throw error;
       
-      // Update conversation title if it's the first user message
       if (isUserMessage && messages.length <= 1) {
         const title = content.length > 30 ? content.substring(0, 30) + "..." : content;
         
