@@ -114,25 +114,11 @@ export function ChatInputArea({
   };
 
   const handleToggleDeepResearch = () => {
-    // If activating DeepSearch mode and text doesn't start with DeepSearch:
-    if (!deepResearchActive && !value.trim().toLowerCase().startsWith('deepsearch:')) {
-      // Prepend DeepSearch: to the input
-      const currentValue = value.trim();
-      const newValue = currentValue ? `DeepSearch: ${currentValue}` : 'DeepSearch: ';
-      setValue(newValue);
-      
-      // Focus on the textarea and place cursor at the end
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-          const length = newValue.length;
-          textareaRef.current.setSelectionRange(length, length);
-          adjustHeight();
-        }
-      }, 0);
-    }
-    
+    // Toggle the DeepSearch mode flag first
     toggleDeepResearch();
+    
+    // Don't modify the input content now - we'll handle DeepSearch in the API call
+    // This allows users to toggle DeepSearch on/off without modifying their input
   };
 
   const handleInputChange = (newValue: string) => {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
+  const [deepSearchActive, setDeepSearchActive] = useState(false);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -312,8 +314,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         );
       }
       
-      // Get AI response
-      const aiResponse = await fetchAIResponse(input);
+      // Get AI response, passing the DeepSearch state
+      const aiResponse = await fetchAIResponse(input, deepSearchActive);
       
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -342,6 +344,10 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     }
   };
 
+  const toggleDeepSearch = () => {
+    setDeepSearchActive(prev => !prev);
+  };
+
   return {
     messages,
     isGenerating,
@@ -349,6 +355,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     isLoadingMessages,
     hasMoreMessages,
     loadMoreMessages,
-    handleSendMessage
+    handleSendMessage,
+    deepSearchActive,
+    toggleDeepSearch
   };
 };

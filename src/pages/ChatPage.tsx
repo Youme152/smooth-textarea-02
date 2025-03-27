@@ -22,7 +22,9 @@ const ChatPage = () => {
     isLoadingMessages,
     hasMoreMessages,
     loadMoreMessages,
-    handleSendMessage
+    handleSendMessage,
+    deepSearchActive,
+    toggleDeepSearch
   } = useChatMessages(conversationId, user, initialMessage);
 
   return (
@@ -34,8 +36,10 @@ const ChatPage = () => {
       hasMoreMessages={hasMoreMessages}
       onLoadMore={loadMoreMessages}
       onSendMessage={handleSendMessage}
+      deepSearchActive={deepSearchActive}
+      toggleDeepSearch={toggleDeepSearch}
     />
   );
-};
+}
 
 export default ChatPage;

@@ -1,6 +1,11 @@
+
 // This mock function provides responses when the webhook is unavailable
-export const getMockResponse = (userMessage: string) => {
+export const getMockResponse = (userMessage: string, isDeepSearch: boolean = false) => {
   const lowercaseMessage = userMessage.toLowerCase();
+  
+  if (isDeepSearch) {
+    return "I'm currently in offline mode and cannot perform DeepSearch queries. Please try again when online connectivity is restored.";
+  }
   
   if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi")) {
     return "Hello! I'm a local AI assistant. How can I help you today?";
@@ -12,10 +17,6 @@ export const getMockResponse = (userMessage: string) => {
   
   if (lowercaseMessage.includes("weather")) {
     return "I don't have access to real-time weather data in this local mode. Please check a weather service for current conditions.";
-  }
-  
-  if (lowercaseMessage.startsWith("deepsearch:")) {
-    return "I'm currently in offline mode and cannot perform DeepSearch queries. Please try again when online connectivity is restored.";
   }
   
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
@@ -31,24 +32,25 @@ const formatViews = (viewCount: number): string => {
   return viewCount.toString();
 };
 
-// DeepSearch webhook URL - Updated to the new URL
+// DeepSearch webhook URL
 const DEEPSEARCH_WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/6e3a64ce-2201-40c4-a9ae-05e76abb891b";
 
 // Function to call DeepSearch webhook
-export const callDeepSearchWebhook = async (query: string, category: string): Promise<string> => {
+export const callDeepSearchWebhook = async (query: string): Promise<string> => {
   try {
-    console.log("Calling DeepSearch webhook with:", query, "Category:", category);
+    console.log("Calling DeepSearch webhook with:", query);
     
     // Using GET method as required by the webhook
     const url = new URL(DEEPSEARCH_WEBHOOK_URL);
     url.searchParams.append('query', query);
-    url.searchParams.append('category', category);
     
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-      }
+      },
+      // Add timeout to prevent long-hanging requests
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     });
     
     console.log("DeepSearch webhook response status:", response.status);
@@ -88,29 +90,39 @@ export const callDeepSearchWebhook = async (query: string, category: string): Pr
     }
   } catch (error) {
     console.error("DeepSearch webhook error:", error);
-    return getMockResponse(`DeepSearch: ${query}`);
+    return getMockResponse(query, true);
   }
 };
 
 // Using GET method based on webhook requirements
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const USE_MOCK_RESPONSES = true; // Changed to true to use mock responses as fallback
+const USE_MOCK_RESPONSES = true; // Use mock responses as fallback
 const MAX_RETRIES = 1; // One retry attempt
 
-export const fetchAIResponse = async (userMessage: string): Promise<string> => {
-  // Check if this is a DeepSearch query
+export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: boolean = false): Promise<string> => {
+  // If DeepSearch is active, always use the DeepSearch webhook regardless of prefix
+  if (isDeepSearchActive) {
+    try {
+      console.log("DeepSearch active, sending to DeepSearch webhook:", userMessage);
+      return await callDeepSearchWebhook(userMessage);
+    } catch (error) {
+      console.error("DeepSearch webhook error:", error);
+      return getMockResponse(userMessage, true);
+    }
+  }
+  
+  // Handle legacy DeepSearch format (prefix) for backward compatibility
   if (userMessage.toLowerCase().startsWith("deepsearch:")) {
     const parts = userMessage.split(":");
     if (parts.length >= 2) {
-      const category = "DeepSearch";
       const query = parts.slice(1).join(":").trim(); // Everything after the first colon
       
       if (query) {
         try {
-          return await callDeepSearchWebhook(query, category);
+          return await callDeepSearchWebhook(query);
         } catch (error) {
           console.error("DeepSearch webhook error:", error);
-          return getMockResponse(userMessage);
+          return getMockResponse(userMessage, true);
         }
       } else {
         return "Please provide a search query after 'DeepSearch:'.";
