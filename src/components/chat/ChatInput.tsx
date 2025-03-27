@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -43,7 +42,7 @@ export function ChatInput({
     // Reset the sending state after a delay
     setTimeout(() => {
       setIsSending(false);
-    }, 2000); // 2 seconds cooldown to prevent rapid clicking
+    }, sendCooldown); // Use the same cooldown period
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

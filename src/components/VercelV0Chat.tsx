@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,6 +8,7 @@ import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/components/auth/AuthContext";
+import { tempMessageStore } from "@/pages/Index";
 
 // Prevent duplicates within this time window
 const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds
@@ -93,8 +93,14 @@ export function VercelV0Chat() {
       
       if (error) throw error;
       
-      // Redirect to the chat page with the new conversation ID and the initial message
-      navigate(`/chat?id=${data.id}&initialMessage=${encodeURIComponent(initialMessage)}`);
+      // Store the message in our temporary store
+      tempMessageStore.pendingMessage = initialMessage;
+      
+      // Clear the input BEFORE navigating
+      setValue("");
+      
+      // Redirect to the chat page with the new conversation ID only
+      navigate(`/chat?id=${data.id}`);
     } catch (error) {
       console.error("Error creating conversation:", error);
       toast({

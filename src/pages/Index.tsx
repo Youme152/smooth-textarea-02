@@ -97,6 +97,10 @@ const Index = () => {
       // Store the message in our temporary store instead of URL
       tempMessageStore.pendingMessage = input;
       
+      // Clear the input BEFORE navigating
+      const messageToSend = input.trim();
+      setInput("");
+      
       // Navigate directly to chat without URL parameters
       navigate(`/chat?id=${data.id}`);
       

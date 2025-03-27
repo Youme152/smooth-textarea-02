@@ -56,12 +56,15 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     fetchConversationTitle();
   }, [conversationId, user]);
 
-  // Simpler initial message handling - no more isFirstLoad check
+  // Process initial message after conversation is loaded
   useEffect(() => {
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
+      console.log("Processing initial message:", initialMessage);
       // Process initial message once per conversation load
       if (!isDuplicateMessage(initialMessage)) {
         handleSendMessage(initialMessage);
+      } else {
+        console.log("Skipping duplicate initial message");
       }
       
       setInitialMessageProcessed(true);
