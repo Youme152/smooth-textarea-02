@@ -60,27 +60,39 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
     console.log("Raw webhook response:", responseText);
     
     try {
+      // Safety check for empty response
+      if (!responseText || responseText.trim() === '') {
+        return { 
+          type: 'text', 
+          content: "The AI service returned an empty response. Please try again with a different query."
+        };
+      }
+      
       // Try to parse as JSON if possible
       const data = JSON.parse(responseText);
       console.log("Parsed JSON response:", data);
       
+      // Add additional safeguards for undefined properties
+      
       // Handle array response with output field
-      if (Array.isArray(data) && data.length > 0 && data[0].output) {
-        return { type: 'text', content: data[0].output };
+      if (Array.isArray(data) && data.length > 0) {
+        if (data[0] && data[0].output !== undefined) {
+          return { type: 'text', content: data[0].output };
+        }
       }
       
       // Handle direct object with output field
-      if (data && data.output) {
+      if (data && data.output !== undefined) {
         return { type: 'text', content: data.output };
       }
       
       // Handle direct object with response field
-      if (data && data.response) {
+      if (data && data.response !== undefined) {
         return { type: 'text', content: data.response };
       }
       
       // Handle direct message field
-      if (data && data.message) {
+      if (data && data.message !== undefined) {
         return { type: 'text', content: data.message };
       }
       
@@ -89,14 +101,27 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
         return { type: 'text', content: data };
       }
       
-      // Fallback to a generic message
-      return { type: 'text', content: "I received your message but couldn't format the response properly." };
+      // Check if there might be a parts property that's causing the error
+      if (data && data.parts) {
+        return { type: 'text', content: Array.isArray(data.parts) ? data.parts.join('\n') : String(data.parts) };
+      }
+      
+      // Fallback to a generic message with the raw data as string
+      return { 
+        type: 'text', 
+        content: "I received your message but couldn't format the response properly. Raw response: " + JSON.stringify(data)
+      };
     } catch (jsonError) {
+      console.error("JSON parsing error:", jsonError);
+      
       // If it's not valid JSON, just return the raw text
       return { type: 'text', content: responseText };
     }
   } catch (error) {
     console.error("Webhook error:", error);
-    return { type: 'text', content: "I'm having trouble connecting to the AI service. Please try again in a moment." };
+    return { 
+      type: 'text', 
+      content: "I'm having trouble connecting to the AI service. Please try again in a moment." 
+    };
   }
 };
