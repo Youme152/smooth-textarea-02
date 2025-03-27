@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -182,14 +183,15 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         content: msg.content,
         sender: msg.is_user_message ? "user" as const : "assistant" as const,
         timestamp: new Date(msg.created_at),
-        type: msg.message_type || "text",
+        // Make sure to cast the message_type to our specific type
+        type: (msg.message_type as "text" | "pdf" | undefined) || "text",
         filename: msg.filename
-      })).reverse();
+      }));
       
       if (page === 0) {
-        setMessages(formattedMessages);
+        setMessages(formattedMessages.reverse());
       } else {
-        setMessages(prev => (page === 0 ? formattedMessages : [...formattedMessages, ...prev]));
+        setMessages(prev => (page === 0 ? formattedMessages.reverse() : [...formattedMessages.reverse(), ...prev]));
       }
       
       setCurrentPage(page);
@@ -322,7 +324,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         content: aiResponse.content,
         sender: "assistant",
         timestamp: new Date(),
-        type: aiResponse.type,
+        type: (aiResponse.type as "text" | "pdf"),
         filename: aiResponse.filename
       };
       
@@ -330,7 +332,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       await saveMessageToSupabase(
         aiResponse.content, 
         false, 
-        aiResponse.type, 
+        (aiResponse.type as "text" | "pdf"), 
         aiResponse.filename
       );
     } catch (error: any) {
