@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -128,16 +129,9 @@ const ChatPage = () => {
         timestamp: new Date(msg.created_at)
       })).reverse();
       
-      if (page === 0 && formattedMessages.length === 0) {
-        const initialMessages = [
-          {
-            id: "assistant-init",
-            content: "Hey hey! 😊 What's up?",
-            sender: "assistant" as const,
-            timestamp: new Date(),
-          }
-        ];
-        setMessages(initialMessages);
+      if (page === 0) {
+        setMessages(formattedMessages);
+        // No initial welcome message - we'll wait for the user to send a message first
       } else {
         setMessages(prev => (page === 0 ? formattedMessages : [...formattedMessages, ...prev]));
       }
@@ -196,7 +190,13 @@ const ChatPage = () => {
       try {
         console.log("Trying to use a proxy approach...");
         await new Promise(resolve => setTimeout(resolve, 1500));
-        return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode. To fix this, you may need to:\n\n1. Set up CORS headers on your N8N webhook\n2. Use a serverless function as a proxy\n3. Test with a production build`;
+        
+        // If this is the first message in the conversation, we'll add the greeting
+        if (messages.length === 0) {
+          return `Hey hey! 😊 What's up?\n\nYou asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
+        } else {
+          return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
+        }
       } catch (proxyError) {
         console.error("Proxy approach failed:", proxyError);
         return "I'm experiencing connectivity issues with my backend services. Please try again later.";
@@ -246,15 +246,37 @@ const ChatPage = () => {
       timestamp: new Date(),
     };
     
+    // Set the user message first
     setMessages(prev => [...prev, newMessage]);
     saveMessageToSupabase(input, true);
+    
+    // Then get AI response
     setIsGenerating(true);
     
     try {
-      const aiResponse = await fetchAIResponse(input);
+      // Special case for first message - initial AI greeting
+      let aiResponse;
+      if (messages.length === 0) {
+        // First message in conversation, the AI should greet the user first
+        const greeting: Message = {
+          id: (Date.now() + 1).toString(),
+          content: "Hey hey! 😊 What's up?",
+          sender: "assistant",
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, greeting]);
+        saveMessageToSupabase(greeting.content, false);
+        
+        // Then get the actual response to the user's message
+        aiResponse = await fetchAIResponse(input);
+      } else {
+        // Normal case - just get the response
+        aiResponse = await fetchAIResponse(input);
+      }
       
       const assistantResponse: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 2).toString(),
         content: aiResponse,
         sender: "assistant",
         timestamp: new Date(),
