@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -56,13 +55,10 @@ const ChatPage = () => {
     fetchConversationTitle();
   }, [conversationId, user]);
 
-  // Process initial message if it exists
   useEffect(() => {
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating) {
-      // Use a slight delay to ensure UI is ready
       const timer = setTimeout(() => {
         handleSendMessage(decodeURIComponent(initialMessage));
-        // Remove the initialMessage from URL to avoid reprocessing
         const newUrl = `/chat?id=${conversationId}`;
         window.history.replaceState({}, document.title, newUrl);
         setInitialMessageProcessed(true);
@@ -176,11 +172,14 @@ const ChatPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ 
           message: userMessage,
           timestamp: new Date().toISOString()
         }),
+        mode: 'cors',
+        credentials: 'omit'
       });
       
       console.log("Webhook response status:", response.status);
@@ -192,21 +191,28 @@ const ChatPage = () => {
       const data = await response.json();
       console.log("Received response from webhook:", data);
       
-      if (data.output) {
+      if (data && data.output) {
         return data.output;
       } else {
-        throw new Error("No output received from webhook");
+        if (data && data.response) {
+          return data.response;
+        }
+        if (data && typeof data === 'string') {
+          return data;
+        }
+        console.error("Unexpected response format:", data);
+        throw new Error("No valid output received from webhook");
       }
     } catch (error) {
       console.error(`Attempt ${retryCount + 1} failed:`, error);
       
       if (retryCount < MAX_RETRIES) {
         console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)));
         return fetchAIResponse(userMessage, retryCount + 1);
       }
       
-      return `I'm sorry, I couldn't process your request. There seems to be an issue connecting to the backend service. Please try again later.`;
+      return `I'm sorry, I couldn't process your request. There seems to be an issue with the backend service. Please try again later or contact support if the issue persists.`;
     }
   };
 
@@ -252,11 +258,9 @@ const ChatPage = () => {
       timestamp: new Date(),
     };
     
-    // Set the user message first
     setMessages(prev => [...prev, newMessage]);
     saveMessageToSupabase(input, true);
     
-    // Then get AI response
     setIsGenerating(true);
     
     try {
