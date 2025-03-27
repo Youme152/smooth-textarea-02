@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ArrowUp, Loader2 } from "lucide-react";
@@ -13,20 +13,34 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [lastSentTime, setLastSentTime] = useState(0);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const sendCooldown = 2000; // 2 seconds cooldown between sends
+
+  // Function to check if we can send a message (not too soon after last send)
+  const canSendMessage = () => {
+    const now = Date.now();
+    return now - lastSentTime >= sendCooldown;
+  };
 
   const handleSendMessage = () => {
-    if (!input.trim() || isGenerating || isSending) return;
+    if (!input.trim() || isGenerating || isSending || !canSendMessage()) return;
     
     setIsSending(true);
-    onSendMessage(input);
+    setLastSentTime(Date.now());
+    
+    // Clone the input value before clearing the input field
+    const messageToSend = input.trim();
     setInput("");
     
-    // Reset the sending state after a short delay to prevent multiple submissions
+    // Send the message
+    onSendMessage(messageToSend);
+    
+    // Reset the sending state after a delay
     setTimeout(() => {
       setIsSending(false);
-    }, 1500); // Increased to 1.5 seconds to prevent rapid clicking
+    }, 2000); // 2 seconds cooldown to prevent rapid clicking
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -35,6 +49,13 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
       handleSendMessage();
     }
   };
+
+  // Auto-focus the textarea when the component mounts
+  useEffect(() => {
+    if (textareaRef.current && !isGenerating && !isSending) {
+      textareaRef.current.focus();
+    }
+  }, [isGenerating, isSending]);
 
   return (
     <div className="bg-[#131314] p-4 pb-8 flex justify-center">
@@ -80,10 +101,10 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSendMessage}
-                disabled={!input.trim() || isGenerating || isSending}
+                disabled={!input.trim() || isGenerating || isSending || !canSendMessage()}
                 className={cn(
                   "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
-                  input.trim() && !isGenerating && !isSending
+                  input.trim() && !isGenerating && !isSending && canSendMessage()
                     ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
                     : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
                 )}
