@@ -1,7 +1,7 @@
 
 // Single webhook URL
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const WEBHOOK_TIMEOUT = 15000; // 15 seconds timeout
+const WEBHOOK_TIMEOUT = 600000; // 10 minutes timeout (600,000 ms)
 
 // Simple function to fetch response from the webhook
 export const fetchAIResponse = async (userMessage: string): Promise<string> => {
