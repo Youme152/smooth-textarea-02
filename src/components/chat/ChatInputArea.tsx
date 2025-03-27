@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
@@ -38,7 +37,6 @@ export function ChatInputArea({
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [deepSearchCategory, setDeepSearchCategory] = useState<string>("All");
 
   // Generate suggestions based on input
   const updateSuggestions = (input: string) => {
@@ -115,24 +113,26 @@ export function ChatInputArea({
     textareaRef.current?.focus();
   };
 
-  const handleDeepSearchCategorySelect = (category: string) => {
-    setDeepSearchCategory(category);
-    
-    // Insert the category into the input field followed by a space
-    setValue(category + " ");
-    
-    // Focus on the textarea and place cursor at the end
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        adjustHeight();
-      }
-    }, 0);
-    
-    // Toggle deep research mode if it's not already active
-    if (!deepResearchActive) {
-      toggleDeepResearch();
+  const handleToggleDeepResearch = () => {
+    // If activating DeepSearch mode and text doesn't start with DeepSearch:
+    if (!deepResearchActive && !value.trim().toLowerCase().startsWith('deepsearch:')) {
+      // Prepend DeepSearch: to the input
+      const currentValue = value.trim();
+      const newValue = currentValue ? `DeepSearch: ${currentValue}` : 'DeepSearch: ';
+      setValue(newValue);
+      
+      // Focus on the textarea and place cursor at the end
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const length = newValue.length;
+          textareaRef.current.setSelectionRange(length, length);
+          adjustHeight();
+        }
+      }, 0);
     }
+    
+    toggleDeepResearch();
   };
 
   const handleInputChange = (newValue: string) => {
@@ -182,7 +182,7 @@ export function ChatInputArea({
         value={value}
         onSend={onSend}
         deepResearchActive={deepResearchActive}
-        onDeepSearchCategorySelect={handleDeepSearchCategorySelect}
+        toggleDeepResearch={handleToggleDeepResearch}
         disabled={isCreatingChat}
       />
     </div>

@@ -1,4 +1,3 @@
-
 // This mock function provides responses when the webhook is unavailable
 export const getMockResponse = (userMessage: string) => {
   const lowercaseMessage = userMessage.toLowerCase();
@@ -32,8 +31,8 @@ const formatViews = (viewCount: number): string => {
   return viewCount.toString();
 };
 
-// DeepSearch webhook URL
-const DEEPSEARCH_WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/a59d2e26-06ce-48cc-b8f7-cdba88f1996c";
+// DeepSearch webhook URL - Updated to the new URL
+const DEEPSEARCH_WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/6e3a64ce-2201-40c4-a9ae-05e76abb891b";
 
 // Function to call DeepSearch webhook
 export const callDeepSearchWebhook = async (query: string, category: string): Promise<string> => {
@@ -89,7 +88,7 @@ export const callDeepSearchWebhook = async (query: string, category: string): Pr
     }
   } catch (error) {
     console.error("DeepSearch webhook error:", error);
-    return getMockResponse(`DeepSearch: ${category} ${query}`);
+    return getMockResponse(`DeepSearch: ${query}`);
   }
 };
 
@@ -101,19 +100,23 @@ const MAX_RETRIES = 1; // One retry attempt
 export const fetchAIResponse = async (userMessage: string): Promise<string> => {
   // Check if this is a DeepSearch query
   if (userMessage.toLowerCase().startsWith("deepsearch:")) {
-    const parts = userMessage.split(" ");
-    const category = parts[0].trim(); // "DeepSearch:Category"
-    const query = parts.slice(1).join(" ").trim(); // Everything after the category
-    
-    if (query) {
-      try {
-        return await callDeepSearchWebhook(query, category);
-      } catch (error) {
-        console.error("DeepSearch webhook error:", error);
-        return getMockResponse(userMessage);
+    const parts = userMessage.split(":");
+    if (parts.length >= 2) {
+      const category = "DeepSearch";
+      const query = parts.slice(1).join(":").trim(); // Everything after the first colon
+      
+      if (query) {
+        try {
+          return await callDeepSearchWebhook(query, category);
+        } catch (error) {
+          console.error("DeepSearch webhook error:", error);
+          return getMockResponse(userMessage);
+        }
+      } else {
+        return "Please provide a search query after 'DeepSearch:'.";
       }
     } else {
-      return "Please provide a search query after the DeepSearch category.";
+      return "Invalid DeepSearch format. Please use 'DeepSearch: your query here'.";
     }
   }
   

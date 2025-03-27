@@ -6,7 +6,7 @@ interface ChatInputControlsProps {
   value: string;
   onSend: () => void;
   deepResearchActive: boolean;
-  onDeepSearchCategorySelect: (category: string) => void;
+  toggleDeepResearch: () => void;
   disabled?: boolean;
 }
 
@@ -14,7 +14,7 @@ export function ChatInputControls({
   value,
   onSend,
   deepResearchActive,
-  onDeepSearchCategorySelect,
+  toggleDeepResearch,
   disabled = false
 }: ChatInputControlsProps) {
   return (
@@ -22,7 +22,7 @@ export function ChatInputControls({
       <div className="flex items-center gap-2">
         <DeepSearchDropdown 
           deepResearchActive={deepResearchActive}
-          onCategorySelect={onDeepSearchCategorySelect}
+          onClick={toggleDeepResearch}
           disabled={disabled}
         />
       </div>
