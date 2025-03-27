@@ -10,11 +10,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/components/auth/AuthContext";
 
+// Prevent duplicates within this time window
+const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds
+
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
   const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [lastSentMessage, setLastSentMessage] = useState({ content: "", timestamp: 0 });
+  
   const isMobile = useIsMobile();
   
   const navigate = useNavigate();
@@ -37,14 +42,46 @@ export function VercelV0Chat() {
     pauseDuration: 2000
   });
   
+  // Check if a message is a duplicate of the recently sent one
+  const isDuplicateMessage = (message: string) => {
+    const normalizedMessage = message.trim().toLowerCase();
+    const normalizedLastMessage = lastSentMessage.content.trim().toLowerCase();
+    const now = Date.now();
+    
+    // Check if this is the same message and was sent recently
+    if (normalizedMessage === normalizedLastMessage && 
+        now - lastSentMessage.timestamp < DUPLICATE_PREVENTION_TIMEOUT) {
+      return true;
+    }
+    
+    return false;
+  };
+  
   const createNewConversation = async (initialMessage) => {
     if (!user) {
       navigate("/auth");
       return;
     }
+    
+    // Prevent duplicate submissions
+    if (isDuplicateMessage(initialMessage)) {
+      toast({
+        title: "Duplicate message",
+        description: "Please wait a moment before sending the same message again.",
+        variant: "destructive"
+      });
+      setIsCreatingChat(false);
+      return;
+    }
 
     try {
       setIsCreatingChat(true);
+      
+      // Record this message as sent
+      setLastSentMessage({
+        content: initialMessage,
+        timestamp: Date.now()
+      });
       
       const { data, error } = await supabase
         .from("chat_conversations")
@@ -75,7 +112,7 @@ export function VercelV0Chat() {
   };
   
   const handleSendClick = () => {
-    if (value.trim()) {
+    if (value.trim() && !isCreatingChat) {
       createNewConversation(value.trim());
     }
   };

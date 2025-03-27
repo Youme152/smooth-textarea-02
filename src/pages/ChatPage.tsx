@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -38,6 +39,7 @@ const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f5
 const USE_MOCK_RESPONSES = false; // Changed to false to try to use the webhook first
 const MESSAGES_PER_PAGE = 20;
 const MAX_RETRIES = 0; // No retries to prevent duplicate messages
+const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds cooldown between identical messages
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -48,6 +50,7 @@ const ChatPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
+  const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map()); // Track recent messages with timestamps
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -57,6 +60,7 @@ const ChatPage = () => {
   const conversationId = queryParams.get("id");
   const initialMessage = queryParams.get("initialMessage");
 
+  // Reset state when conversation changes
   useEffect(() => {
     if (!user) {
       navigate("/auth");
@@ -72,23 +76,76 @@ const ChatPage = () => {
     setMessages([]);
     setInitialMessageProcessed(false);
     setProcessedMessageIds(new Set());
+    setRecentMessages(new Map());
     
     fetchMessages(0);
     fetchConversationTitle();
   }, [conversationId, user]);
 
+  // Handle initial message with better duplicate protection
   useEffect(() => {
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating) {
-      const timer = setTimeout(() => {
-        handleSendMessage(decodeURIComponent(initialMessage));
+      const decodedMessage = decodeURIComponent(initialMessage);
+      
+      // Only process if not already processed and not a duplicate
+      if (!isDuplicateMessage(decodedMessage)) {
+        const timer = setTimeout(() => {
+          handleSendMessage(decodedMessage);
+          const newUrl = `/chat?id=${conversationId}`;
+          window.history.replaceState({}, document.title, newUrl);
+          setInitialMessageProcessed(true);
+        }, 500);
+        
+        return () => clearTimeout(timer);
+      } else {
+        // If it's a duplicate, mark as processed without sending
         const newUrl = `/chat?id=${conversationId}`;
         window.history.replaceState({}, document.title, newUrl);
         setInitialMessageProcessed(true);
-      }, 500);
-      
-      return () => clearTimeout(timer);
+      }
     }
   }, [conversationId, initialMessage, initialMessageProcessed, messages, isGenerating]);
+
+  // Check if a message is a duplicate (sent recently)
+  const isDuplicateMessage = (content: string) => {
+    const normalizedContent = content.trim().toLowerCase();
+    const now = Date.now();
+    
+    // Check if this exact message was sent recently
+    if (recentMessages.has(normalizedContent)) {
+      const lastSentTime = recentMessages.get(normalizedContent) || 0;
+      
+      // Consider it a duplicate if sent within the prevention timeout
+      if (now - lastSentTime < DUPLICATE_PREVENTION_TIMEOUT) {
+        console.log("Preventing duplicate message:", normalizedContent);
+        return true;
+      }
+    }
+    
+    // Not a duplicate or timeout has passed
+    return false;
+  };
+
+  // Add message to recent messages tracking
+  const trackMessageSent = (content: string) => {
+    const normalizedContent = content.trim().toLowerCase();
+    const now = Date.now();
+    
+    // Update the recent messages map
+    setRecentMessages(prev => {
+      const updated = new Map(prev);
+      updated.set(normalizedContent, now);
+      
+      // Clean up old entries (older than 1 minute)
+      for (const [key, timestamp] of updated.entries()) {
+        if (now - timestamp > 60000) {
+          updated.delete(key);
+        }
+      }
+      
+      return updated;
+    });
+  };
 
   const createNewConversation = async () => {
     try {
@@ -313,6 +370,17 @@ const ChatPage = () => {
   const handleSendMessage = async (input: string) => {
     if (!input.trim() || isGenerating) return;
     
+    // Check for duplicate message
+    if (isDuplicateMessage(input)) {
+      console.log("Prevented duplicate message submission:", input);
+      toast({
+        title: "Duplicate message",
+        description: "Please wait a moment before sending the same message again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Generate a temporary ID for the message
     const tempId = Date.now().toString();
     
@@ -321,6 +389,9 @@ const ChatPage = () => {
       console.log("Preventing duplicate message with ID:", tempId);
       return;
     }
+    
+    // Track this message to prevent duplicates
+    trackMessageSent(input);
     
     // Add to processed messages to prevent duplicates
     setProcessedMessageIds(prev => new Set(prev).add(tempId));
