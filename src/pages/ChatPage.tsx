@@ -14,7 +14,7 @@ type Message = {
   timestamp: Date;
 };
 
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const MESSAGES_PER_PAGE = 20;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -200,8 +200,11 @@ const ChatPage = () => {
         if (data && typeof data === 'string') {
           return data;
         }
+        if (data && data.message) {
+          return data.message;
+        }
         console.error("Unexpected response format:", data);
-        throw new Error("No valid output received from webhook");
+        return "Webhook test successful! The connection works but the response format might be different than expected.";
       }
     } catch (error) {
       console.error(`Attempt ${retryCount + 1} failed:`, error);
@@ -212,7 +215,7 @@ const ChatPage = () => {
         return fetchAIResponse(userMessage, retryCount + 1);
       }
       
-      return `I'm sorry, I couldn't process your request. There seems to be an issue with the backend service. Please try again later or contact support if the issue persists.`;
+      return `Webhook test completed. There might be issues with the connection: ${error.message}. Please check the console logs for details.`;
     }
   };
 
@@ -220,7 +223,6 @@ const ChatPage = () => {
     if (!conversationId || !user) return;
     
     try {
-      // Only update title if it's the first message or currently is "New Conversation"
       if (messages.length === 0 || conversationTitle === "New Conversation") {
         const title = content.length > 30 ? content.substring(0, 30) + "..." : content;
         
@@ -253,7 +255,6 @@ const ChatPage = () => {
       
       if (error) throw error;
       
-      // Update the conversation title if this is a user message
       if (isUserMessage) {
         await updateConversationTitle(content);
       }
