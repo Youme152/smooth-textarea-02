@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageSquare, Plus, Menu } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,36 +21,61 @@ export function ChatSidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthContext();
 
+  // Extract the current conversation ID from URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const currentId = queryParams.get("id");
+    if (currentId) {
+      setActiveConversationId(currentId);
+    }
+  }, [location]);
+
+  // Fetch conversations when user logs in or navigates to the page
   useEffect(() => {
     if (!user) return;
-    
-    const fetchConversations = async () => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("chat_conversations")
-          .select("*")
-          .order("created_at", { ascending: false });
-        
-        if (error) throw error;
-        
-        setConversations(data || []);
-      } catch (error: any) {
-        console.error("Error fetching conversations:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to load conversations",
-          description: error.message || "An error occurred while loading your conversations."
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchConversations();
+
+    // Listen for changes to chat_conversations table
+    const channel = supabase
+      .channel('sidebar-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'chat_conversations' }, 
+        () => {
+          fetchConversations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
+
+  const fetchConversations = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("chat_conversations")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      
+      setConversations(data || []);
+    } catch (error: any) {
+      console.error("Error fetching conversations:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to load conversations",
+        description: error.message || "An error occurred while loading your conversations."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const createNewConversation = async () => {
     if (!user) {

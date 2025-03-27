@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -216,6 +217,28 @@ const ChatPage = () => {
     }
   };
 
+  const updateConversationTitle = async (content: string) => {
+    if (!conversationId || !user) return;
+    
+    try {
+      // Only update title if it's the first message or currently is "New Conversation"
+      if (messages.length === 0 || conversationTitle === "New Conversation") {
+        const title = content.length > 30 ? content.substring(0, 30) + "..." : content;
+        
+        const { error } = await supabase
+          .from("chat_conversations")
+          .update({ title })
+          .eq("id", conversationId);
+        
+        if (!error) {
+          setConversationTitle(title);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating conversation title:", error);
+    }
+  };
+
   const saveMessageToSupabase = async (content: string, isUserMessage: boolean) => {
     if (!conversationId || !user) return;
     
@@ -231,17 +254,9 @@ const ChatPage = () => {
       
       if (error) throw error;
       
-      if (isUserMessage && messages.length <= 1) {
-        const title = content.length > 30 ? content.substring(0, 30) + "..." : content;
-        
-        const { error: titleError } = await supabase
-          .from("chat_conversations")
-          .update({ title })
-          .eq("id", conversationId);
-        
-        if (!titleError) {
-          setConversationTitle(title);
-        }
+      // Update the conversation title if this is a user message
+      if (isUserMessage) {
+        await updateConversationTitle(content);
       }
     } catch (error) {
       console.error("Error saving message:", error);
