@@ -32,6 +32,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   
   // Add a ref to track current conversation ID to prevent state leaking across conversations
   const currentConversationIdRef = useRef<string | null>(null);
+  const activeRequestRef = useRef<{ id: string, conversationId: string | null } | null>(null);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -324,6 +325,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     // Generate a temporary ID for the message
     const tempId = Date.now().toString();
     
+    // Create a unique ID for this request
+    const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     // Check if this message has already been processed
     if (processedMessageIds.has(tempId)) {
       console.log("Preventing duplicate message with ID:", tempId);
@@ -336,7 +340,13 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     // Add to processed messages to prevent duplicates
     setProcessedMessageIds(prev => new Set(prev).add(tempId));
     
-    setIsGenerating(true);
+    // Only set isGenerating if this is the active conversation
+    if (currentConversationIdRef.current === targetConversationId) {
+      setIsGenerating(true);
+    }
+    
+    // Store the active request reference
+    activeRequestRef.current = { id: requestId, conversationId: targetConversationId };
     
     // Add user message to UI immediately
     const userMessage: Message = {
@@ -362,10 +372,18 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       // Get AI response
       const aiResponse = await fetchAIResponse(input);
       
-      // Check if the conversation ID has changed during processing
-      if (targetConversationId !== currentConversationIdRef.current) {
+      // Check if this request is still active and for the current conversation
+      if (
+        activeRequestRef.current?.id !== requestId || 
+        activeRequestRef.current?.conversationId !== targetConversationId ||
+        targetConversationId !== currentConversationIdRef.current
+      ) {
         console.log("Conversation changed during AI response generation, aborting update");
-        setIsGenerating(false);
+        
+        // Only reset isGenerating if we're in the same conversation that initiated the request
+        if (targetConversationId === currentConversationIdRef.current) {
+          setIsGenerating(false);
+        }
         return;
       }
       
@@ -388,10 +406,18 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     } catch (error: any) {
       console.error("Error in message flow:", error);
       
-      // Check if the conversation ID has changed during processing
-      if (targetConversationId !== currentConversationIdRef.current) {
+      // Check if this request is still active and for the current conversation
+      if (
+        activeRequestRef.current?.id !== requestId || 
+        activeRequestRef.current?.conversationId !== targetConversationId ||
+        targetConversationId !== currentConversationIdRef.current
+      ) {
         console.log("Conversation changed during error handling, aborting update");
-        setIsGenerating(false);
+        
+        // Only reset isGenerating if we're in the same conversation that initiated the request
+        if (targetConversationId === currentConversationIdRef.current) {
+          setIsGenerating(false);
+        }
         return;
       }
       
@@ -407,8 +433,13 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       await saveMessageToSupabase(errorResponse.content, false);
     } finally {
       // Only update isGenerating state if we're still in the same conversation
-      if (targetConversationId === currentConversationIdRef.current) {
+      // and this is still the active request
+      if (
+        targetConversationId === currentConversationIdRef.current &&
+        activeRequestRef.current?.id === requestId
+      ) {
         setIsGenerating(false);
+        activeRequestRef.current = null;
       }
     }
   };
