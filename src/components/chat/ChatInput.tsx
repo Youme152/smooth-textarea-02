@@ -12,13 +12,21 @@ interface ChatInputProps {
 export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSendMessage = () => {
-    if (!input.trim() || isGenerating) return;
+    if (!input.trim() || isGenerating || isSending) return;
+    
+    setIsSending(true);
     onSendMessage(input);
     setInput("");
+    
+    // Reset the sending state after a short delay
+    setTimeout(() => {
+      setIsSending(false);
+    }, 1000);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -49,7 +57,7 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
               setIsInputFocused(false);
             }}
             placeholder="Reply to Ora..."
-            disabled={isGenerating}
+            disabled={isGenerating || isSending}
             className={cn(
               "w-full px-5 py-4",
               "resize-none",
@@ -62,7 +70,7 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
               "h-[36px] min-h-[36px] max-h-[36px]",
               "transition-all duration-300",
               "overflow-hidden",
-              isGenerating && "opacity-70"
+              (isGenerating || isSending) && "opacity-70"
             )}
           />
 
@@ -72,15 +80,15 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSendMessage}
-                disabled={!input.trim() || isGenerating}
+                disabled={!input.trim() || isGenerating || isSending}
                 className={cn(
                   "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
-                  input.trim() && !isGenerating
+                  input.trim() && !isGenerating && !isSending
                     ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
                     : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
                 )}
               >
-                {isGenerating ? (
+                {isGenerating || isSending ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <ArrowUp className="h-5 w-5" />
