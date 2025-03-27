@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import { tempMessageStore } from "@/pages/Index";
 
 const ChatPage = () => {
   const location = useLocation();
@@ -12,7 +13,9 @@ const ChatPage = () => {
   
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
-  const initialMessage = queryParams.get("initialMessage");
+  
+  // Use the pending message from our store instead of URL
+  const initialMessage = tempMessageStore.consumeMessage();
 
   // Use the custom hook to manage chat messages and state
   const {

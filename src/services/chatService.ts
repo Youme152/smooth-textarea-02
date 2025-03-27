@@ -38,7 +38,7 @@ const formatViews = (viewCount: number): string => {
 
 // Single webhook URL - updated to the real webhook
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const USE_MOCK_RESPONSES = true; // Use mock responses as fallback
+const USE_MOCK_RESPONSES = false; // Set to false to actually use the webhook
 const MAX_RETRIES = 1; // One retry attempt
 const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout
 

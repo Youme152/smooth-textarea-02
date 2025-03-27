@@ -12,6 +12,17 @@ import { HighlightedText } from "@/components/ui/highlighted-text";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
+// We'll create a global variable to store temporary messages
+// This avoids using URL parameters which can cause issues
+export const tempMessageStore = {
+  pendingMessage: null as string | null,
+  consumeMessage: function() {
+    const message = this.pendingMessage;
+    this.pendingMessage = null;
+    return message;
+  }
+};
+
 const Index = () => {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -48,7 +59,7 @@ const Index = () => {
     }
   };
 
-  // Improved chat creation function with better navigation flow
+  // Simplified chat creation function - no more URL parameter approach
   const createNewConversation = async () => {
     if (!user) {
       navigate("/auth");
@@ -73,7 +84,6 @@ const Index = () => {
       
       if (error) throw error;
       
-      // Only add the initialMessage parameter if the chat is brand new
       if (!data.id) {
         toast({
           variant: "destructive",
@@ -84,14 +94,11 @@ const Index = () => {
         return;
       }
       
-      // First navigate to chat without the initial message
-      navigate(`/chat?id=${data.id}`);
+      // Store the message in our temporary store instead of URL
+      tempMessageStore.pendingMessage = input;
       
-      // Then, after a short delay, update the URL with the initial message
-      // This helps prevent the message from being processed twice
-      setTimeout(() => {
-        navigate(`/chat?id=${data.id}&initialMessage=${encodeURIComponent(input)}`);
-      }, 100);
+      // Navigate directly to chat without URL parameters
+      navigate(`/chat?id=${data.id}`);
       
     } catch (error: any) {
       console.error("Error creating new conversation:", error);

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +26,6 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -50,33 +48,22 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     setProcessedMessageIds(new Set());
     setRecentMessages(new Map());
     setInitialLoadComplete(false);
-    setIsFirstLoad(true);
     
     fetchMessages(0);
     fetchConversationTitle();
   }, [conversationId, user]);
 
-  // Initial message handling
+  // Simpler initial message handling - no more isFirstLoad check
   useEffect(() => {
-    // Only proceed if we have completed the initial data loading
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
-      // We only process initial message once per conversation load
-      if (isFirstLoad) {
-        const decodedMessage = decodeURIComponent(initialMessage);
-        setIsFirstLoad(false);
-        
-        // Only process if not a duplicate
-        if (!isDuplicateMessage(decodedMessage)) {
-          handleSendMessage(decodedMessage);
-        }
-        
-        // Always clear the URL parameter regardless of whether message was sent
-        const newUrl = `/chat?id=${conversationId}`;
-        window.history.replaceState({}, document.title, newUrl);
-        setInitialMessageProcessed(true);
+      // Process initial message once per conversation load
+      if (!isDuplicateMessage(initialMessage)) {
+        handleSendMessage(initialMessage);
       }
+      
+      setInitialMessageProcessed(true);
     }
-  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete, isFirstLoad]);
+  }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete]);
 
   // Check if a message is a duplicate (sent recently)
   const isDuplicateMessage = (content: string) => {
