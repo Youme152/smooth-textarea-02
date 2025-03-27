@@ -16,18 +16,11 @@ interface MessageItemProps {
 
 export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
   const { toast } = useToast();
-  const [skipAnimation, setSkipAnimation] = useState(false);
+  const [skipAnimation, setSkipAnimation] = useState(true);
   
-  // Skip animation for any message that exists when the component mounts
-  useEffect(() => {
-    // Use a short timeout to allow for initial render
-    const timer = setTimeout(() => {
-      setSkipAnimation(true);
-    }, 50);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
+  // Skip animation for any message - always set to true
+  // This ensures animation is skipped even when returning to the page
+  
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
