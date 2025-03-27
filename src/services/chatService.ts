@@ -1,49 +1,11 @@
 
-// This mock function provides responses when the webhook is unavailable
-export const getMockResponse = (userMessage: string) => {
-  const lowercaseMessage = userMessage.toLowerCase();
-  
-  if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi")) {
-    return "Hello! I'm a local AI assistant. How can I help you today?";
-  }
-  
-  if (lowercaseMessage.includes("help")) {
-    return "I can help answer questions, provide information, or just chat. What would you like to know?";
-  }
-  
-  if (lowercaseMessage.includes("weather")) {
-    return "I don't have access to real-time weather data in this local mode. Please check a weather service for current conditions.";
-  }
-  
-  if (lowercaseMessage.includes("roblox")) {
-    return "Roblox is a popular online platform where users can create and play games made by other users. Some popular Roblox game ideas include obstacle courses, roleplaying games, tycoon games, and simulators. To make your Roblox game more engaging, focus on unique gameplay, attractive visuals, and regular updates.";
-  }
-  
-  if (lowercaseMessage.includes("viral") || lowercaseMessage.includes("trending")) {
-    return "To create viral content, focus on emotional impact, relatability, and timing. Keep content short, engaging, and shareable. Use trending sounds, challenges, or formats, but add your unique twist. Consistency is key - post regularly and engage with your audience.";
-  }
-  
-  return "I'm currently operating in offline mode. The webhook service appears to be unavailable. I can still chat with you using my local knowledge, but my responses will be limited. What would you like to talk about?";
-};
-
-// Format view counts to be more readable (e.g., 1.2M instead of 1200000)
-const formatViews = (viewCount: number): string => {
-  if (viewCount >= 1000000) {
-    return (viewCount / 1000000).toFixed(1) + 'M';
-  } else if (viewCount >= 1000) {
-    return (viewCount / 1000).toFixed(1) + 'K';
-  }
-  return viewCount.toString();
-};
-
-// Single webhook URL - updated to the real webhook
+// Single webhook URL - using the real webhook
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const USE_MOCK_RESPONSES = false; // Set to false to actually use the webhook
-const MAX_RETRIES = 1; // One retry attempt
-const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout
+const MAX_RETRIES = 2; // Increase to two retry attempts
+const WEBHOOK_TIMEOUT = 10000; // 10 seconds timeout
 
 // Status tracking for webhook availability
-let isWebhookAvailable = false;
+let isWebhookAvailable = true; // Default to true to always try the webhook first
 let lastWebhookCheckTime = 0;
 const ONLINE_STATUS_CHECK_INTERVAL = 60000; // Check online status every minute
 
@@ -80,13 +42,7 @@ const checkWebhookAvailability = async (): Promise<boolean> => {
 };
 
 export const fetchAIResponse = async (userMessage: string): Promise<string> => {
-  // Check if we're in forced mock mode or the webhook is known to be down
-  if (USE_MOCK_RESPONSES || !(await checkWebhookAvailability())) {
-    console.log("Using immediate mock response due to webhook likely being down");
-    return getMockResponse(userMessage);
-  }
-  
-  // Regular chat flow with retry logic
+  // Always attempt to use the webhook
   let retryCount = 0;
   let lastError = null;
   
@@ -149,7 +105,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
         
         // Fallback to stringified JSON only if we have no other option
         console.log("No recognized response format, returning error message");
-        return "Sorry, I couldn't process that request properly.";
+        return "I'm sorry, I couldn't process that request properly.";
       } catch (jsonError) {
         // If it's not valid JSON, just return the raw text
         console.log("Not valid JSON, using text response");
@@ -162,18 +118,11 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
       
       // Small delay before retry
       if (retryCount <= MAX_RETRIES) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Progressive delay
       }
     }
   }
   
-  console.log("All retry attempts failed, using mock response");
-  
-  // If we're here, all attempts failed
-  if (USE_MOCK_RESPONSES) {
-    console.log("Using mock response due to webhook failure");
-    return getMockResponse(userMessage);
-  }
-  
-  return `I'm sorry, I couldn't connect to the AI service after multiple attempts. Your message has been saved, but I'm unable to generate a response at this time.`;
+  // If all webhook attempts fail, return a clear error message
+  return "I'm sorry, I couldn't connect to the AI service after multiple attempts. Please try again in a moment.";
 };
