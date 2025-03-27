@@ -15,6 +15,8 @@ interface ChatInputAreaProps {
   deepResearchActive: boolean;
   toggleDeepResearch: () => void;
   placeholderText: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  isCreatingChat?: boolean;
 }
 
 export function ChatInputArea({
@@ -25,7 +27,9 @@ export function ChatInputArea({
   setIsInputFocused,
   deepResearchActive,
   toggleDeepResearch,
-  placeholderText
+  placeholderText,
+  onKeyDown,
+  isCreatingChat = false
 }: ChatInputAreaProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 60,
@@ -88,7 +92,13 @@ export function ChatInputArea({
   });
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    // Pass to parent component if provided
+    if (onKeyDown) {
+      onKeyDown(e);
+    }
+    
+    // Default Enter key handling if not handled by parent
+    if (e.key === "Enter" && !e.shiftKey && !onKeyDown) {
       e.preventDefault();
       if (value.trim()) {
         onSend();
@@ -142,6 +152,7 @@ export function ChatInputArea({
         isInputFocused={isInputFocused}
         adjustHeight={adjustHeight}
         placeholderText={placeholderText}
+        disabled={isCreatingChat}
       />
 
       {/* Suggestions Dropdown */}
@@ -157,6 +168,7 @@ export function ChatInputArea({
         onSend={onSend}
         deepResearchActive={deepResearchActive}
         onDeepSearchCategorySelect={handleDeepSearchCategorySelect}
+        disabled={isCreatingChat}
       />
     </div>
   );

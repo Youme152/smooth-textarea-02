@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -26,6 +27,7 @@ const ChatPage = () => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ const ChatPage = () => {
   
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
+  const initialMessage = queryParams.get("initialMessage");
 
   useEffect(() => {
     if (!user) {
@@ -47,10 +50,27 @@ const ChatPage = () => {
 
     setCurrentPage(0);
     setMessages([]);
+    setInitialMessageProcessed(false);
     
     fetchMessages(0);
     fetchConversationTitle();
   }, [conversationId, user]);
+
+  // Process initial message if it exists
+  useEffect(() => {
+    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating) {
+      // Use a slight delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        handleSendMessage(decodeURIComponent(initialMessage));
+        // Remove the initialMessage from URL to avoid reprocessing
+        const newUrl = `/chat?id=${conversationId}`;
+        window.history.replaceState({}, document.title, newUrl);
+        setInitialMessageProcessed(true);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [conversationId, initialMessage, initialMessageProcessed, messages, isGenerating]);
 
   const createNewConversation = async () => {
     try {

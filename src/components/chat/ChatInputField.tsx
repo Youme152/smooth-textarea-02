@@ -14,6 +14,7 @@ interface ChatInputFieldProps {
   isInputFocused: boolean;
   adjustHeight: () => void;
   placeholderText: string;
+  disabled?: boolean;
 }
 
 export function ChatInputField({
@@ -25,7 +26,8 @@ export function ChatInputField({
   textareaRef,
   isInputFocused,
   adjustHeight,
-  placeholderText
+  placeholderText,
+  disabled = false
 }: ChatInputFieldProps) {
   const isMobile = useIsMobile();
   
@@ -42,6 +44,7 @@ export function ChatInputField({
         onFocus={onFocus}
         onBlur={onBlur}
         placeholder={placeholderText}
+        disabled={disabled}
         className={cn(
           "w-full",
           isMobile ? "px-3 py-2" : "px-4 py-3",
@@ -55,10 +58,11 @@ export function ChatInputField({
           "placeholder:text-neutral-500", 
           isMobile ? "placeholder:text-lg" : "placeholder:text-xl",
           "placeholder:transition-opacity placeholder:duration-200",
-          isInputFocused ? "placeholder:opacity-80" : "placeholder:text-neutral-500",
+          isInputFocused ? "placeholder:opacity-80" : "placeholder:placeholder-neutral-500",
           "h-[60px] min-h-[60px] max-h-[60px]", // Fixed height
           "transition-all duration-200",
-          "overflow-hidden" // Changed from overflow-y-auto to overflow-hidden
+          "overflow-hidden", // Changed from overflow-y-auto to overflow-hidden
+          disabled ? "opacity-60 cursor-not-allowed" : ""
         )}
       />
     </div>

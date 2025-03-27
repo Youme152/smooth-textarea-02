@@ -7,13 +7,15 @@ interface ChatInputControlsProps {
   onSend: () => void;
   deepResearchActive: boolean;
   onDeepSearchCategorySelect: (category: string) => void;
+  disabled?: boolean;
 }
 
 export function ChatInputControls({
   value,
   onSend,
   deepResearchActive,
-  onDeepSearchCategorySelect
+  onDeepSearchCategorySelect,
+  disabled = false
 }: ChatInputControlsProps) {
   return (
     <div className="flex items-center justify-between p-3">
@@ -21,12 +23,13 @@ export function ChatInputControls({
         <DeepSearchDropdown 
           deepResearchActive={deepResearchActive}
           onCategorySelect={onDeepSearchCategorySelect}
+          disabled={disabled}
         />
       </div>
       
       <SendButton 
         onClick={onSend}
-        disabled={!value.trim()}
+        disabled={!value.trim() || disabled}
       />
     </div>
   );

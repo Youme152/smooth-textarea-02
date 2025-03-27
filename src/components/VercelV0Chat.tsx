@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ChatInputArea } from "./chat/ChatInputArea";
@@ -7,14 +7,18 @@ import { usePlaceholderTyping } from "@/hooks/usePlaceholderTyping";
 import { toast } from "@/components/ui/use-toast";
 import { AnimatedGradientText } from "@/components/ui/text-generate-effect";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/components/auth/AuthContext";
 
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
   const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const isMobile = useIsMobile();
   
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   
   const placeholders = [
     "Ask a question...",
@@ -33,15 +37,60 @@ export function VercelV0Chat() {
     pauseDuration: 2000
   });
   
+  const createNewConversation = async (initialMessage) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      setIsCreatingChat(true);
+      
+      const { data, error } = await supabase
+        .from("chat_conversations")
+        .insert([{ 
+          user_id: user.id,
+          title: initialMessage.length > 30 ? initialMessage.substring(0, 30) + "..." : initialMessage 
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Redirect to the chat page with the new conversation ID and the initial message
+      navigate(`/chat?id=${data.id}&initialMessage=${encodeURIComponent(initialMessage)}`);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      toast({
+        variant: "destructive",
+        title: "Failed to create conversation",
+        description: error.message || "An error occurred while creating a new conversation."
+      });
+      setIsCreatingChat(false);
+    }
+  };
+
+  const handleInputChange = (newValue) => {
+    setValue(newValue);
+  };
+  
   const handleSendClick = () => {
     if (value.trim()) {
-      // Navigate to the chat page
-      navigate("/chat");
+      createNewConversation(value.trim());
     }
   };
   
   const handleDeepResearch = () => {
     setDeepResearchActive(!deepResearchActive);
+  };
+
+  // Handle key press to create chat immediately
+  const handleKeyDown = (e) => {
+    // If Enter is pressed and not with Shift, create the chat
+    if (e.key === "Enter" && !e.shiftKey && value.trim() && !isCreatingChat) {
+      e.preventDefault();
+      createNewConversation(value.trim());
+    }
   };
 
   return (
@@ -59,13 +108,15 @@ export function VercelV0Chat() {
       <div className="w-full max-w-xl">
         <ChatInputArea 
           value={value}
-          setValue={setValue}
+          setValue={handleInputChange}
           onSend={handleSendClick}
           isInputFocused={isInputFocused}
           setIsInputFocused={setIsInputFocused}
           deepResearchActive={deepResearchActive}
           toggleDeepResearch={handleDeepResearch}
           placeholderText={placeholderText}
+          onKeyDown={handleKeyDown}
+          isCreatingChat={isCreatingChat}
         />
       </div>
     </div>
