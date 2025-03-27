@@ -35,24 +35,30 @@ export type Database = {
           chat_id: string
           content: string
           created_at: string
+          filename: string | null
           id: string
           is_user_message: boolean | null
+          message_type: string | null
           user_id: string
         }
         Insert: {
           chat_id: string
           content: string
           created_at?: string
+          filename?: string | null
           id?: string
           is_user_message?: boolean | null
+          message_type?: string | null
           user_id: string
         }
         Update: {
           chat_id?: string
           content?: string
           created_at?: string
+          filename?: string | null
           id?: string
           is_user_message?: boolean | null
+          message_type?: string | null
           user_id?: string
         }
         Relationships: [
