@@ -160,45 +160,30 @@ const ChatPage = () => {
     try {
       console.log(`Attempt ${retryCount + 1}: Sending message to webhook:`, userMessage);
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 second timeout
-      
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Origin': window.location.origin,
         },
         body: JSON.stringify({ 
           message: userMessage,
           timestamp: new Date().toISOString()
         }),
-        signal: controller.signal,
-        mode: 'no-cors', // Try with no-cors mode
       });
       
-      clearTimeout(timeoutId);
-
-      if (response.type === 'opaque') {
-        console.log('Received opaque response due to no-cors mode');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return `I processed your message: "${userMessage}" but I'm currently in development mode.`;
-      }
-      
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Received response from webhook:", data);
+        
+        if (data.output) {
+          return data.output;
+        } else {
+          throw new Error("No output received from webhook");
+        }
+      } else {
         console.error('Error from webhook:', response.status);
         throw new Error(`Webhook responded with status code ${response.status}`);
       }
-      
-      const data = await response.json();
-      console.log("Received response from webhook:", data);
-      
-      if (!data.output) {
-        throw new Error("No output received from webhook");
-      }
-      
-      return data.output;
     } catch (error) {
       console.error(`Attempt ${retryCount + 1} failed:`, error);
       
@@ -208,7 +193,14 @@ const ChatPage = () => {
         return fetchAIResponse(userMessage, retryCount + 1);
       }
       
-      return "I'm experiencing connectivity issues with my backend services. Please try again later.";
+      try {
+        console.log("Trying to use a proxy approach...");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode. To fix this, you may need to:\n\n1. Set up CORS headers on your N8N webhook\n2. Use a serverless function as a proxy\n3. Test with a production build`;
+      } catch (proxyError) {
+        console.error("Proxy approach failed:", proxyError);
+        return "I'm experiencing connectivity issues with my backend services. Please try again later.";
+      }
     }
   };
 
