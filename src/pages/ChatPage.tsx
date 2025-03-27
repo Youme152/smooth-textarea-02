@@ -216,21 +216,34 @@ const ChatPage = () => {
         const data = JSON.parse(responseText);
         console.log("Parsed JSON response:", data);
         
+        // Handle array response with output field
+        if (Array.isArray(data) && data.length > 0 && data[0].output) {
+          return data[0].output;
+        }
+        
+        // Handle direct object with output field
         if (data && data.output) {
           return data.output;
-        } else if (data && data.response) {
-          return data.response;
-        } else if (data && typeof data === 'string') {
-          return data;
-        } else if (data && data.message) {
-          return data.message;
-        } else if (typeof data === 'string') {
-          return data;
-        } else {
-          // If it's JSON but doesn't have expected fields
-          console.log("Using the raw JSON stringified as response");
-          return JSON.stringify(data);
         }
+        
+        // Handle direct object with response field
+        if (data && data.response) {
+          return data.response;
+        }
+        
+        // Handle direct message field
+        if (data && data.message) {
+          return data.message;
+        }
+        
+        // If it's a string directly
+        if (typeof data === 'string') {
+          return data;
+        }
+        
+        // Fallback to stringified JSON only if we have no other option
+        console.log("No recognized response format, returning error message");
+        return "Sorry, I couldn't process that request properly.";
       } catch (jsonError) {
         // If it's not valid JSON, just return the raw text
         console.log("Not valid JSON, using text response");
