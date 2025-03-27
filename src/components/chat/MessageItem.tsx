@@ -4,6 +4,7 @@ import { MessageLoadingEffect, TextGenerateEffect } from "@/components/ui/text-g
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Download, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { PDFMessage } from "./PDFMessage";
+import { useEffect, useState } from "react";
 
 interface MessageItemProps {
   id: string;
@@ -15,6 +16,17 @@ interface MessageItemProps {
 
 export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
   const { toast } = useToast();
+  const [skipAnimation, setSkipAnimation] = useState(false);
+  
+  // Skip animation for any message that exists when the component mounts
+  useEffect(() => {
+    // Use a short timeout to allow for initial render
+    const timer = setTimeout(() => {
+      setSkipAnimation(true);
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -46,7 +58,11 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
     <div className="max-w-2xl">
       <div className="text-white mb-4">
         <div className="mb-2">
-          <TextGenerateEffect text={content} typingSpeed={1} />
+          <TextGenerateEffect 
+            text={content} 
+            typingSpeed={1} 
+            skipAnimation={skipAnimation}
+          />
         </div>
         <div className="flex items-center space-x-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">

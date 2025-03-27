@@ -9,6 +9,7 @@ interface TextGenerateEffectProps {
   className?: string;
   typingSpeed?: number;
   showCursor?: boolean;
+  skipAnimation?: boolean;
 }
 
 export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
@@ -16,15 +17,24 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
   className = "",
   typingSpeed = 1,
   showCursor = true,
+  skipAnimation = false,
 }) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const [displayedText, setDisplayedText] = useState(skipAnimation ? text : "");
+  const [currentIndex, setCurrentIndex] = useState(skipAnimation ? text.length : 0);
+  const [isComplete, setIsComplete] = useState(skipAnimation);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (text !== displayedText && currentIndex === 0) {
       setDisplayedText("");
+    }
+
+    // If skipAnimation is true, immediately show the full text
+    if (skipAnimation && currentIndex !== text.length) {
+      setDisplayedText(text);
+      setCurrentIndex(text.length);
+      setIsComplete(true);
+      return;
     }
 
     let timeout: ReturnType<typeof setTimeout>;
@@ -39,7 +49,7 @@ export const TextGenerateEffect: React.FC<TextGenerateEffectProps> = ({
     }
     
     return () => clearTimeout(timeout);
-  }, [text, currentIndex, displayedText, typingSpeed]);
+  }, [text, currentIndex, displayedText, typingSpeed, skipAnimation]);
 
   return (
     <div
