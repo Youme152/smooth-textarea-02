@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +9,7 @@ export type Message = {
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
-  type?: "text" | "pdf";
+  type?: "text" | "pdf" | "html";
   filename?: string;
 };
 
@@ -187,7 +186,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         sender: msg.is_user_message ? "user" as const : "assistant" as const,
         timestamp: new Date(msg.created_at),
         // Make sure to cast the message_type to our specific type
-        type: (msg.message_type as "text" | "pdf" | undefined) || "text",
+        type: (msg.message_type as "text" | "pdf" | "html" | undefined) || "text",
         filename: msg.filename
       }));
       
@@ -237,7 +236,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     }
   };
 
-  const saveMessageToSupabase = async (content: string, isUserMessage: boolean, type: "text" | "pdf" = "text", filename?: string) => {
+  const saveMessageToSupabase = async (content: string, isUserMessage: boolean, type: "text" | "pdf" | "html" = "text", filename?: string) => {
     if (!conversationId || !user) return;
     
     try {
@@ -327,7 +326,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         content: aiResponse.content,
         sender: "assistant",
         timestamp: new Date(),
-        type: (aiResponse.type as "text" | "pdf"),
+        type: (aiResponse.type as "text" | "pdf" | "html"),
         filename: aiResponse.filename
       };
       
@@ -335,7 +334,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       await saveMessageToSupabase(
         aiResponse.content, 
         false, 
-        (aiResponse.type as "text" | "pdf"), 
+        (aiResponse.type as "text" | "pdf" | "html"), 
         aiResponse.filename
       );
     } catch (error: any) {

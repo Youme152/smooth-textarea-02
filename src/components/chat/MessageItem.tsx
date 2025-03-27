@@ -4,13 +4,14 @@ import { MessageLoadingEffect, TextGenerateEffect } from "@/components/ui/text-g
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Download, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { PDFMessage } from "./PDFMessage";
+import { HtmlMessage } from "./HtmlMessage";
 import { useEffect, useState } from "react";
 
 interface MessageItemProps {
   id: string;
   content: string;
   sender: "user" | "assistant";
-  type?: "text" | "pdf";
+  type?: "text" | "pdf" | "html";
   filename?: string;
 }
 
@@ -43,6 +44,19 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
     return (
       <div className="max-w-2xl">
         <PDFMessage url={content} filename={filename || "document.pdf"} />
+      </div>
+    );
+  }
+
+  if (type === "html" && content) {
+    return (
+      <div className="max-w-2xl w-full">
+        <HtmlMessage content={content} />
+        <div className="flex items-center space-x-2 mt-4">
+          <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
+            <Copy className="h-4 w-4 text-gray-400" onClick={() => copyToClipboard(content)} />
+          </button>
+        </div>
       </div>
     );
   }

@@ -4,7 +4,7 @@ const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f5
 const WEBHOOK_TIMEOUT = 600000; // 10 minutes timeout (600,000 ms)
 
 export interface AIResponse {
-  type: 'text' | 'pdf';
+  type: 'text' | 'pdf' | 'html';
   content: string;
   filename?: string;
 }
@@ -22,7 +22,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        'Accept': 'application/json, application/pdf',
+        'Accept': 'application/json, application/pdf, text/html',
       },
       // Add timeout to prevent hanging requests
       signal: AbortSignal.timeout(WEBHOOK_TIMEOUT)
@@ -55,9 +55,32 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       };
     }
     
+    // Handle HTML response
+    if (contentType.includes('text/html')) {
+      console.log("Detected HTML response");
+      const htmlContent = await response.text();
+      
+      return {
+        type: 'html',
+        content: htmlContent
+      };
+    }
+    
     // Handle text/JSON response
     const responseText = await response.text();
     console.log("Raw webhook response:", responseText);
+    
+    // Check if the response looks like HTML (even if not properly content-typed)
+    if (responseText.trim().startsWith('<!DOCTYPE html>') || 
+        responseText.trim().startsWith('<html') || 
+        (responseText.includes('<') && responseText.includes('</') && 
+         responseText.includes('<div') || responseText.includes('<p'))) {
+      console.log("Detected HTML-like content in response");
+      return {
+        type: 'html',
+        content: responseText
+      };
+    }
     
     try {
       // Safety check for empty response
@@ -101,7 +124,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
         return { type: 'text', content: data };
       }
       
-      // Specifically check for undefined parts property - this is where the error was occurring
+      // Specifically check for undefined parts property
       if (data && data.parts === undefined) {
         return {
           type: 'text',
