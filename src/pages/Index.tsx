@@ -53,13 +53,14 @@ const Index = () => {
     setDeepResearchActive(!deepResearchActive);
   };
 
+  // Improved chat creation function with better navigation flow
   const createNewConversation = async () => {
     if (!user) {
       navigate("/auth");
       return;
     }
     
-    if (!input.trim()) return;
+    if (!input.trim() || isCreatingChat) return;
     
     try {
       setIsCreatingChat(true);
@@ -77,8 +78,26 @@ const Index = () => {
       
       if (error) throw error;
       
-      // Redirect to the chat page with the initial message parameter
-      navigate(`/chat?id=${data.id}&initialMessage=${encodeURIComponent(input)}`);
+      // Only add the initialMessage parameter if the chat is brand new
+      if (!data.id) {
+        toast({
+          variant: "destructive",
+          title: "Failed to create conversation",
+          description: "Could not generate conversation ID"
+        });
+        setIsCreatingChat(false);
+        return;
+      }
+      
+      // First navigate to chat without the initial message
+      navigate(`/chat?id=${data.id}`);
+      
+      // Then, after a short delay, update the URL with the initial message
+      // This helps prevent the message from being processed twice
+      setTimeout(() => {
+        navigate(`/chat?id=${data.id}&initialMessage=${encodeURIComponent(input)}`);
+      }, 100);
+      
     } catch (error: any) {
       console.error("Error creating new conversation:", error);
       toast({

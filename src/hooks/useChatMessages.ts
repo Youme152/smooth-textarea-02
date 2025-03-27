@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -57,23 +56,21 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     fetchConversationTitle();
   }, [conversationId, user]);
 
-  // Handle initial message with better duplicate protection
+  // Fix: Completely revised initial message handling
   useEffect(() => {
     // Only proceed if we have completed the initial data loading
-    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete && isFirstLoad) {
-      const decodedMessage = decodeURIComponent(initialMessage);
-      setIsFirstLoad(false);
-      
-      // Only process if not already processed and not a duplicate
-      if (!isDuplicateMessage(decodedMessage)) {
-        handleSendMessage(decodedMessage);
+    if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
+      // We only process initial message once per conversation load
+      if (isFirstLoad) {
+        const decodedMessage = decodeURIComponent(initialMessage);
+        setIsFirstLoad(false);
         
-        // Clear the initial message from the URL to prevent re-processing on refresh
-        const newUrl = `/chat?id=${conversationId}`;
-        window.history.replaceState({}, document.title, newUrl);
-        setInitialMessageProcessed(true);
-      } else {
-        // If it's a duplicate, mark as processed without sending
+        // Only process if not a duplicate
+        if (!isDuplicateMessage(decodedMessage)) {
+          handleSendMessage(decodedMessage);
+        }
+        
+        // Always clear the URL parameter regardless of whether message was sent
         const newUrl = `/chat?id=${conversationId}`;
         window.history.replaceState({}, document.title, newUrl);
         setInitialMessageProcessed(true);
@@ -349,7 +346,6 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       await saveMessageToSupabase(errorResponse.content, false);
     } finally {
       setIsGenerating(false);
-      // We don't remove from processedMessageIds to ensure this temp ID is never processed again
     }
   };
 

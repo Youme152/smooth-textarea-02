@@ -1,7 +1,7 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuthContext } from "@/components/auth/AuthContext";
-import { fetchAIResponse } from "@/services/chatService";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { ChatContainer } from "@/components/chat/ChatContainer";
 
@@ -26,6 +26,13 @@ const ChatPage = () => {
     deepSearchActive,
     toggleDeepSearch
   } = useChatMessages(conversationId, user, initialMessage);
+
+  // Log for debugging
+  useEffect(() => {
+    if (initialMessage) {
+      console.log("Initial message detected:", initialMessage);
+    }
+  }, [initialMessage]);
 
   return (
     <ChatContainer
