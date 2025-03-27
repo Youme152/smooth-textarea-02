@@ -25,7 +25,7 @@ const ChatPage = () => {
       console.log("Retrieved pending message:", pendingMessage);
       setInitialMessage(pendingMessage);
     }
-  }, []);
+  }, [conversationId]); // Add conversationId as dependency to reset on chat change
 
   // Use the custom hook to manage chat messages and state
   const {

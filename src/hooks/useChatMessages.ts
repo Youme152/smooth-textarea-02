@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -29,8 +30,16 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   
+  // Add a ref to track current conversation ID to prevent state leaking across conversations
+  const currentConversationIdRef = useRef<string | null>(null);
+  
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Update the current conversation ID ref when it changes
+  useEffect(() => {
+    currentConversationIdRef.current = conversationId;
+  }, [conversationId]);
 
   // Debug initial message
   useEffect(() => {
@@ -46,6 +55,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     setCurrentPage(0);
     setInitialMessageProcessed(false);
     setInitialLoadComplete(false);
+    // Reset the isGenerating state when chat changes
+    setIsGenerating(false);
     fetchMessages(0, true); // force refresh
     fetchConversationTitle();
   }, [conversationId]);
@@ -68,6 +79,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     setProcessedMessageIds(new Set());
     setRecentMessages(new Map());
     setInitialLoadComplete(false);
+    // Reset the isGenerating state when conversation changes
+    setIsGenerating(false);
     
     fetchMessages(0);
     fetchConversationTitle();
@@ -294,6 +307,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     
     console.log("Handling send message:", input);
     
+    // Capture the current conversation ID for this message flow
+    const targetConversationId = currentConversationIdRef.current;
+    
     // Check for duplicate message
     if (isDuplicateMessage(input)) {
       console.log("Prevented duplicate message submission:", input);
@@ -346,6 +362,13 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       // Get AI response
       const aiResponse = await fetchAIResponse(input);
       
+      // Check if the conversation ID has changed during processing
+      if (targetConversationId !== currentConversationIdRef.current) {
+        console.log("Conversation changed during AI response generation, aborting update");
+        setIsGenerating(false);
+        return;
+      }
+      
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
         content: aiResponse.content,
@@ -365,6 +388,13 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     } catch (error: any) {
       console.error("Error in message flow:", error);
       
+      // Check if the conversation ID has changed during processing
+      if (targetConversationId !== currentConversationIdRef.current) {
+        console.log("Conversation changed during error handling, aborting update");
+        setIsGenerating(false);
+        return;
+      }
+      
       const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
         content: "I'm sorry, I encountered an error processing your request. Please try again.",
@@ -376,7 +406,10 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       setMessages(prev => [...prev, errorResponse]);
       await saveMessageToSupabase(errorResponse.content, false);
     } finally {
-      setIsGenerating(false);
+      // Only update isGenerating state if we're still in the same conversation
+      if (targetConversationId === currentConversationIdRef.current) {
+        setIsGenerating(false);
+      }
     }
   };
 
