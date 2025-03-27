@@ -18,6 +18,16 @@ export const getMockResponse = (userMessage: string) => {
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
 };
 
+// Format view counts to be more readable (e.g., 1.2M instead of 1200000)
+const formatViews = (viewCount: number): string => {
+  if (viewCount >= 1000000) {
+    return (viewCount / 1000000).toFixed(1) + 'M';
+  } else if (viewCount >= 1000) {
+    return (viewCount / 1000).toFixed(1) + 'K';
+  }
+  return viewCount.toString();
+};
+
 // Using GET method based on webhook requirements
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = false; // Changed to false to try to use the webhook first

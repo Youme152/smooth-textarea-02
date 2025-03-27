@@ -43,16 +43,16 @@ export function DeepSearchDropdown({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border border-neutral-800/50 text-white shadow-xl z-50">
-        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("Thumbnails")}>
+        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("DeepSearch: Thumbnails")}>
           <Palette className="w-4 h-4" /> Thumbnails
         </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("Titles")}>
+        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("DeepSearch: Titles")}>
           <Hash className="w-4 h-4" /> Titles
         </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("Channels")}>
+        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("DeepSearch: Channels")}>
           <Video className="w-4 h-4" /> Channels
         </DropdownMenuItem>
-        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("Topics")}>
+        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => onCategorySelect("DeepSearch: Topics")}>
           <Eye className="w-4 h-4" /> Topics
         </DropdownMenuItem>
       </DropdownMenuContent>

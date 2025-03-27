@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
 import { SuggestionDropdown } from "./SuggestionDropdown";
@@ -87,9 +87,9 @@ export function ChatInputArea({
   };
 
   // Update suggestions when input changes
-  useState(() => {
+  useEffect(() => {
     updateSuggestions(value);
-  });
+  }, [value]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Pass to parent component if provided
@@ -117,7 +117,22 @@ export function ChatInputArea({
 
   const handleDeepSearchCategorySelect = (category: string) => {
     setDeepSearchCategory(category);
-    toggleDeepResearch();
+    
+    // Insert the category into the input field followed by a space
+    setValue(category + " ");
+    
+    // Focus on the textarea and place cursor at the end
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        adjustHeight();
+      }
+    }, 0);
+    
+    // Toggle deep research mode if it's not already active
+    if (!deepResearchActive) {
+      toggleDeepResearch();
+    }
   };
 
   const handleInputChange = (newValue: string) => {
