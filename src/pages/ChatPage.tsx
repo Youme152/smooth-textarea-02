@@ -183,18 +183,19 @@ const ChatPage = () => {
         }),
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Received response from webhook:", data);
-        
-        if (data.output) {
-          return data.output;
-        } else {
-          throw new Error("No output received from webhook");
-        }
-      } else {
-        console.error('Error from webhook:', response.status);
+      console.log("Webhook response status:", response.status);
+      
+      if (!response.ok) {
         throw new Error(`Webhook responded with status code ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Received response from webhook:", data);
+      
+      if (data.output) {
+        return data.output;
+      } else {
+        throw new Error("No output received from webhook");
       }
     } catch (error) {
       console.error(`Attempt ${retryCount + 1} failed:`, error);
@@ -205,15 +206,7 @@ const ChatPage = () => {
         return fetchAIResponse(userMessage, retryCount + 1);
       }
       
-      try {
-        console.log("Trying to use a proxy approach...");
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
-      } catch (proxyError) {
-        console.error("Proxy approach failed:", proxyError);
-        return "I'm experiencing connectivity issues with my backend services. Please try again later.";
-      }
+      return `I'm sorry, I couldn't process your request. There seems to be an issue connecting to the backend service. Please try again later.`;
     }
   };
 
