@@ -11,8 +11,6 @@ interface ChatContainerProps {
   hasMoreMessages: boolean;
   onLoadMore: () => void;
   onSendMessage: (message: string) => void;
-  deepSearchActive: boolean;
-  toggleDeepSearch: () => void;
 }
 
 export function ChatContainer({
@@ -22,9 +20,7 @@ export function ChatContainer({
   isLoadingMessages,
   hasMoreMessages,
   onLoadMore,
-  onSendMessage,
-  deepSearchActive,
-  toggleDeepSearch
+  onSendMessage
 }: ChatContainerProps) {
   return (
     <div className="flex h-screen bg-[#131314] text-white overflow-hidden">
@@ -46,8 +42,6 @@ export function ChatContainer({
         <ChatInput 
           onSendMessage={onSendMessage} 
           isGenerating={isGenerating} 
-          deepSearchActive={deepSearchActive}
-          toggleDeepSearch={toggleDeepSearch}
         />
       </div>
     </div>

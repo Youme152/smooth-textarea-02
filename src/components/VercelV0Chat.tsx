@@ -15,7 +15,6 @@ const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds
 
 export function VercelV0Chat() {
   const [value, setValue] = useState("");
-  const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [lastSentMessage, setLastSentMessage] = useState({ content: "", timestamp: 0 });
@@ -117,10 +116,6 @@ export function VercelV0Chat() {
     }
   };
   
-  const handleDeepResearch = () => {
-    setDeepResearchActive(!deepResearchActive);
-  };
-
   // Handle key press to create chat immediately
   const handleKeyDown = (e) => {
     // If Enter is pressed and not with Shift, create the chat
@@ -149,8 +144,6 @@ export function VercelV0Chat() {
           onSend={handleSendClick}
           isInputFocused={isInputFocused}
           setIsInputFocused={setIsInputFocused}
-          deepResearchActive={deepResearchActive}
-          toggleDeepResearch={handleDeepResearch}
           placeholderText={placeholderText}
           onKeyDown={handleKeyDown}
           isCreatingChat={isCreatingChat}

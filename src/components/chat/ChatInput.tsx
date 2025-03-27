@@ -3,20 +3,15 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ArrowUp, Loader2 } from "lucide-react";
-import { DeepSearchDropdown } from "./DeepSearchDropdown";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isGenerating?: boolean;
-  deepSearchActive?: boolean;
-  toggleDeepSearch?: () => void;
 }
 
 export function ChatInput({ 
   onSendMessage, 
-  isGenerating = false, 
-  deepSearchActive = false,
-  toggleDeepSearch
+  isGenerating = false
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -85,7 +80,7 @@ export function ChatInput({
             onBlur={() => {
               setIsInputFocused(false);
             }}
-            placeholder="Reply to Ora..."
+            placeholder="Type a message..."
             disabled={isGenerating || isSending}
             className={cn(
               "w-full px-5 py-4",
@@ -103,35 +98,23 @@ export function ChatInput({
             )}
           />
 
-          <div className="flex items-center justify-between px-4 py-3">
-            <div>
-              {toggleDeepSearch && (
-                <DeepSearchDropdown 
-                  deepResearchActive={deepSearchActive}
-                  onClick={toggleDeepSearch}
-                  disabled={isGenerating || isSending}
-                />
+          <div className="flex items-center justify-end px-4 py-3">
+            <button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isGenerating || isSending || !canSendMessage()}
+              className={cn(
+                "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
+                input.trim() && !isGenerating && !isSending && canSendMessage()
+                  ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
+                  : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
               )}
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSendMessage}
-                disabled={!input.trim() || isGenerating || isSending || !canSendMessage()}
-                className={cn(
-                  "w-9 h-9 flex items-center justify-center rounded-lg transition-all",
-                  input.trim() && !isGenerating && !isSending && canSendMessage()
-                    ? "bg-white text-black hover:bg-gray-200 active:scale-95" 
-                    : "bg-neutral-600/50 text-white/50 opacity-80 cursor-not-allowed"
-                )}
-              >
-                {isGenerating || isSending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <ArrowUp className="h-5 w-5" />
-                )}
-              </button>
-            </div>
+            >
+              {isGenerating || isSending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <ArrowUp className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
       </div>

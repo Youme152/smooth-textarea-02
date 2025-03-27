@@ -15,7 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = () => {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [deepResearchActive, setDeepResearchActive] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
@@ -47,10 +46,6 @@ const Index = () => {
       e.preventDefault();
       handleSendMessage();
     }
-  };
-
-  const handleDeepResearch = () => {
-    setDeepResearchActive(!deepResearchActive);
   };
 
   // Improved chat creation function with better navigation flow
@@ -166,23 +161,7 @@ const Index = () => {
 
             <div className="flex items-center justify-between px-2.5 py-2">
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={handleDeepResearch}
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-sm transition-all",
-                    deepResearchActive 
-                      ? "bg-blue-600/30 text-blue-300 shadow-sm shadow-blue-500/20"
-                      : "text-[#9ca3af] hover:bg-white/10 active:bg-blue-600/20 active:text-blue-200"
-                  )}
-                  disabled={isCreatingChat}
-                >
-                  <img 
-                    src="/lovable-uploads/b2e4bf4c-23d2-439c-aaf2-a005b5465610.png" 
-                    alt="DeepSearch" 
-                    className="w-6 h-6" 
-                  />
-                  DeepSearch
-                </button>
+                {/* DeepSearch button removed */}
               </div>
 
               <div className="flex items-center gap-2">

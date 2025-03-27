@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -25,7 +26,6 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState<Set<string>>(new Set());
   const [recentMessages, setRecentMessages] = useState<Map<string, number>>(new Map());
-  const [deepSearchActive, setDeepSearchActive] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
@@ -56,7 +56,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     fetchConversationTitle();
   }, [conversationId, user]);
 
-  // Fix: Completely revised initial message handling
+  // Initial message handling
   useEffect(() => {
     // Only proceed if we have completed the initial data loading
     if (conversationId && initialMessage && !initialMessageProcessed && !isGenerating && initialLoadComplete) {
@@ -320,8 +320,8 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         );
       }
       
-      // Get AI response, passing the DeepSearch state
-      const aiResponse = await fetchAIResponse(input, deepSearchActive);
+      // Get AI response
+      const aiResponse = await fetchAIResponse(input);
       
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -349,10 +349,6 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     }
   };
 
-  const toggleDeepSearch = () => {
-    setDeepSearchActive(prev => !prev);
-  };
-
   return {
     messages,
     isGenerating,
@@ -360,8 +356,6 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     isLoadingMessages,
     hasMoreMessages,
     loadMoreMessages,
-    handleSendMessage,
-    deepSearchActive,
-    toggleDeepSearch
+    handleSendMessage
   };
 };

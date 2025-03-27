@@ -1,11 +1,7 @@
 
 // This mock function provides responses when the webhook is unavailable
-export const getMockResponse = (userMessage: string, isDeepSearch: boolean = false) => {
+export const getMockResponse = (userMessage: string) => {
   const lowercaseMessage = userMessage.toLowerCase();
-  
-  if (isDeepSearch) {
-    return "I'm currently in offline mode and cannot perform DeepSearch queries. Please try again when online connectivity is restored.";
-  }
   
   if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi")) {
     return "Hello! I'm a local AI assistant. How can I help you today?";
@@ -27,10 +23,6 @@ export const getMockResponse = (userMessage: string, isDeepSearch: boolean = fal
     return "To create viral content, focus on emotional impact, relatability, and timing. Keep content short, engaging, and shareable. Use trending sounds, challenges, or formats, but add your unique twist. Consistency is key - post regularly and engage with your audience.";
   }
   
-  if (lowercaseMessage.includes("search") || lowercaseMessage.includes("find")) {
-    return "I'm currently in offline mode and cannot perform search operations. My responses are limited to pre-programmed information. Please try again when online connectivity is restored.";
-  }
-  
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. I can still chat with you using my local knowledge, but my responses will be limited. What would you like to talk about?";
 };
 
@@ -44,79 +36,16 @@ const formatViews = (viewCount: number): string => {
   return viewCount.toString();
 };
 
-// DeepSearch webhook URL
-const DEEPSEARCH_WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/6e3a64ce-2201-40c4-a9ae-05e76abb891b";
-
-// Function to call DeepSearch webhook
-export const callDeepSearchWebhook = async (query: string): Promise<string> => {
-  try {
-    console.log("Calling DeepSearch webhook with:", query);
-    
-    // Using GET method as required by the webhook
-    const url = new URL(DEEPSEARCH_WEBHOOK_URL);
-    url.searchParams.append('query', query);
-    
-    // Use a shorter timeout for DeepSearch to fail faster
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      // Shorter timeout to fail faster
-      signal: AbortSignal.timeout(5000) // 5 second timeout
-    });
-    
-    console.log("DeepSearch webhook response status:", response.status);
-    
-    if (!response.ok) {
-      throw new Error(`DeepSearch webhook responded with status code ${response.status}`);
-    }
-    
-    // Try to parse the response as text first
-    const responseText = await response.text();
-    console.log("Raw DeepSearch webhook response:", responseText);
-    
-    try {
-      // Try to parse as JSON if possible
-      const data = JSON.parse(responseText);
-      console.log("Parsed JSON response from DeepSearch:", data);
-      
-      // Handle various response formats
-      if (typeof data === 'object') {
-        if (data.output) return data.output;
-        if (data.response) return data.response;
-        if (data.message) return data.message;
-        if (data.result) return data.result;
-      }
-      
-      // If it's a string directly
-      if (typeof data === 'string') {
-        return data;
-      }
-      
-      // Fallback to stringified JSON
-      return "DeepSearch results: " + JSON.stringify(data);
-    } catch (jsonError) {
-      // If it's not valid JSON, just return the raw text
-      console.log("Not valid JSON from DeepSearch, using text response");
-      return responseText;
-    }
-  } catch (error) {
-    console.error("DeepSearch webhook error:", error);
-    return getMockResponse(query, true);
-  }
-};
-
-// Using GET method based on webhook requirements
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
+// Single webhook URL
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const USE_MOCK_RESPONSES = true; // Use mock responses as fallback
 const MAX_RETRIES = 1; // One retry attempt
-const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout (reduced from 10s)
-const ONLINE_STATUS_CHECK_INTERVAL = 60000; // Check online status every minute
+const WEBHOOK_TIMEOUT = 5000; // 5 seconds timeout
 
 // Status tracking for webhook availability
 let isWebhookAvailable = false;
 let lastWebhookCheckTime = 0;
+const ONLINE_STATUS_CHECK_INTERVAL = 60000; // Check online status every minute
 
 // Function to check if the webhook is available
 const checkWebhookAvailability = async (): Promise<boolean> => {
@@ -150,39 +79,7 @@ const checkWebhookAvailability = async (): Promise<boolean> => {
   }
 };
 
-export const fetchAIResponse = async (userMessage: string, isDeepSearchActive: boolean = false): Promise<string> => {
-  // If DeepSearch is active, always use the DeepSearch webhook regardless of prefix
-  if (isDeepSearchActive) {
-    try {
-      console.log("DeepSearch active, sending to DeepSearch webhook:", userMessage);
-      return await callDeepSearchWebhook(userMessage);
-    } catch (error) {
-      console.error("DeepSearch webhook error:", error);
-      return getMockResponse(userMessage, true);
-    }
-  }
-  
-  // Handle legacy DeepSearch format (prefix) for backward compatibility
-  if (userMessage.toLowerCase().startsWith("deepsearch:")) {
-    const parts = userMessage.split(":");
-    if (parts.length >= 2) {
-      const query = parts.slice(1).join(":").trim(); // Everything after the first colon
-      
-      if (query) {
-        try {
-          return await callDeepSearchWebhook(query);
-        } catch (error) {
-          console.error("DeepSearch webhook error:", error);
-          return getMockResponse(userMessage, true);
-        }
-      } else {
-        return "Please provide a search query after 'DeepSearch:'.";
-      }
-    } else {
-      return "Invalid DeepSearch format. Please use 'DeepSearch: your query here'.";
-    }
-  }
-  
+export const fetchAIResponse = async (userMessage: string): Promise<string> => {
   // Check if we're in forced mock mode or the webhook is known to be down
   if (USE_MOCK_RESPONSES || !(await checkWebhookAvailability())) {
     console.log("Using immediate mock response due to webhook likely being down");

@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "../AutoResizeTextarea";
@@ -11,8 +12,6 @@ interface ChatInputAreaProps {
   onSend: () => void;
   isInputFocused: boolean;
   setIsInputFocused: (value: boolean) => void;
-  deepResearchActive: boolean;
-  toggleDeepResearch: () => void;
   placeholderText: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   isCreatingChat?: boolean;
@@ -24,8 +23,6 @@ export function ChatInputArea({
   onSend,
   isInputFocused,
   setIsInputFocused,
-  deepResearchActive,
-  toggleDeepResearch,
   placeholderText,
   onKeyDown,
   isCreatingChat = false
@@ -113,14 +110,6 @@ export function ChatInputArea({
     textareaRef.current?.focus();
   };
 
-  const handleToggleDeepResearch = () => {
-    // Toggle the DeepSearch mode flag first
-    toggleDeepResearch();
-    
-    // Don't modify the input content now - we'll handle DeepSearch in the API call
-    // This allows users to toggle DeepSearch on/off without modifying their input
-  };
-
   const handleInputChange = (newValue: string) => {
     setValue(newValue);
     updateSuggestions(newValue);
@@ -167,8 +156,6 @@ export function ChatInputArea({
       <ChatInputControls
         value={value}
         onSend={onSend}
-        deepResearchActive={deepResearchActive}
-        toggleDeepResearch={handleToggleDeepResearch}
         disabled={isCreatingChat}
       />
     </div>
