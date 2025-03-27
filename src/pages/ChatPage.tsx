@@ -16,11 +16,16 @@ type Message = {
 };
 
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
+const MESSAGES_PER_PAGE = 20;
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [conversationTitle, setConversationTitle] = useState("New Conversation");
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthContext();
@@ -41,8 +46,12 @@ const ChatPage = () => {
       return;
     }
 
+    // Reset pagination when conversation changes
+    setCurrentPage(0);
+    setMessages([]);
+    
     // Fetch conversation messages
-    fetchMessages();
+    fetchMessages(0);
     // Fetch conversation details
     fetchConversationTitle();
   }, [conversationId, user]);
@@ -89,29 +98,45 @@ const ChatPage = () => {
     }
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (page = 0) => {
     if (!conversationId) return;
     
     try {
+      setIsLoadingMessages(true);
+      
+      const from = page * MESSAGES_PER_PAGE;
+      const to = from + MESSAGES_PER_PAGE - 1;
+      
+      // First, count total messages to know if there are more
+      const { count, error: countError } = await supabase
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("chat_id", conversationId);
+      
+      if (countError) throw countError;
+      
+      // Then fetch the actual messages
       const { data, error } = await supabase
         .from("chat_messages")
         .select("*")
         .eq("chat_id", conversationId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .range(from, to);
       
       if (error) throw error;
+      
+      // Check if there are more messages
+      setHasMoreMessages(count !== null && from + data.length < count);
       
       const formattedMessages = data.map(msg => ({
         id: msg.id,
         content: msg.content,
         sender: msg.is_user_message ? "user" as const : "assistant" as const,
         timestamp: new Date(msg.created_at)
-      }));
+      })).reverse();
       
-      setMessages(formattedMessages);
-      
-      // If no messages, initialize with a greeting
-      if (formattedMessages.length === 0) {
+      if (page === 0 && formattedMessages.length === 0) {
+        // If no messages, initialize with a greeting
         const initialMessages = [
           {
             id: "assistant-init",
@@ -121,9 +146,22 @@ const ChatPage = () => {
           }
         ];
         setMessages(initialMessages);
+      } else {
+        // Append messages if paginating, otherwise replace
+        setMessages(prev => (page === 0 ? formattedMessages : [...formattedMessages, ...prev]));
       }
+      
+      setCurrentPage(page);
     } catch (error) {
       console.error("Error fetching messages:", error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
+  const loadMoreMessages = () => {
+    if (!isLoadingMessages && hasMoreMessages) {
+      fetchMessages(currentPage + 1);
     }
   };
 
@@ -241,6 +279,9 @@ const ChatPage = () => {
         <MessageList 
           messages={messages}
           isGenerating={isGenerating}
+          onLoadMore={loadMoreMessages}
+          isLoading={isLoadingMessages}
+          hasMore={hasMoreMessages}
         />
         
         <ChatInput onSendMessage={handleSendMessage} />
