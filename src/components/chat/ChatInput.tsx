@@ -3,13 +3,21 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ArrowUp, Loader2 } from "lucide-react";
+import { DeepSearchDropdown } from "./DeepSearchDropdown";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isGenerating?: boolean;
+  deepSearchActive?: boolean;
+  toggleDeepSearch?: () => void;
 }
 
-export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProps) {
+export function ChatInput({ 
+  onSendMessage, 
+  isGenerating = false, 
+  deepSearchActive = false,
+  toggleDeepSearch
+}: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -96,7 +104,15 @@ export function ChatInput({ onSendMessage, isGenerating = false }: ChatInputProp
           />
 
           <div className="flex items-center justify-between px-4 py-3">
-            <div></div>
+            <div>
+              {toggleDeepSearch && (
+                <DeepSearchDropdown 
+                  deepResearchActive={deepSearchActive}
+                  onClick={toggleDeepSearch}
+                  disabled={isGenerating || isSending}
+                />
+              )}
+            </div>
             
             <div className="flex items-center gap-2">
               <button
