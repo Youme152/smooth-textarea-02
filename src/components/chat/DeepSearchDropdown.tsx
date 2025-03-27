@@ -12,22 +12,25 @@ import {
 interface DeepSearchDropdownProps {
   deepResearchActive: boolean;
   onCategorySelect: (category: string) => void;
+  disabled?: boolean;
 }
 
 export function DeepSearchDropdown({
   deepResearchActive,
-  onCategorySelect
+  onCategorySelect,
+  disabled = false
 }: DeepSearchDropdownProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild disabled={disabled}>
         <button
           type="button"
           className={cn(
             "px-2 py-1 rounded-lg text-sm transition-all duration-200 flex items-center justify-between gap-1",
             deepResearchActive 
               ? "bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm shadow-blue-500/20"
-              : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 active:bg-blue-600/20 active:text-blue-200"
+              : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 active:bg-blue-600/20 active:text-blue-200",
+            disabled ? "opacity-60 cursor-not-allowed" : ""
           )}
         >
           <img 
