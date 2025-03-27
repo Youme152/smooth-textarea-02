@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { MessageSquare, Plus, Menu } from "lucide-react";
+import { MessageSquare, Plus, Menu, History } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
