@@ -16,6 +16,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           "border-transparent focus:border-transparent",
           "focus:bg-transparent", 
           "placeholder:transition-opacity placeholder:duration-200 focus:placeholder:opacity-70",
+          "appearance-none", // Remove browser default styling
           className
         )}
         ref={ref}

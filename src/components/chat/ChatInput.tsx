@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ export function ChatInput({
   const [lastSentTime, setLastSentTime] = useState(0);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
   const sendCooldown = 2000; // 2 seconds cooldown between sends
 
   // Function to check if we can send a message (not too soon after last send)
@@ -58,16 +60,27 @@ export function ChatInput({
       textareaRef.current.focus();
     }
   }, [isGenerating, isSending]);
+  
+  // Handle clicks on the input container to focus the textarea
+  const handleContainerClick = () => {
+    if (textareaRef.current && !isGenerating && !isSending) {
+      textareaRef.current.focus();
+    }
+  };
 
   return (
     <div className="bg-[#131314] p-4 pb-8 flex justify-center">
       <div className="w-full max-w-3xl relative">
-        <div className={cn(
-          "relative bg-[#1E1E1E] rounded-lg transition-all duration-300",
-          isInputFocused 
-            ? "border border-neutral-700 shadow-lg" 
-            : "border border-neutral-800 shadow-md"
-        )}>
+        <div 
+          ref={inputContainerRef}
+          onClick={handleContainerClick}
+          className={cn(
+            "relative bg-[#1E1E1E] rounded-lg transition-all duration-300 cursor-text",
+            isInputFocused 
+              ? "border border-neutral-700 shadow-lg" 
+              : "border border-neutral-800 shadow-md"
+          )}
+        >
           <Textarea
             ref={textareaRef}
             value={input}
@@ -93,6 +106,7 @@ export function ChatInput({
               "h-[36px] min-h-[36px] max-h-[36px]",
               "transition-all duration-300",
               "overflow-hidden",
+              "caret-white", // Set the cursor color to white
               (isGenerating || isSending) && "opacity-70"
             )}
           />
