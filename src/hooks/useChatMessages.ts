@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,17 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Reset state function that can be called when returning to the page
+  const resetChatState = useCallback(() => {
+    if (!conversationId) return;
+    
+    setCurrentPage(0);
+    setInitialMessageProcessed(false);
+    setInitialLoadComplete(false);
+    fetchMessages(0, true); // force refresh
+    fetchConversationTitle();
+  }, [conversationId]);
 
   // Reset state when conversation changes
   useEffect(() => {
@@ -153,7 +165,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     }
   };
 
-  const fetchMessages = async (page = 0) => {
+  const fetchMessages = async (page = 0, forceRefresh = false) => {
     if (!conversationId) return;
     
     try {
@@ -190,10 +202,10 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         filename: msg.filename
       }));
       
-      if (page === 0) {
+      if (page === 0 || forceRefresh) {
         setMessages(formattedMessages.reverse());
       } else {
-        setMessages(prev => (page === 0 ? formattedMessages.reverse() : [...formattedMessages.reverse(), ...prev]));
+        setMessages(prev => [...formattedMessages.reverse(), ...prev]);
       }
       
       setCurrentPage(page);
@@ -362,6 +374,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     isLoadingMessages,
     hasMoreMessages,
     loadMoreMessages,
-    handleSendMessage
+    handleSendMessage,
+    resetChatState
   };
 };

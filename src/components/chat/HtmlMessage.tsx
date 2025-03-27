@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface HtmlMessageProps {
@@ -9,12 +9,30 @@ interface HtmlMessageProps {
 
 export function HtmlMessage({ content, className }: HtmlMessageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hasRendered, setHasRendered] = useState(false);
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && !hasRendered) {
       containerRef.current.innerHTML = content;
+      setHasRendered(true);
     }
-  }, [content]);
+  }, [content, hasRendered]);
+
+  // Prevent unnecessary re-renders on visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && containerRef.current && !hasRendered) {
+        containerRef.current.innerHTML = content;
+        setHasRendered(true);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [content, hasRendered]);
 
   return (
     <div 

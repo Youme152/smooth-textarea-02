@@ -26,7 +26,8 @@ const ChatPage = () => {
     isLoadingMessages,
     hasMoreMessages,
     loadMoreMessages,
-    handleSendMessage
+    handleSendMessage,
+    resetChatState
   } = useChatMessages(conversationId, user, initialMessage);
 
   // Log for debugging
@@ -36,10 +37,16 @@ const ChatPage = () => {
     }
   }, [initialMessage]);
 
-  // Handle page visibility changes
+  // Handle page visibility changes to prevent unnecessary reloads
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setIsPageVisible(!document.hidden);
+      const isVisible = !document.hidden;
+      setIsPageVisible(isVisible);
+      
+      // Only reset state when coming back to the page if necessary
+      if (isVisible && messages.length === 0 && conversationId) {
+        resetChatState();
+      }
     };
 
     // Add event listener for tab visibility changes
@@ -48,7 +55,7 @@ const ChatPage = () => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [conversationId, messages.length, resetChatState]);
 
   return (
     <ChatContainer

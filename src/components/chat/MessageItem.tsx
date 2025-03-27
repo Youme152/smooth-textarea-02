@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Download, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { PDFMessage } from "./PDFMessage";
 import { HtmlMessage } from "./HtmlMessage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 
 interface MessageItemProps {
   id: string;
@@ -15,7 +15,14 @@ interface MessageItemProps {
   filename?: string;
 }
 
-export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
+// Use memo to prevent unnecessary re-renders when parent components update
+export const MessageItem = memo(function MessageItem({ 
+  id, 
+  content, 
+  sender, 
+  type = "text", 
+  filename 
+}: MessageItemProps) {
   const { toast } = useToast();
   const [skipAnimation, setSkipAnimation] = useState(true);
   
@@ -91,4 +98,4 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
       </div>
     </div>
   );
-}
+});
