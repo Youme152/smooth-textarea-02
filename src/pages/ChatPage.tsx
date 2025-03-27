@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -15,7 +14,7 @@ type Message = {
   timestamp: Date;
 };
 
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
+const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
 const MESSAGES_PER_PAGE = 20;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
@@ -131,7 +130,6 @@ const ChatPage = () => {
       
       if (page === 0) {
         setMessages(formattedMessages);
-        // No initial welcome message - we'll wait for the user to send a message first
       } else {
         setMessages(prev => (page === 0 ? formattedMessages : [...formattedMessages, ...prev]));
       }
@@ -191,12 +189,7 @@ const ChatPage = () => {
         console.log("Trying to use a proxy approach...");
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // If this is the first message in the conversation, we'll add the greeting
-        if (messages.length === 0) {
-          return `Hey hey! 😊 What's up?\n\nYou asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
-        } else {
-          return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
-        }
+        return `You asked: "${userMessage}"\n\nI'm sorry, I couldn't connect to the backend webhook directly. This is likely due to CORS restrictions when running in development mode.`;
       } catch (proxyError) {
         console.error("Proxy approach failed:", proxyError);
         return "I'm experiencing connectivity issues with my backend services. Please try again later.";
@@ -254,29 +247,10 @@ const ChatPage = () => {
     setIsGenerating(true);
     
     try {
-      // Special case for first message - initial AI greeting
-      let aiResponse;
-      if (messages.length === 0) {
-        // First message in conversation, the AI should greet the user first
-        const greeting: Message = {
-          id: (Date.now() + 1).toString(),
-          content: "Hey hey! 😊 What's up?",
-          sender: "assistant",
-          timestamp: new Date(),
-        };
-        
-        setMessages(prev => [...prev, greeting]);
-        saveMessageToSupabase(greeting.content, false);
-        
-        // Then get the actual response to the user's message
-        aiResponse = await fetchAIResponse(input);
-      } else {
-        // Normal case - just get the response
-        aiResponse = await fetchAIResponse(input);
-      }
+      const aiResponse = await fetchAIResponse(input);
       
       const assistantResponse: Message = {
-        id: (Date.now() + 2).toString(),
+        id: (Date.now() + 1).toString(),
         content: aiResponse,
         sender: "assistant",
         timestamp: new Date(),
