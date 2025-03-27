@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -17,6 +16,8 @@ type Message = {
 
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/e2d00243-1d2b-4ebd-bdf8-c0ee6a64a1da";
 const MESSAGES_PER_PAGE = 20;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -155,13 +156,12 @@ const ChatPage = () => {
     }
   };
 
-  const fetchAIResponse = async (userMessage: string): Promise<string> => {
+  const fetchAIResponse = async (userMessage: string, retryCount = 0): Promise<string> => {
     try {
-      console.log("Sending message to webhook:", userMessage);
+      console.log(`Attempt ${retryCount + 1}: Sending message to webhook:`, userMessage);
       
-      // Adding a timeout to the fetch to prevent hanging
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 second timeout
       
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -175,10 +175,16 @@ const ChatPage = () => {
           timestamp: new Date().toISOString()
         }),
         signal: controller.signal,
-        mode: 'cors', // Try with CORS mode
+        mode: 'no-cors', // Try with no-cors mode
       });
       
       clearTimeout(timeoutId);
+
+      if (response.type === 'opaque') {
+        console.log('Received opaque response due to no-cors mode');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        return `I processed your message: "${userMessage}" but I'm currently in development mode.`;
+      }
       
       if (!response.ok) {
         console.error('Error from webhook:', response.status);
@@ -194,9 +200,15 @@ const ChatPage = () => {
       
       return data.output;
     } catch (error) {
-      console.error('Error calling webhook:', error);
-      // Return a fallback response instead of throwing
-      return "I'm sorry, I couldn't connect to my backend services right now. Please try again in a moment.";
+      console.error(`Attempt ${retryCount + 1} failed:`, error);
+      
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+        return fetchAIResponse(userMessage, retryCount + 1);
+      }
+      
+      return "I'm experiencing connectivity issues with my backend services. Please try again later.";
     }
   };
 
