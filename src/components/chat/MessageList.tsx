@@ -12,6 +12,8 @@ type Message = {
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
+  type?: "text" | "pdf";
+  filename?: string;
 };
 
 interface MessageListProps {
@@ -76,6 +78,8 @@ export function MessageList({
               id={message.id}
               content={message.content}
               sender={message.sender}
+              type={message.type}
+              filename={message.filename}
             />
           </div>
         ))}

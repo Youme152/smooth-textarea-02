@@ -3,14 +3,17 @@ import { cn } from "@/lib/utils";
 import { MessageLoadingEffect, TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Download, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
+import { PDFMessage } from "./PDFMessage";
 
 interface MessageItemProps {
   id: string;
   content: string;
   sender: "user" | "assistant";
+  type?: "text" | "pdf";
+  filename?: string;
 }
 
-export function MessageItem({ id, content, sender }: MessageItemProps) {
+export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
   const { toast } = useToast();
 
   const copyToClipboard = (text: string) => {
@@ -27,6 +30,14 @@ export function MessageItem({ id, content, sender }: MessageItemProps) {
         <div className="bg-[#1E1E1E] text-white px-4 py-3 rounded-md max-w-md shadow-md">
           {content}
         </div>
+      </div>
+    );
+  }
+
+  if (type === "pdf" && content) {
+    return (
+      <div className="max-w-2xl">
+        <PDFMessage url={content} filename={filename || "document.pdf"} />
       </div>
     );
   }

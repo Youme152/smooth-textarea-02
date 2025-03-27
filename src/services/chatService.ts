@@ -3,8 +3,14 @@
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
 const WEBHOOK_TIMEOUT = 600000; // 10 minutes timeout (600,000 ms)
 
+export interface AIResponse {
+  type: 'text' | 'pdf';
+  content: string;
+  filename?: string;
+}
+
 // Simple function to fetch response from the webhook
-export const fetchAIResponse = async (userMessage: string): Promise<string> => {
+export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> => {
   try {
     console.log("Sending message to webhook:", userMessage);
     
@@ -16,7 +22,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        'Accept': 'application/json, application/pdf',
       },
       // Add timeout to prevent hanging requests
       signal: AbortSignal.timeout(WEBHOOK_TIMEOUT)
@@ -28,7 +34,28 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
       throw new Error(`Webhook responded with status code ${response.status}`);
     }
     
-    // Get the raw response text
+    // Check content type to determine how to handle the response
+    const contentType = response.headers.get('Content-Type') || '';
+    
+    // Handle PDF response
+    if (contentType.includes('application/pdf')) {
+      console.log("Detected PDF response");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition') || '';
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : `document-${Date.now()}.pdf`;
+      
+      return {
+        type: 'pdf',
+        content: objectUrl,
+        filename
+      };
+    }
+    
+    // Handle text/JSON response
     const responseText = await response.text();
     console.log("Raw webhook response:", responseText);
     
@@ -39,37 +66,37 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
       
       // Handle array response with output field
       if (Array.isArray(data) && data.length > 0 && data[0].output) {
-        return data[0].output;
+        return { type: 'text', content: data[0].output };
       }
       
       // Handle direct object with output field
       if (data && data.output) {
-        return data.output;
+        return { type: 'text', content: data.output };
       }
       
       // Handle direct object with response field
       if (data && data.response) {
-        return data.response;
+        return { type: 'text', content: data.response };
       }
       
       // Handle direct message field
       if (data && data.message) {
-        return data.message;
+        return { type: 'text', content: data.message };
       }
       
       // If it's a string directly
       if (typeof data === 'string') {
-        return data;
+        return { type: 'text', content: data };
       }
       
       // Fallback to a generic message
-      return "I received your message but couldn't format the response properly.";
+      return { type: 'text', content: "I received your message but couldn't format the response properly." };
     } catch (jsonError) {
       // If it's not valid JSON, just return the raw text
-      return responseText;
+      return { type: 'text', content: responseText };
     }
   } catch (error) {
     console.error("Webhook error:", error);
-    return "I'm having trouble connecting to the AI service. Please try again in a moment.";
+    return { type: 'text', content: "I'm having trouble connecting to the AI service. Please try again in a moment." };
   }
 };

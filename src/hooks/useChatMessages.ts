@@ -9,6 +9,8 @@ export type Message = {
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
+  type?: "text" | "pdf";
+  filename?: string;
 };
 
 // Constants
@@ -179,7 +181,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         id: msg.id,
         content: msg.content,
         sender: msg.is_user_message ? "user" as const : "assistant" as const,
-        timestamp: new Date(msg.created_at)
+        timestamp: new Date(msg.created_at),
+        type: msg.message_type || "text",
+        filename: msg.filename
       })).reverse();
       
       if (page === 0) {
@@ -228,7 +232,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     }
   };
 
-  const saveMessageToSupabase = async (content: string, isUserMessage: boolean) => {
+  const saveMessageToSupabase = async (content: string, isUserMessage: boolean, type: "text" | "pdf" = "text", filename?: string) => {
     if (!conversationId || !user) return;
     
     try {
@@ -238,7 +242,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
           chat_id: conversationId,
           user_id: user.id,
           content: content,
-          is_user_message: isUserMessage
+          is_user_message: isUserMessage,
+          message_type: type,
+          filename: filename
         }])
         .select("id")
         .single();
@@ -293,6 +299,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       content: input,
       sender: "user",
       timestamp: new Date(),
+      type: "text"
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -312,13 +319,20 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       
       const assistantResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: aiResponse,
+        content: aiResponse.content,
         sender: "assistant",
         timestamp: new Date(),
+        type: aiResponse.type,
+        filename: aiResponse.filename
       };
       
       setMessages(prev => [...prev, assistantResponse]);
-      await saveMessageToSupabase(aiResponse, false);
+      await saveMessageToSupabase(
+        aiResponse.content, 
+        false, 
+        aiResponse.type, 
+        aiResponse.filename
+      );
     } catch (error: any) {
       console.error("Error in message flow:", error);
       
@@ -327,6 +341,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         content: "I'm sorry, I encountered an error processing your request. Please try again.",
         sender: "assistant",
         timestamp: new Date(),
+        type: "text"
       };
       
       setMessages(prev => [...prev, errorResponse]);
