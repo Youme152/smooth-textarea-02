@@ -50,7 +50,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<string> => {
     try {
       console.log(`Sending message to webhook (attempt ${retryCount + 1}):`, userMessage);
       
-      // Using GET method as required by the webhook
+      // Using GET method with message as a query parameter as required by the webhook
       const url = new URL(WEBHOOK_URL);
       url.searchParams.append('message', userMessage);
       
