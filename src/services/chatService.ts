@@ -101,9 +101,21 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
         return { type: 'text', content: data };
       }
       
+      // Specifically check for undefined parts property - this is where the error was occurring
+      if (data && data.parts === undefined) {
+        return {
+          type: 'text',
+          content: "Received a response without expected data format. Please try again with a different query."
+        };
+      }
+      
       // Check if there might be a parts property that's causing the error
       if (data && data.parts) {
-        return { type: 'text', content: Array.isArray(data.parts) ? data.parts.join('\n') : String(data.parts) };
+        // Safely handle the parts property
+        return { 
+          type: 'text', 
+          content: Array.isArray(data.parts) ? data.parts.join('\n') : String(data.parts) 
+        };
       }
       
       // Fallback to a generic message with the raw data as string
