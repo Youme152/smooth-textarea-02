@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MessageList } from "@/components/chat/MessageList";
@@ -34,12 +33,11 @@ const getMockResponse = (userMessage: string) => {
   return "I'm currently operating in offline mode. The webhook service appears to be unavailable. Your message has been saved to the conversation.";
 };
 
-// Change from POST to GET based on error message
+// Using GET method based on webhook requirements
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook-test/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const USE_MOCK_RESPONSES = true; // Set to true to use mock responses when webhook fails
+const USE_MOCK_RESPONSES = false; // Changed to false to try to use the webhook first
 const MESSAGES_PER_PAGE = 20;
 const MAX_RETRIES = 0; // No retries to prevent duplicate messages
-const RETRY_DELAY = 1000; // 1 second
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -188,22 +186,19 @@ const ChatPage = () => {
     }
   };
 
-  const fetchAIResponse = async (userMessage: string, retryCount = 0): Promise<string> => {
+  const fetchAIResponse = async (userMessage: string): Promise<string> => {
     try {
-      console.log(`Attempt ${retryCount + 1}: Sending message to webhook:`, userMessage);
+      console.log("Sending message to webhook:", userMessage);
       
-      // Using GET instead of POST based on the webhook error message
+      // Using GET method as required by the webhook
       const url = new URL(WEBHOOK_URL);
       url.searchParams.append('message', userMessage);
-      url.searchParams.append('timestamp', new Date().toISOString());
       
       const response = await fetch(url.toString(), {
-        method: 'GET', // Changed from POST to GET
+        method: 'GET',
         headers: {
           'Accept': 'application/json',
-        },
-        mode: 'cors',
-        credentials: 'omit'
+        }
       });
       
       console.log("Webhook response status:", response.status);
@@ -212,32 +207,37 @@ const ChatPage = () => {
         throw new Error(`Webhook responded with status code ${response.status}`);
       }
       
-      const data = await response.json();
-      console.log("Received response from webhook:", data);
+      // Try to parse the response as text first, then decide if it's JSON
+      const responseText = await response.text();
+      console.log("Raw webhook response:", responseText);
       
-      if (data && data.output) {
-        return data.output;
-      } else {
-        if (data && data.response) {
+      try {
+        // Try to parse as JSON if possible
+        const data = JSON.parse(responseText);
+        console.log("Parsed JSON response:", data);
+        
+        if (data && data.output) {
+          return data.output;
+        } else if (data && data.response) {
           return data.response;
-        }
-        if (data && typeof data === 'string') {
+        } else if (data && typeof data === 'string') {
           return data;
-        }
-        if (data && data.message) {
+        } else if (data && data.message) {
           return data.message;
+        } else if (typeof data === 'string') {
+          return data;
+        } else {
+          // If it's JSON but doesn't have expected fields
+          console.log("Using the raw JSON stringified as response");
+          return JSON.stringify(data);
         }
-        console.error("Unexpected response format:", data);
-        throw new Error("Unexpected response format");
+      } catch (jsonError) {
+        // If it's not valid JSON, just return the raw text
+        console.log("Not valid JSON, using text response");
+        return responseText;
       }
     } catch (error) {
-      console.error(`Attempt ${retryCount + 1} failed:`, error);
-      
-      if (retryCount < MAX_RETRIES) {
-        console.log(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)));
-        return fetchAIResponse(userMessage, retryCount + 1);
-      }
+      console.error("Webhook error:", error);
       
       if (USE_MOCK_RESPONSES) {
         console.log("Using mock response due to webhook failure");
