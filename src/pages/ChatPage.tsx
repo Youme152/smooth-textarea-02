@@ -1,6 +1,6 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { ChatContainer } from "@/components/chat/ChatContainer";
@@ -10,6 +10,7 @@ const ChatPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const [isPageVisible, setIsPageVisible] = useState(true);
   
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
@@ -34,6 +35,20 @@ const ChatPage = () => {
       console.log("Initial message detected:", initialMessage);
     }
   }, [initialMessage]);
+
+  // Handle page visibility changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    // Add event listener for tab visibility changes
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <ChatContainer

@@ -12,7 +12,15 @@ import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const queryClient = new QueryClient();
+// Configure the query client with options to prevent refetches on window focus
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Prevent refetches when switching tabs
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 // Header wrapper component that conditionally renders the header
 const HeaderWrapper = () => {
