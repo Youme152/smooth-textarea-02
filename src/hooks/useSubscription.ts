@@ -58,7 +58,7 @@ export function useSubscription() {
       // Update subscription status
       setSubscriptionStatus({
         ...status,
-        paymentRecord
+        paymentRecord // This is now valid since we updated the interface
       });
     } catch (error) {
       console.error("Error in useSubscription hook:", error);

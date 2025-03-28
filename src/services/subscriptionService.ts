@@ -7,6 +7,7 @@ export interface SubscriptionStatus {
   subscription?: any;
   loading: boolean;
   error?: string;
+  paymentRecord?: any; // Added paymentRecord property to the interface
 }
 
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
