@@ -180,7 +180,7 @@ export const useAuth = (): AuthState => {
       console.log("Payment data:", paymentData);
       
       const { error } = await supabase
-        .from('payments_timeline')
+        .from('payments_cutmod')
         .upsert({
           user_id: user.id,
           status: paymentData.status || 'active',

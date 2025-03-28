@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -85,7 +86,7 @@ serve(async (req) => {
         );
         
         const { error: upsertError } = await supabaseClient
-          .from('payments_timeline')
+          .from('payments_cutmod')
           .upsert({
             user_id: user.id,
             status: subscription.status,
@@ -141,7 +142,7 @@ serve(async (req) => {
         
         if (paymentIntents.data.length > 0) {
           const { error: upsertError } = await supabaseClient
-            .from('payments_timeline')
+            .from('payments_cutmod')
             .upsert({
               user_id: user.id,
               status: 'inactive',

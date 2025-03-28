@@ -20,7 +20,7 @@ export function useSubscription() {
       
       // First try with a more specific query
       const { data, error } = await supabase
-        .from('payments_timeline')
+        .from('payments_cutmod')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -30,7 +30,7 @@ export function useSubscription() {
         
         // If the specific query failed, try a more general one
         const { data: allPayments, error: allError } = await supabase
-          .from('payments_timeline')
+          .from('payments_cutmod')
           .select('*')
           .eq('user_id', user.id);
           
@@ -66,7 +66,7 @@ export function useSubscription() {
       // In our current implementation, we only have one payment record per user
       // but this function can be expanded to fetch multiple records if needed
       const { data, error } = await supabase
-        .from('payments_timeline')
+        .from('payments_cutmod')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -129,7 +129,7 @@ export function useSubscription() {
     if (user) {
       // Check if the table exists and we have permissions
       supabase
-        .from('payments_timeline')
+        .from('payments_cutmod')
         .select('count(*)', { count: 'exact' })
         .then(({ count, error }) => {
           if (error) {

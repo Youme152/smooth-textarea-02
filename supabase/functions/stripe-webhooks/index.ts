@@ -103,7 +103,7 @@ serve(async (req) => {
           }
           
           const { error: paymentError } = await supabaseClient
-            .from('payments_timeline')
+            .from('payments_cutmod')
             .upsert({
               user_id: user.id,
               status: 'active',
@@ -153,13 +153,13 @@ serve(async (req) => {
           }
           
           const { data: existingPayment } = await supabaseClient
-            .from('payments_timeline')
+            .from('payments_cutmod')
             .select('*')
             .eq('user_id', user.id)
             .single();
           
           const { error: paymentError } = await supabaseClient
-            .from('payments_timeline')
+            .from('payments_cutmod')
             .upsert({
               user_id: user.id,
               status: 'active',
@@ -210,7 +210,7 @@ serve(async (req) => {
         }
         
         const { error: subscriptionError } = await supabaseClient
-          .from('payments_timeline')
+          .from('payments_cutmod')
           .upsert({
             user_id: user.id,
             status: subscription.status,
@@ -255,7 +255,7 @@ serve(async (req) => {
         }
         
         const { error: cancelError } = await supabaseClient
-          .from('payments_timeline')
+          .from('payments_cutmod')
           .upsert({
             user_id: user.id,
             status: 'canceled',

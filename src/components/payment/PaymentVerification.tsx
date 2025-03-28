@@ -62,13 +62,12 @@ export function PaymentVerification({ onComplete }: PaymentVerificationProps) {
         
         // Also try the original method as a backup - redundancy to ensure data is saved
         const { data, error: upsertError } = await supabase
-          .from('payments_timeline')
+          .from('payments_cutmod')
           .upsert({
             user_id: user.id,
             status: 'active',
             stripe_session_id: sessionId,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
           }, {
             onConflict: 'user_id'
           });
