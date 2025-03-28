@@ -9,6 +9,7 @@ export interface SubscriptionStatus {
   error?: string;
   paymentRecord?: any;
   paymentHistory?: any[];
+  billingInfo?: any; // Added this missing property to fix the type error
 }
 
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
