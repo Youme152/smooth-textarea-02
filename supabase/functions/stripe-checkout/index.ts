@@ -122,7 +122,7 @@ serve(async (req) => {
           },
         ],
         mode: 'subscription',
-        success_url: `${origin}/payment-success`,
+        success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/payment-cancelled`,
         billing_address_collection: 'auto',
         payment_method_types: ['card'],

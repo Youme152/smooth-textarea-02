@@ -1,15 +1,19 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, CheckCircle } from "lucide-react";
+import { Sparkles, CheckCircle, Loader2 } from "lucide-react";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
+import { supabase } from "@/integrations/supabase/client";
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
-  const { subscribed, loading } = useSubscription();
+  const { subscribed, loading, refetch } = useSubscription();
+  const [searchParams] = useSearchParams();
+  const [verifying, setVerifying] = useState(true);
+  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
     // Show success toast
@@ -19,6 +23,40 @@ const PaymentSuccessPage = () => {
       duration: 5000,
     });
 
+    const verifyAndRecordPayment = async () => {
+      if (!user) {
+        setVerifying(false);
+        return;
+      }
+      
+      try {
+        // If we have a session ID from the URL, record the payment
+        if (sessionId) {
+          // Record the payment in our database
+          await supabase
+            .from('payments_cutmod')
+            .upsert({
+              user_id: user.id,
+              status: 'active',
+              stripe_session_id: sessionId
+            }, {
+              onConflict: 'user_id'
+            });
+          
+          // Refetch subscription status
+          await refetch();
+          
+          console.log("Payment recorded successfully with session ID:", sessionId);
+        }
+      } catch (error) {
+        console.error("Error recording payment:", error);
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    verifyAndRecordPayment();
+
     // If not logged in or no subscription detected after 5 seconds, redirect to home
     const timeout = setTimeout(() => {
       if (!user || (!loading && !subscribed)) {
@@ -27,7 +65,7 @@ const PaymentSuccessPage = () => {
     }, 5000);
 
     return () => clearTimeout(timeout);
-  }, [subscribed, loading, user, navigate]);
+  }, [subscribed, loading, user, navigate, sessionId, refetch]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-16 pt-24 bg-gradient-to-b from-gray-900 to-black text-white">
@@ -41,6 +79,13 @@ const PaymentSuccessPage = () => {
         <p className="text-lg text-gray-300">
           Thank you for your subscription. Your account has been upgraded!
         </p>
+        
+        {verifying && (
+          <div className="flex items-center justify-center gap-2 text-gray-400">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>Verifying subscription...</span>
+          </div>
+        )}
         
         <div className="flex flex-col gap-3 mt-8 w-full">
           <button
