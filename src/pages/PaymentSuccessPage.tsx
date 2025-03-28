@@ -7,6 +7,7 @@ import { useAuthContext } from "@/components/auth/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
@@ -60,6 +61,11 @@ const PaymentSuccessPage = () => {
           setError(`Failed to record payment: ${upsertError.message}`);
         } else {
           console.log("Payment recorded successfully.");
+          toast({
+            title: "Payment Recorded",
+            description: "Your payment has been successfully recorded in our system.",
+            duration: 5000,
+          });
         }
         
         // Fetch the latest payment record to verify it was saved
@@ -79,15 +85,6 @@ const PaymentSuccessPage = () => {
     };
 
     verifyAndRecordPayment();
-
-    // If not logged in or no subscription detected after 5 seconds, redirect to home
-    const timeout = setTimeout(() => {
-      if (!user) {
-        navigate("/");
-      }
-    }, 8000);
-
-    return () => clearTimeout(timeout);
   }, [subscribed, loading, user, navigate, sessionId, refetch, checkPaymentStatus]);
 
   return (
@@ -130,13 +127,21 @@ const PaymentSuccessPage = () => {
         )}
         
         <div className="flex flex-col gap-3 mt-8 w-full">
-          <button
+          <Button
             onClick={() => navigate("/")}
             className="px-8 py-3 font-medium rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white flex items-center justify-center gap-2"
           >
             <Sparkles className="w-5 h-5" />
             Start Exploring
-          </button>
+          </Button>
+          
+          <Button
+            onClick={() => navigate("/settings")}
+            variant="outline"
+            className="px-8 py-3 font-medium rounded-md text-white border-white/20 hover:bg-white/10"
+          >
+            View Subscription Status
+          </Button>
         </div>
       </div>
     </div>

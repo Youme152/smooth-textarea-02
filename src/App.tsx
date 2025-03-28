@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentCancelledPage from "./pages/PaymentCancelledPage";
+import SettingsPage from "./pages/SettingsPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Configure the query client with options to prevent refetches on window focus
@@ -71,6 +72,12 @@ const App = () => (
               <>
                 <Header />
                 <PaymentCancelledPage />
+              </>
+            } />
+            <Route path="/settings" element={
+              <>
+                <Header />
+                <SettingsPage />
               </>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

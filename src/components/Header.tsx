@@ -1,43 +1,65 @@
-
-import { UserMenu } from "@/components/auth/UserMenu";
 import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { Link, useLocation } from "react-router-dom";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { useAuthContext } from "@/components/auth/AuthContext";
+import { Settings } from "lucide-react";
 
 export function Header() {
-  const [showChatHistory, setShowChatHistory] = useState(false);
+  const { user } = useAuthContext();
+  const location = useLocation();
+
+  // Check if the current path matches any of these routes
+  const isAuthPage = location.pathname === "/auth";
+  const isResetPasswordPage = location.pathname === "/reset-password";
+
+  // Don't show auth button on auth pages
+  const showAuthButton = !isAuthPage && !isResetPasswordPage;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-md border-b border-neutral-800 shadow-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <a href="/" className="flex items-center gap-2">
-            <h1 className="font-playfair font-bold text-2xl text-white">Timeline</h1>
-          </a>
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-6 md:gap-10">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="inline-block font-bold">
+              CUTMOD
+            </span>
+          </Link>
+          <nav className="hidden gap-6 md:flex">
+            <Link
+              to="/"
+              className="flex items-center text-lg font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Home
+            </Link>
+            {user && (
+              <>
+                <Link
+                  to="/chat"
+                  className="flex items-center text-lg font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Chat
+                </Link>
+                <Link
+                  to="/settings"
+                  className="flex items-center text-lg font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  Settings
+                </Link>
+              </>
+            )}
+          </nav>
         </div>
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setShowChatHistory(true)}
-            className="text-white hover:bg-white/10"
-          >
-            <History className="h-5 w-5" />
-          </Button>
-          <UserMenu />
+        <div className="flex items-center gap-2">
+          {user ? (
+            <UserMenu />
+          ) : showAuthButton ? (
+            <Button asChild size="sm">
+              <Link to="/auth">Login</Link>
+            </Button>
+          ) : null}
         </div>
       </div>
-
-      <Dialog open={showChatHistory} onOpenChange={setShowChatHistory}>
-        <DialogContent className="bg-[#0f0f0f] border-neutral-700 text-white sm:max-w-[425px] p-0 overflow-hidden">
-          <DialogTitle className="p-4 border-b border-neutral-800">Chat History</DialogTitle>
-          <div className="relative h-[500px]">
-            <ChatSidebar />
-          </div>
-        </DialogContent>
-      </Dialog>
     </header>
   );
 }
