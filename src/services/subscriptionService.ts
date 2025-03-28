@@ -65,6 +65,47 @@ export const createCheckoutSession = async (): Promise<{ url: string } | null> =
   }
 };
 
+export const cancelSubscription = async (subscriptionId?: string): Promise<{ success: boolean, error?: string }> => {
+  if (!subscriptionId) {
+    return {
+      success: false,
+      error: "No subscription ID provided"
+    };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke("cancel-subscription", {
+      body: { subscriptionId }
+    });
+
+    if (error) {
+      console.error("Error cancelling subscription:", error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+
+    if (data?.error) {
+      console.error("Subscription cancellation error:", data.error);
+      return {
+        success: false,
+        error: data.error
+      };
+    }
+
+    return {
+      success: true
+    };
+  } catch (error) {
+    console.error("Exception cancelling subscription:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An unknown error occurred"
+    };
+  }
+};
+
 export const checkSubscriptionStatus = async (): Promise<SubscriptionStatus> => {
   try {
     const { data, error } = await supabase.functions.invoke("check-subscription");

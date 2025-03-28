@@ -5,16 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle, AlertCircle, RefreshCw, XCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format, fromUnixTime } from "date-fns";
-import { createCheckoutSession } from "@/services/subscriptionService";
+import { createCheckoutSession, cancelSubscription } from "@/services/subscriptionService";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
 export function SubscriptionSettings() {
   const { subscribed, loading, error, subscription, paymentRecord, refetch, checkPaymentStatus } = useSubscription();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleRefresh = async () => {
@@ -32,6 +36,35 @@ export function SubscriptionSettings() {
       window.open(session.url, "_blank");
     }
     setCheckoutLoading(false);
+  };
+
+  const handleCancelSubscription = async () => {
+    setCancelLoading(true);
+    try {
+      const result = await cancelSubscription(subscription?.id);
+      if (result.success) {
+        toast({
+          title: "Subscription Cancelled",
+          description: "Your subscription has been cancelled successfully.",
+        });
+        await refetch();
+        setCancelDialogOpen(false);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "Failed to cancel subscription.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   // Format date function - properly handles Unix timestamps and ISO strings
@@ -137,15 +170,15 @@ export function SubscriptionSettings() {
                   <p><span className="font-medium">Session ID:</span> {paymentRecord.stripe_session_id}</p>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No payment records found.</p>
+                <p className="text-sm text-muted-foreground">No payment records found. This could happen if your subscription was created recently and our system hasn't processed the payment record yet. Try refreshing the page.</p>
               )}
             </div>
           </>
         )}
       </CardContent>
       
-      <CardFooter>
-        {!subscribed && (
+      <CardFooter className="flex flex-wrap gap-3">
+        {!subscribed ? (
           <Button 
             onClick={handleSubscribe}
             disabled={checkoutLoading}
@@ -163,6 +196,45 @@ export function SubscriptionSettings() {
               </>
             )}
           </Button>
+        ) : (
+          <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" className="ml-auto">
+                <XCircle className="h-4 w-4 mr-2" />
+                Cancel Subscription
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Cancel Subscription</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current billing period.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
+                  Keep Subscription
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleCancelSubscription}
+                  disabled={cancelLoading}
+                >
+                  {cancelLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Yes, Cancel Subscription
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </CardFooter>
     </Card>
