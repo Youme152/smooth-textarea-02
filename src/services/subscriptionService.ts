@@ -11,7 +11,21 @@ export interface SubscriptionStatus {
 
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
   try {
+    // Show loading toast
+    const loadingToast = toast({
+      title: "Creating checkout session",
+      description: "Please wait...",
+    });
+
     const { data: sessionData, error } = await supabase.functions.invoke("stripe-checkout");
+    
+    // Dismiss loading toast regardless of result
+    toast({
+      id: loadingToast.id,
+      title: "",
+      description: "",
+      duration: 0,
+    });
     
     if (error) {
       console.error("Error creating checkout session:", error);
@@ -66,6 +80,16 @@ export const checkSubscriptionStatus = async (): Promise<SubscriptionStatus> => 
 
     if (data?.error) {
       console.error("Subscription check error from edge function:", data.error);
+      
+      // Show a toast notification for configuration errors
+      if (data.error.includes("Configuration error")) {
+        toast({
+          variant: "destructive",
+          title: "Subscription Service Error",
+          description: data.error
+        });
+      }
+      
       return {
         subscribed: false,
         loading: false,

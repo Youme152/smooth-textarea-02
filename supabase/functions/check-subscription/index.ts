@@ -55,12 +55,12 @@ serve(async (req) => {
     }
 
     // Validate that we have a secret key, not a publishable key
-    if (stripeSecretKey.startsWith('pk_')) {
-      console.error('Publishable key provided instead of secret key');
+    if (!stripeSecretKey.startsWith('sk_')) {
+      console.error('Invalid Stripe key format - must start with sk_');
       return new Response(
         JSON.stringify({ 
           subscribed: false, 
-          error: "Configuration error: Invalid Stripe key (publishable key used instead of secret key)" 
+          error: "Configuration error: Invalid Stripe key format (must start with sk_)" 
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
