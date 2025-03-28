@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { createCheckoutSession } from "@/services/subscriptionService";
 import { useAuthContext } from "@/components/auth/AuthContext";
@@ -13,6 +13,7 @@ export function SubscriptionButton() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const checkoutWindowRef = useRef<Window | null>(null);
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -25,25 +26,44 @@ export function SubscriptionButton() {
       return;
     }
 
+    // First, open a new window immediately to prevent popup blockers
+    checkoutWindowRef.current = window.open("about:blank", "_blank");
+    
+    // Show loading notification
+    toast({
+      title: "Preparing Checkout",
+      description: "Setting up your secure payment page...",
+      variant: "default"
+    });
+    
     setIsLoading(true);
     setCheckoutError(null);
     
     try {
       const session = await createCheckoutSession();
-      if (session?.url) {
-        // Open in a new tab to avoid CORS issues
-        window.open(session.url, '_blank');
+      
+      if (session?.url && checkoutWindowRef.current) {
+        // Redirect the already-opened window to the checkout URL
+        checkoutWindowRef.current.location.href = session.url;
         
         toast({
-          title: "Checkout Started",
-          description: "We've opened the secure payment page in a new tab.",
+          title: "Checkout Ready",
+          description: "We've opened the secure payment page for you.",
           variant: "default"
         });
       } else {
+        // Close the blank window if we couldn't get a checkout URL
+        if (checkoutWindowRef.current) {
+          checkoutWindowRef.current.close();
+        }
         setCheckoutError("Unable to create checkout session. Please try again later.");
       }
     } catch (error) {
       console.error("Error in subscription button:", error);
+      // Close the blank window if there was an error
+      if (checkoutWindowRef.current) {
+        checkoutWindowRef.current.close();
+      }
       setCheckoutError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsLoading(false);
