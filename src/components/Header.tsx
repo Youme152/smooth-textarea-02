@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "@/components/auth/UserMenu";
@@ -21,7 +22,7 @@ export function Header() {
         <div className="flex items-center gap-6 md:gap-10">
           <Link to="/" className="flex items-center space-x-2">
             <span className="inline-block font-bold">
-              CUTMOD
+              TIMELINE
             </span>
           </Link>
           <nav className="hidden gap-6 md:flex">
