@@ -10,6 +10,8 @@ import ChatPage from "./pages/ChatPage";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentCancelledPage from "./pages/PaymentCancelledPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Configure the query client with options to prevent refetches on window focus
@@ -57,6 +59,18 @@ const App = () => (
               <>
                 <Header />
                 <ResetPasswordPage />
+              </>
+            } />
+            <Route path="/payment-success" element={
+              <>
+                <Header />
+                <PaymentSuccessPage />
+              </>
+            } />
+            <Route path="/payment-cancelled" element={
+              <>
+                <Header />
+                <PaymentCancelledPage />
               </>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

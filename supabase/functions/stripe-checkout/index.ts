@@ -108,6 +108,9 @@ serve(async (req) => {
         }
       }
 
+      // Get the origin for success and cancel URLs
+      const origin = req.headers.get('origin') || 'https://your-app-url.com';
+
       console.log('Creating subscription checkout session...');
       const session = await stripe.checkout.sessions.create({
         customer: customer_id,
@@ -119,8 +122,8 @@ serve(async (req) => {
           },
         ],
         mode: 'subscription',
-        success_url: `${req.headers.get('origin')}/payment-success`,
-        cancel_url: `${req.headers.get('origin')}/payment-cancelled`,
+        success_url: `${origin}/payment-success`,
+        cancel_url: `${origin}/payment-cancelled`,
         billing_address_collection: 'auto',
         payment_method_types: ['card'],
         allow_promotion_codes: true,
