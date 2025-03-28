@@ -5,7 +5,7 @@ import { createCheckoutSession } from "@/services/subscriptionService";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { CreditCard, Sparkles, AlertCircle } from "lucide-react";
+import { CreditCard, Sparkles, AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function SubscriptionButton() {
@@ -26,44 +26,47 @@ export function SubscriptionButton() {
       return;
     }
 
-    // First, open a new window immediately to prevent popup blockers
-    checkoutWindowRef.current = window.open("about:blank", "_blank");
-    
-    // Show loading notification
-    toast({
-      title: "Preparing Checkout",
-      description: "Setting up your secure payment page...",
-      variant: "default"
-    });
+    // Prevent multiple clicks
+    if (isLoading) return;
     
     setIsLoading(true);
     setCheckoutError(null);
     
+    // Show loading notification immediately
+    toast({
+      title: "Opening Checkout",
+      description: "Preparing your secure payment page...",
+      variant: "default"
+    });
+    
+    // We'll open the window only after we have the session URL
+    // to prevent the blank page flashing
     try {
       const session = await createCheckoutSession();
       
-      if (session?.url && checkoutWindowRef.current) {
-        // Redirect the already-opened window to the checkout URL
-        checkoutWindowRef.current.location.href = session.url;
+      if (session?.url) {
+        // Only open the window once we have the URL
+        checkoutWindowRef.current = window.open(session.url, "_blank");
         
-        toast({
-          title: "Checkout Ready",
-          description: "We've opened the secure payment page for you.",
-          variant: "default"
-        });
-      } else {
-        // Close the blank window if we couldn't get a checkout URL
-        if (checkoutWindowRef.current) {
-          checkoutWindowRef.current.close();
+        if (!checkoutWindowRef.current) {
+          // If popup was blocked
+          toast({
+            title: "Popup Blocked",
+            description: "Please allow popups for this site and try again.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Checkout Ready",
+            description: "Payment page opened in a new tab.",
+            variant: "default"
+          });
         }
-        setCheckoutError("Unable to create checkout session. Please try again later.");
+      } else {
+        setCheckoutError("Unable to create checkout session. Please try again.");
       }
     } catch (error) {
       console.error("Error in subscription button:", error);
-      // Close the blank window if there was an error
-      if (checkoutWindowRef.current) {
-        checkoutWindowRef.current.close();
-      }
       setCheckoutError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsLoading(false);
@@ -76,10 +79,15 @@ export function SubscriptionButton() {
         onClick={handleSubscribe} 
         disabled={isLoading}
         size="lg"
-        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg border border-blue-400/20 transition-all duration-300 animate-pulse hover:animate-none"
+        className={`bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
+          shadow-lg border border-blue-400/20 transition-all duration-300 
+          ${!isLoading ? "animate-pulse hover:animate-none" : ""}`}
       >
         {isLoading ? (
-          "Processing..."
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Opening Checkout...
+          </>
         ) : (
           <>
             <CreditCard className="w-4 h-4 mr-2" />
