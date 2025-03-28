@@ -41,69 +41,111 @@ serve(async (req) => {
     // Get the Stripe secret key from environment variables
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
-      throw new Error('Missing Stripe secret key in environment variables');
+      console.error('Missing Stripe secret key in environment variables');
+      return new Response(
+        JSON.stringify({ 
+          subscribed: false, 
+          error: "Configuration error: Missing Stripe secret key" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
+    }
+
+    // Validate that we have a secret key, not a publishable key
+    if (stripeSecretKey.startsWith('pk_')) {
+      console.error('Publishable key provided instead of secret key');
+      return new Response(
+        JSON.stringify({ 
+          subscribed: false, 
+          error: "Configuration error: Invalid Stripe key (publishable key used instead of secret key)" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
-    // Get customer by email
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 1
-    });
+    try {
+      // Get customer by email
+      const customers = await stripe.customers.list({
+        email: user.email,
+        limit: 1
+      });
 
-    if (customers.data.length === 0) {
+      if (customers.data.length === 0) {
+        return new Response(
+          JSON.stringify({ subscribed: false, reason: "No Stripe customer found" }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
+      }
+
+      // Check for active subscriptions
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customers.data[0].id,
+        status: 'active',
+        price: 'price_1R7WWJKbF8BsQYX00nfARfyL',  // Monthly subscription price ID
+        limit: 1
+      });
+
+      const isSubscribed = subscriptions.data.length > 0;
+      
+      // If subscribed, update the status in our database
+      if (isSubscribed && subscriptions.data[0].id) {
+        await supabaseClient
+          .from('payments_cutmod')
+          .upsert({
+            user_id: user.id,
+            status: 'active',
+            stripe_session_id: subscriptions.data[0].id
+          }, {
+            onConflict: 'user_id'
+          });
+      }
+
       return new Response(
-        JSON.stringify({ subscribed: false, reason: "No Stripe customer found" }),
+        JSON.stringify({ 
+          subscribed: isSubscribed,
+          subscription: isSubscribed ? subscriptions.data[0] : null
+        }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
       );
+    } catch (stripeError) {
+      console.error('Stripe API error:', stripeError);
+      return new Response(
+        JSON.stringify({ 
+          subscribed: false, 
+          error: stripeError.message || "Error communicating with Stripe"
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
     }
-
-    // Check for active subscriptions
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customers.data[0].id,
-      status: 'active',
-      price: 'price_1R7WWJKbF8BsQYX00nfARfyL',  // Monthly subscription price ID
-      limit: 1
-    });
-
-    const isSubscribed = subscriptions.data.length > 0;
-    
-    // If subscribed, update the status in our database
-    if (isSubscribed && subscriptions.data[0].id) {
-      await supabaseClient
-        .from('payments_cutmod')
-        .upsert({
-          user_id: user.id,
-          status: 'active',
-          stripe_session_id: subscriptions.data[0].id
-        }, {
-          onConflict: 'user_id'
-        });
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        subscribed: isSubscribed,
-        subscription: isSubscribed ? subscriptions.data[0] : null
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
   } catch (error) {
     console.error('Error checking subscription:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        subscribed: false, 
+        error: error.message || "An unknown error occurred"
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 200, // Return 200 to prevent client-side errors
       }
     );
   }

@@ -30,96 +30,142 @@ serve(async (req) => {
     const email = user?.email;
 
     if (!email) {
-      throw new Error('No email found. User must be authenticated.');
+      return new Response(
+        JSON.stringify({ error: 'No email found. User must be authenticated.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
     }
 
     // Get the Stripe secret key from environment variables
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
-      throw new Error('Missing Stripe secret key in environment variables');
+      console.error('Missing Stripe secret key in environment variables');
+      return new Response(
+        JSON.stringify({ 
+          error: "Configuration error: Missing Stripe secret key" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
+    }
+
+    // Validate that we have a secret key, not a publishable key
+    if (stripeSecretKey.startsWith('pk_')) {
+      console.error('Publishable key provided instead of secret key');
+      return new Response(
+        JSON.stringify({ 
+          error: "Configuration error: Invalid Stripe key (publishable key used instead of secret key)" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
-    // Check if this customer already exists
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 1
-    });
-
-    // Price ID for the monthly subscription
-    const price_id = "price_1R7WWJKbF8BsQYX00nfARfyL";
-
-    let customer_id = undefined;
-    if (customers.data.length > 0) {
-      customer_id = customers.data[0].id;
-      
-      // Check if already subscribed to this price
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
-        status: 'active',
-        price: price_id,
+    try {
+      // Check if this customer already exists
+      const customers = await stripe.customers.list({
+        email: email,
         limit: 1
       });
 
-      if (subscriptions.data.length > 0) {
-        return new Response(
-          JSON.stringify({ 
-            error: "You already have an active subscription.",
-            subscriptionData: subscriptions.data[0]
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400,
-          }
-        );
-      }
-    }
+      // Price ID for the monthly subscription
+      const price_id = "price_1R7WWJKbF8BsQYX00nfARfyL";
 
-    console.log('Creating subscription checkout session...');
-    const session = await stripe.checkout.sessions.create({
-      customer: customer_id,
-      customer_email: customer_id ? undefined : email,
-      line_items: [
-        {
+      let customer_id = undefined;
+      if (customers.data.length > 0) {
+        customer_id = customers.data[0].id;
+        
+        // Check if already subscribed to this price
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customers.data[0].id,
+          status: 'active',
           price: price_id,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/`,
-      cancel_url: `${req.headers.get('origin')}/`,
-    });
-
-    console.log('Checkout session created:', session.id);
-    
-    // Record the session in the database for tracking
-    if (user) {
-      await supabaseClient
-        .from('payments_cutmod')
-        .insert({
-          user_id: user.id,
-          status: 'pending',
-          stripe_session_id: session.id
+          limit: 1
         });
-    }
 
-    return new Response(
-      JSON.stringify({ url: session.url }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        if (subscriptions.data.length > 0) {
+          return new Response(
+            JSON.stringify({ 
+              error: "You already have an active subscription.",
+              subscriptionData: subscriptions.data[0]
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200,
+            }
+          );
+        }
       }
-    );
+
+      console.log('Creating subscription checkout session...');
+      const session = await stripe.checkout.sessions.create({
+        customer: customer_id,
+        customer_email: customer_id ? undefined : email,
+        line_items: [
+          {
+            price: price_id,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${req.headers.get('origin')}/`,
+        cancel_url: `${req.headers.get('origin')}/`,
+      });
+
+      console.log('Checkout session created:', session.id);
+      
+      // Record the session in the database for tracking
+      if (user) {
+        await supabaseClient
+          .from('payments_cutmod')
+          .upsert({
+            user_id: user.id,
+            status: 'pending',
+            stripe_session_id: session.id
+          }, {
+            onConflict: 'user_id'
+          });
+      }
+
+      return new Response(
+        JSON.stringify({ url: session.url }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    } catch (stripeError) {
+      console.error('Stripe API error:', stripeError);
+      return new Response(
+        JSON.stringify({ 
+          error: stripeError.message || "Error communicating with Stripe" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 to prevent client-side errors but include error message
+        }
+      );
+    }
   } catch (error) {
     console.error('Error creating subscription session:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || "An unknown error occurred" 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 200, // Return 200 to prevent client-side errors
       }
     );
   }

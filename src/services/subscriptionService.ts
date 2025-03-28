@@ -24,10 +24,17 @@ export const createCheckoutSession = async (): Promise<{ url: string } | null> =
     }
 
     if (!sessionData?.url) {
+      let errorMessage = "No checkout URL returned";
+      
+      if (sessionData?.error) {
+        errorMessage = sessionData.error;
+        console.error("Checkout error from edge function:", sessionData.error);
+      }
+      
       toast({
         variant: "destructive",
         title: "Checkout Error",
-        description: "No checkout URL returned"
+        description: errorMessage
       });
       return null;
     }
@@ -54,6 +61,15 @@ export const checkSubscriptionStatus = async (): Promise<SubscriptionStatus> => 
         subscribed: false, 
         loading: false,
         error: error.message 
+      };
+    }
+
+    if (data?.error) {
+      console.error("Subscription check error from edge function:", data.error);
+      return {
+        subscribed: false,
+        loading: false,
+        error: data.error
       };
     }
 
