@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -11,9 +10,9 @@ import SquaresBackground from "@/components/SquaresBackground";
 import { HighlightedText } from "@/components/ui/highlighted-text";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionButton } from "@/components/SubscriptionButton";
+import { useSubscription } from "@/hooks/useSubscription";
 
-// We'll create a global variable to store temporary messages
-// This avoids using URL parameters which can cause issues
 export const tempMessageStore = {
   pendingMessage: null as string | null,
   consumeMessage: function() {
@@ -37,6 +36,7 @@ const Index = () => {
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuthContext();
+  const { subscribed, loading: subscriptionLoading } = useSubscription();
 
   const placeholders = [
     "What do you want to know?",
@@ -62,7 +62,6 @@ const Index = () => {
     }
   };
 
-  // Improved chat creation function with better initial message handling
   const createNewConversation = async () => {
     if (!user) {
       navigate("/auth");
@@ -97,15 +96,12 @@ const Index = () => {
         return;
       }
       
-      // Store the message in our temporary store
       const messageToSend = input.trim();
       tempMessageStore.setPendingMessage(messageToSend);
       console.log("Setting pending message:", messageToSend);
       
-      // Clear the input BEFORE navigating
       setInput("");
       
-      // Navigate directly to chat without URL parameters
       navigate(`/chat?id=${data.id}`);
       
     } catch (error: any) {
@@ -147,6 +143,16 @@ const Index = () => {
             </p>
           )}
         </div>
+
+        {user && !subscriptionLoading && !subscribed && (
+          <div className="w-full mb-8 text-center">
+            <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-lg p-4 shadow-lg">
+              <h2 className="text-xl font-medium text-white mb-2">Unlock Premium Features</h2>
+              <p className="text-gray-300 mb-4">Get unlimited chats and premium capabilities with our subscription</p>
+              <SubscriptionButton />
+            </div>
+          </div>
+        )}
 
         <div className="w-full mb-5 relative">
           <div className="w-full rounded-2xl overflow-hidden transition-all duration-300 bg-[rgba(39,39,42,0.6)] shadow-lg border border-neutral-700">
@@ -225,6 +231,15 @@ const Index = () => {
             Market Research
           </button>
         </div>
+        
+        {user && subscribed && (
+          <div className="mt-8 flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/30 rounded-lg">
+            <div className="flex items-center">
+              <span className="h-2 w-2 rounded-full bg-green-500 mr-2"></span>
+              <span className="text-green-400 font-medium">Premium Subscription Active</span>
+            </div>
+          </div>
+        )}
       </div>
       <Toaster />
     </div>
