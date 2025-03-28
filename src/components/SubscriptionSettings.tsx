@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CreditCard, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { format } from "date-fns";
+import { format, fromUnixTime } from "date-fns";
 import { createCheckoutSession } from "@/services/subscriptionService";
 import { useNavigate } from "react-router-dom";
 
@@ -34,13 +34,29 @@ export function SubscriptionSettings() {
     setCheckoutLoading(false);
   };
 
-  // Format date if available
-  const formatDate = (timestamp: string | undefined | null) => {
+  // Format date function - properly handles Unix timestamps and ISO strings
+  const formatDate = (timestamp: string | number | undefined | null) => {
     if (!timestamp) return "N/A";
+    
     try {
+      // Check if it's a Unix timestamp (number or numeric string)
+      if (typeof timestamp === 'number' || (typeof timestamp === 'string' && !isNaN(Number(timestamp)))) {
+        const numericTimestamp = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
+        
+        // If timestamp is in seconds (Unix timestamp), convert to milliseconds
+        // Unix timestamps are typically 10 digits (seconds) while JS timestamps are 13 digits (milliseconds)
+        if (numericTimestamp < 10000000000) {
+          return format(fromUnixTime(numericTimestamp), "PPP");
+        } else {
+          return format(new Date(numericTimestamp), "PPP");
+        }
+      }
+      
+      // Handle ISO date strings
       return format(new Date(timestamp), "PPP");
     } catch (e) {
-      return timestamp;
+      console.error("Error formatting date:", e, "Value was:", timestamp);
+      return "Invalid date";
     }
   };
 
@@ -83,7 +99,7 @@ export function SubscriptionSettings() {
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-medium">Status:</h3>
               {subscribed ? (
-                <Badge variant="success" className="bg-green-100 text-green-800 hover:bg-green-200">
+                <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-200">
                   <CheckCircle className="h-3 w-3 mr-1" /> Active
                 </Badge>
               ) : (
