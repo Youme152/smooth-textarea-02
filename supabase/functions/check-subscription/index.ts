@@ -90,11 +90,11 @@ serve(async (req) => {
         );
       }
 
-      // Check for active subscriptions
+      // Check for active subscriptions - updated to use the new price ID
       const subscriptions = await stripe.subscriptions.list({
         customer: customers.data[0].id,
         status: 'active',
-        price: 'price_1R7WWJKbF8BsQYX00nfARfyL',  // Monthly subscription price ID
+        price: 'price_1R7YPgKbF8BsQYX0NUifYLls',  // Updated $2 test price ID
         limit: 1
       });
 

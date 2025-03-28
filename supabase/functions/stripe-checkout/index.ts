@@ -79,8 +79,8 @@ serve(async (req) => {
         limit: 1
       });
 
-      // Price ID for the monthly subscription
-      const price_id = "price_1R7WWJKbF8BsQYX00nfARfyL";
+      // Updated price ID for the $2 test subscription
+      const price_id = "price_1R7YPgKbF8BsQYX0NUifYLls";
 
       let customer_id = undefined;
       if (customers.data.length > 0) {
