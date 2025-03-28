@@ -21,7 +21,7 @@ export const createCheckoutSession = async (): Promise<{ url: string } | null> =
     
     // Dismiss loading toast regardless of result
     toast({
-      id: loadingToast.id,
+      // The 'id' property doesn't exist on the Toast type, removed it
       title: "",
       description: "",
       duration: 0,
