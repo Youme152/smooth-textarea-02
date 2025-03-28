@@ -1,0 +1,8 @@
+
+project_id = "fcgwtmgvdasnlrmbpvko"
+
+[functions.stripe-checkout]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false

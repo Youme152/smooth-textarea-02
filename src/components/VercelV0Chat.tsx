@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { tempMessageStore } from "@/pages/Index";
+import { SubscriptionButton } from "@/components/SubscriptionButton";
+import { useSubscription } from "@/hooks/useSubscription";
 
 // Prevent duplicates within this time window
 const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds
@@ -24,6 +25,7 @@ export function VercelV0Chat() {
   
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { subscribed, loading: subscriptionLoading } = useSubscription();
   
   const placeholders = [
     "Ask a question...",
@@ -61,6 +63,17 @@ export function VercelV0Chat() {
     if (!user) {
       navigate("/auth");
       return;
+    }
+    
+    // Check subscription status for conversation limit
+    if (!subscribed) {
+      // Allow limited usage or show subscription prompt
+      // You can customize this logic based on your business model
+      toast({
+        title: "Monthly Subscription Required",
+        description: "Please subscribe to access unlimited chats and premium features.",
+        variant: "default"
+      });
     }
     
     // Prevent duplicate submissions
@@ -157,6 +170,23 @@ export function VercelV0Chat() {
           isCreatingChat={isCreatingChat}
         />
       </div>
+      
+      {user && !subscriptionLoading && (
+        <div className="mt-4 text-center">
+          {subscribed ? (
+            <div className="text-green-400 font-medium text-sm">
+              ✓ Premium Subscriber
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-neutral-400 text-sm">
+                Unlock unlimited chats and premium features
+              </p>
+              <SubscriptionButton />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
