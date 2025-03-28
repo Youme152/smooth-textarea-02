@@ -31,7 +31,14 @@ export function SubscriptionButton() {
     try {
       const session = await createCheckoutSession();
       if (session?.url) {
-        window.location.href = session.url;
+        // Open in a new tab to avoid CORS issues
+        window.open(session.url, '_blank');
+        
+        toast({
+          title: "Checkout Started",
+          description: "We've opened the secure payment page in a new tab.",
+          variant: "default"
+        });
       } else {
         setCheckoutError("Unable to create checkout session. Please try again later.");
       }
@@ -52,7 +59,7 @@ export function SubscriptionButton() {
         className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg border border-blue-400/20 transition-all duration-300 animate-pulse hover:animate-none"
       >
         {isLoading ? (
-          "Redirecting..."
+          "Processing..."
         ) : (
           <>
             <CreditCard className="w-4 h-4 mr-2" />

@@ -12,16 +12,15 @@ export interface SubscriptionStatus {
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
   try {
     // Show loading toast
-    const loadingToast = toast({
+    const loadingToastId = toast({
       title: "Creating checkout session",
       description: "Please wait...",
     });
 
     const { data: sessionData, error } = await supabase.functions.invoke("stripe-checkout");
     
-    // Dismiss loading toast regardless of result
+    // Dismiss loading toast
     toast({
-      // The 'id' property doesn't exist on the Toast type, removed it
       title: "",
       description: "",
       duration: 0,

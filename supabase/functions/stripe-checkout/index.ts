@@ -119,8 +119,11 @@ serve(async (req) => {
           },
         ],
         mode: 'subscription',
-        success_url: `${req.headers.get('origin')}/`,
-        cancel_url: `${req.headers.get('origin')}/`,
+        success_url: `${req.headers.get('origin')}/payment-success`,
+        cancel_url: `${req.headers.get('origin')}/payment-cancelled`,
+        billing_address_collection: 'auto',
+        payment_method_types: ['card'],
+        allow_promotion_codes: true,
       });
 
       console.log('Checkout session created:', session.id);
