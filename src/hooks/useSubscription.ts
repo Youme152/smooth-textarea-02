@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { checkSubscriptionStatus, SubscriptionStatus } from "@/services/subscriptionService";
 import { useAuthContext } from "@/components/auth/AuthContext";
@@ -21,7 +20,7 @@ export function useSubscription() {
       
       // First try with a more specific query
       const { data, error } = await supabase
-        .from('payments_cutmod')
+        .from('payments_timeline')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -31,7 +30,7 @@ export function useSubscription() {
         
         // If the specific query failed, try a more general one
         const { data: allPayments, error: allError } = await supabase
-          .from('payments_cutmod')
+          .from('payments_timeline')
           .select('*')
           .eq('user_id', user.id);
           
@@ -67,7 +66,7 @@ export function useSubscription() {
       // In our current implementation, we only have one payment record per user
       // but this function can be expanded to fetch multiple records if needed
       const { data, error } = await supabase
-        .from('payments_cutmod')
+        .from('payments_timeline')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -130,7 +129,7 @@ export function useSubscription() {
     if (user) {
       // Check if the table exists and we have permissions
       supabase
-        .from('payments_cutmod')
+        .from('payments_timeline')
         .select('count(*)', { count: 'exact' })
         .then(({ count, error }) => {
           if (error) {

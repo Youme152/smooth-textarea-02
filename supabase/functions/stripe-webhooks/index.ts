@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -9,7 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -31,7 +29,6 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
     });
 
-    // Get the signature from the headers
     const signature = req.headers.get('stripe-signature');
     
     if (!signature) {
@@ -45,7 +42,6 @@ serve(async (req) => {
       );
     }
 
-    // Get the webhook secret from environment variables
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
       console.error('Missing Stripe webhook secret');
@@ -58,12 +54,10 @@ serve(async (req) => {
       );
     }
 
-    // Get request body as text
     const body = await req.text();
     
     let event;
     try {
-      // Verify the event came from Stripe using the webhook secret
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       console.error(`Webhook signature verification failed: ${err.message}`);
@@ -78,27 +72,22 @@ serve(async (req) => {
 
     console.log(`Received Stripe webhook event: ${event.type}`);
 
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
-    // Process different event types
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
         console.log('Checkout session completed:', session.id);
         
-        // Find the customer & subscription
         if (session.customer && session.subscription) {
-          // Get customer details
           const customer = await stripe.customers.retrieve(session.customer);
           if (!customer || customer.deleted) {
             throw new Error('Customer not found or deleted');
           }
           
-          // Get user ID from the customer's email
           const { data: userData, error: userError } = await supabaseClient.auth
             .admin.listUsers();
           
@@ -113,9 +102,8 @@ serve(async (req) => {
             break;
           }
           
-          // Insert or update payment record
           const { error: paymentError } = await supabaseClient
-            .from('payments_cutmod')
+            .from('payments_timeline')
             .upsert({
               user_id: user.id,
               status: 'active',
@@ -145,13 +133,11 @@ serve(async (req) => {
         console.log('Invoice paid:', invoice.id);
         
         if (invoice.customer && invoice.subscription) {
-          // Get customer details to find user
           const customer = await stripe.customers.retrieve(invoice.customer);
           if (!customer || customer.deleted) {
             throw new Error('Customer not found or deleted');
           }
           
-          // Find user by email
           const { data: userData, error: userError } = await supabaseClient.auth
             .admin.listUsers();
           
@@ -166,16 +152,14 @@ serve(async (req) => {
             break;
           }
           
-          // Get existing payment record
           const { data: existingPayment } = await supabaseClient
-            .from('payments_cutmod')
+            .from('payments_timeline')
             .select('*')
             .eq('user_id', user.id)
             .single();
           
-          // Update payment record
           const { error: paymentError } = await supabaseClient
-            .from('payments_cutmod')
+            .from('payments_timeline')
             .upsert({
               user_id: user.id,
               status: 'active',
@@ -206,13 +190,11 @@ serve(async (req) => {
         const subscription = event.data.object;
         console.log('Subscription updated:', subscription.id);
         
-        // Get customer details
         const customer = await stripe.customers.retrieve(subscription.customer);
         if (!customer || customer.deleted) {
           throw new Error('Customer not found or deleted');
         }
         
-        // Find user by email
         const { data: userData, error: userError } = await supabaseClient.auth
           .admin.listUsers();
         
@@ -227,9 +209,8 @@ serve(async (req) => {
           break;
         }
         
-        // Update subscription status
         const { error: subscriptionError } = await supabaseClient
-          .from('payments_cutmod')
+          .from('payments_timeline')
           .upsert({
             user_id: user.id,
             status: subscription.status,
@@ -254,13 +235,11 @@ serve(async (req) => {
         const subscription = event.data.object;
         console.log('Subscription deleted:', subscription.id);
         
-        // Get customer details
         const customer = await stripe.customers.retrieve(subscription.customer);
         if (!customer || customer.deleted) {
           throw new Error('Customer not found or deleted');
         }
         
-        // Find user by email
         const { data: userData, error: userError } = await supabaseClient.auth
           .admin.listUsers();
         
@@ -275,9 +254,8 @@ serve(async (req) => {
           break;
         }
         
-        // Update subscription status to canceled
         const { error: cancelError } = await supabaseClient
-          .from('payments_cutmod')
+          .from('payments_timeline')
           .upsert({
             user_id: user.id,
             status: 'canceled',

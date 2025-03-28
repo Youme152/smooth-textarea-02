@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
@@ -21,7 +20,6 @@ export const useAuth = (): AuthState => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed:", event);
@@ -30,7 +28,6 @@ export const useAuth = (): AuthState => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -40,7 +37,6 @@ export const useAuth = (): AuthState => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Helper function to get the current site URL
   const getSiteUrl = () => {
     return window.location.origin;
   };
@@ -48,7 +44,6 @@ export const useAuth = (): AuthState => {
   const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
     try {
       setLoading(true);
-      // Pass emailRedirectTo and disable auto confirmation email to improve the user experience
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -57,7 +52,6 @@ export const useAuth = (): AuthState => {
             full_name: fullName
           },
           emailRedirectTo: `${getSiteUrl()}/auth`,
-          // We're not disabling email confirmation here, but the UI will behave better
         }
       });
 
@@ -65,7 +59,6 @@ export const useAuth = (): AuthState => {
         throw error;
       }
 
-      // More detailed feedback based on the response
       if (data?.user?.identities?.length === 0) {
         toast({
           variant: "destructive",
@@ -75,7 +68,6 @@ export const useAuth = (): AuthState => {
         return;
       }
 
-      // Immediately log the user in after signup if possible
       if (data?.user && !data.user.confirmed_at) {
         toast({
           title: "Account created!",
@@ -173,7 +165,6 @@ export const useAuth = (): AuthState => {
     }
   };
 
-  // New function to update user payment info in Supabase
   const updateUserPayment = async (paymentData: any): Promise<void> => {
     if (!user) {
       toast({
@@ -188,9 +179,8 @@ export const useAuth = (): AuthState => {
       console.log("Updating payment data for user:", user.id);
       console.log("Payment data:", paymentData);
       
-      // Update or insert payment record in the payments_cutmod table
       const { error } = await supabase
-        .from('payments_cutmod')
+        .from('payments_timeline')
         .upsert({
           user_id: user.id,
           status: paymentData.status || 'active',

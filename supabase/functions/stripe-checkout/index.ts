@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
@@ -9,7 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -20,11 +18,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
 
-    // Get the authentication token from the request
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
     
-    // Get the user from the token
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     const email = user?.email;
@@ -39,7 +35,6 @@ serve(async (req) => {
       );
     }
 
-    // Get the Stripe secret key from environment variables
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       console.error('Missing Stripe secret key in environment variables');
@@ -49,12 +44,11 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
 
-    // Validate that we have a secret key, not a publishable key
     if (!stripeSecretKey.startsWith('sk_')) {
       console.error('Invalid Stripe key format - must start with sk_');
       return new Response(
@@ -63,7 +57,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
@@ -73,20 +67,17 @@ serve(async (req) => {
     });
 
     try {
-      // Check if this customer already exists
       const customers = await stripe.customers.list({
         email: email,
         limit: 1
       });
 
-      // Updated price ID for the $2 test subscription
       const price_id = "price_1R7YPgKbF8BsQYX0NUifYLls";
 
       let customer_id = undefined;
       if (customers.data.length > 0) {
         customer_id = customers.data[0].id;
         
-        // Check if already subscribed to this price
         const subscriptions = await stripe.subscriptions.list({
           customer: customers.data[0].id,
           status: 'active',
@@ -108,7 +99,6 @@ serve(async (req) => {
         }
       }
 
-      // Get the origin for success and cancel URLs
       const origin = req.headers.get('origin') || 'https://your-app-url.com';
 
       console.log('Creating subscription checkout session...');
@@ -131,10 +121,9 @@ serve(async (req) => {
 
       console.log('Checkout session created:', session.id);
       
-      // Record the session in the database for tracking
       if (user) {
         await supabaseClient
-          .from('payments_cutmod')
+          .from('payments_timeline')
           .upsert({
             user_id: user.id,
             status: 'pending',
@@ -159,7 +148,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
@@ -171,7 +160,7 @@ serve(async (req) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200, // Return 200 to prevent client-side errors
+        status: 200,
       }
     );
   }
