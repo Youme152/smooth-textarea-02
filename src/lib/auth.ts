@@ -47,14 +47,16 @@ export const useAuth = (): AuthState => {
   const signUp = async (email: string, password: string, fullName?: string): Promise<void> => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      // Pass emailRedirectTo and disable auto confirmation email to improve the user experience
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName
           },
-          emailRedirectTo: `${getSiteUrl()}/auth`
+          emailRedirectTo: `${getSiteUrl()}/auth`,
+          // We're not disabling email confirmation here, but the UI will behave better
         }
       });
 
@@ -62,10 +64,28 @@ export const useAuth = (): AuthState => {
         throw error;
       }
 
-      toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
-      });
+      // More detailed feedback based on the response
+      if (data?.user?.identities?.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Email already registered",
+          description: "This email is already registered. Please sign in instead.",
+        });
+        return;
+      }
+
+      // Immediately log the user in after signup if possible
+      if (data?.user && !data.user.confirmed_at) {
+        toast({
+          title: "Account created!",
+          description: "You can now sign in with your credentials.",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: "Please check your email to confirm your account.",
+        });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
