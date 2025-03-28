@@ -74,16 +74,33 @@ export function SubscriptionSettings() {
   };
 
   const handleCancelSubscription = async () => {
+    console.log("Cancel subscription button clicked");
+    console.log("Subscription ID:", subscription?.id);
+    
+    if (!subscription?.id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No subscription ID found. Please refresh and try again.",
+      });
+      return;
+    }
+    
     setCancelLoading(true);
     try {
-      const result = await cancelSubscription(subscription?.id);
+      const result = await cancelSubscription(subscription.id);
+      console.log("Cancel subscription result:", result);
+      
       if (result.success) {
         toast({
           title: "Subscription Cancelled",
           description: "Your subscription has been cancelled successfully.",
         });
-        await refetch();
         setCancelDialogOpen(false);
+        // Add a small delay before refreshing to allow the backend to process
+        setTimeout(async () => {
+          await refetch();
+        }, 1000);
       } else {
         toast({
           variant: "destructive",
@@ -92,6 +109,7 @@ export function SubscriptionSettings() {
         });
       }
     } catch (error) {
+      console.error("Error in handleCancelSubscription:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -204,9 +222,9 @@ export function SubscriptionSettings() {
                   <p><span className="font-medium">Status:</span> {subscription.status}</p>
                   <p><span className="font-medium">Started:</span> {formatDate(subscription.start_date)}</p>
                   <p><span className="font-medium">Next billing:</span> {formatDate(subscription.current_period_end)}</p>
-                  {paymentRecord?.cancel_at_period_end && (
+                  {subscription.cancel_at_period_end && (
                     <p className="text-orange-600">
-                      <span className="font-medium">Cancellation:</span> Subscription will end on {formatDate(paymentRecord.current_period_end)}
+                      <span className="font-medium">Cancellation:</span> Subscription will end on {formatDate(subscription.current_period_end)}
                     </p>
                   )}
                   <p><span className="font-medium">Subscription ID:</span> {subscription.id}</p>

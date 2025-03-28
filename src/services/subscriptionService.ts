@@ -9,7 +9,7 @@ export interface SubscriptionStatus {
   error?: string;
   paymentRecord?: any;
   paymentHistory?: any[];
-  billingInfo?: any; // Added this missing property to fix the type error
+  billingInfo?: any;
 }
 
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
@@ -69,6 +69,12 @@ export const createCheckoutSession = async (): Promise<{ url: string } | null> =
 
 export const cancelSubscription = async (subscriptionId?: string): Promise<{ success: boolean, error?: string }> => {
   if (!subscriptionId) {
+    toast({
+      variant: "destructive",
+      title: "Cancellation Error",
+      description: "No subscription ID provided"
+    });
+    
     return {
       success: false,
       error: "No subscription ID provided"
@@ -76,12 +82,25 @@ export const cancelSubscription = async (subscriptionId?: string): Promise<{ suc
   }
 
   try {
+    console.log("Cancelling subscription:", subscriptionId);
+    
+    // Show loading toast
+    toast({
+      title: "Processing cancellation",
+      description: "Please wait while we process your request..."
+    });
+    
     const { data, error } = await supabase.functions.invoke("cancel-subscription", {
       body: { subscriptionId }
     });
 
     if (error) {
       console.error("Error cancelling subscription:", error);
+      toast({
+        variant: "destructive",
+        title: "Cancellation Error",
+        description: error.message
+      });
       return {
         success: false,
         error: error.message
@@ -90,17 +109,29 @@ export const cancelSubscription = async (subscriptionId?: string): Promise<{ suc
 
     if (data?.error) {
       console.error("Subscription cancellation error:", data.error);
+      toast({
+        variant: "destructive",
+        title: "Cancellation Error",
+        description: data.error
+      });
       return {
         success: false,
         error: data.error
       };
     }
 
+    console.log("Subscription cancelled successfully:", data);
+    
     return {
       success: true
     };
   } catch (error) {
     console.error("Exception cancelling subscription:", error);
+    toast({
+      variant: "destructive",
+      title: "Cancellation Error",
+      description: error instanceof Error ? error.message : "An unknown error occurred"
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "An unknown error occurred"
