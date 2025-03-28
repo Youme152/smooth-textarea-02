@@ -1,7 +1,9 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { checkSubscriptionStatus, SubscriptionStatus } from "@/services/subscriptionService";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export function useSubscription() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>({
@@ -16,6 +18,8 @@ export function useSubscription() {
     
     try {
       console.log("Checking payment status for user:", user.id);
+      
+      // First try with a more specific query
       const { data, error } = await supabase
         .from('payments_cutmod')
         .select('*')
@@ -23,11 +27,26 @@ export function useSubscription() {
         .single();
       
       if (error) {
-        if (error.code === 'PGRST116') { // No rows returned
-          console.log("No payment records found for user");
+        console.error("Error fetching payment status:", error);
+        
+        // If the specific query failed, try a more general one
+        const { data: allPayments, error: allError } = await supabase
+          .from('payments_cutmod')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (allError) {
+          console.error("Error fetching all payments:", allError);
           return null;
         }
-        console.error("Error fetching payment status:", error);
+        
+        if (allPayments && allPayments.length > 0) {
+          console.log("Found payments using general query:", allPayments);
+          // Return the most recent payment
+          return allPayments[0];
+        }
+        
+        console.log("No payment records found for user");
         return null;
       }
       
@@ -106,7 +125,37 @@ export function useSubscription() {
   
   useEffect(() => {
     checkStatus();
-  }, [checkStatus]);
+    
+    // Additionally, let's check if there are any issues with the payments table
+    if (user) {
+      // Check if the table exists and we have permissions
+      supabase
+        .from('payments_cutmod')
+        .select('count(*)', { count: 'exact' })
+        .then(({ count, error }) => {
+          if (error) {
+            console.error("Error accessing payments table:", error);
+            if (error.code === '42P01') {
+              // Table doesn't exist
+              toast({
+                variant: "destructive",
+                title: "Database configuration issue",
+                description: "The payments table doesn't exist. Please contact support.",
+              });
+            } else if (error.code === '42501') {
+              // Permission denied
+              toast({
+                variant: "destructive",
+                title: "Permission issue",
+                description: "You don't have permission to access payment data.",
+              });
+            }
+          } else {
+            console.log(`Found ${count} total payments in the system`);
+          }
+        });
+    }
+  }, [checkStatus, user]);
   
   return {
     ...subscriptionStatus,

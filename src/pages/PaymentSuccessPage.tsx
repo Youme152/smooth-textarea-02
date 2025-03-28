@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -13,7 +12,7 @@ import { format } from "date-fns";
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { user, updateUserPayment } = useAuthContext();
   const { subscribed, loading, refetch, checkPaymentStatus } = useSubscription();
   const [searchParams] = useSearchParams();
   const [verifying, setVerifying] = useState(true);
@@ -47,7 +46,20 @@ const PaymentSuccessPage = () => {
         console.log("Verifying payment with session ID:", sessionId);
         console.log("User ID:", user.id);
         
-        // Record the payment in our database
+        // Store the payment data in our database using the new auth method
+        await updateUserPayment({
+          sessionId: sessionId,
+          status: 'active'
+        });
+        
+        console.log("Payment recorded successfully via auth context.");
+        toast({
+          title: "Payment Recorded",
+          description: "Your payment has been successfully recorded in our system.",
+          duration: 5000,
+        });
+        
+        // Also try the original method as a backup - redundancy to ensure data is saved
         const { data, error: upsertError } = await supabase
           .from('payments_cutmod')
           .upsert({
@@ -61,15 +73,10 @@ const PaymentSuccessPage = () => {
           });
         
         if (upsertError) {
-          console.error("Error recording payment:", upsertError);
-          setError(`Failed to record payment: ${upsertError.message}`);
+          console.error("Error recording payment (backup method):", upsertError);
+          // Don't throw error here since we already tried the primary method
         } else {
-          console.log("Payment recorded successfully.");
-          toast({
-            title: "Payment Recorded",
-            description: "Your payment has been successfully recorded in our system.",
-            duration: 5000,
-          });
+          console.log("Payment recorded successfully (backup method).");
         }
         
         // Sync with Stripe to get the most accurate data
@@ -90,7 +97,7 @@ const PaymentSuccessPage = () => {
     };
 
     verifyAndRecordPayment();
-  }, [user, sessionId, refetch, checkPaymentStatus]);
+  }, [user, sessionId, refetch, checkPaymentStatus, updateUserPayment]);
 
   const handleSyncSubscription = async () => {
     setSyncingData(true);

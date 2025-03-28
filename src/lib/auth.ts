@@ -12,6 +12,7 @@ export interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updateUserPayment: (paymentData: any) => Promise<void>;
 }
 
 export const useAuth = (): AuthState => {
@@ -172,6 +173,53 @@ export const useAuth = (): AuthState => {
     }
   };
 
+  // New function to update user payment info in Supabase
+  const updateUserPayment = async (paymentData: any): Promise<void> => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You must be logged in to update payment information",
+      });
+      return;
+    }
+
+    try {
+      console.log("Updating payment data for user:", user.id);
+      console.log("Payment data:", paymentData);
+      
+      // Update or insert payment record in the payments_cutmod table
+      const { error } = await supabase
+        .from('payments_cutmod')
+        .upsert({
+          user_id: user.id,
+          status: paymentData.status || 'active',
+          stripe_session_id: paymentData.sessionId,
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error("Error updating payment record:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Payment information updated",
+        description: "Your payment details have been saved successfully",
+      });
+    } catch (error: any) {
+      console.error("Failed to update payment information:", error);
+      toast({
+        variant: "destructive",
+        title: "Error saving payment",
+        description: error.message || "An error occurred while saving payment information",
+      });
+      throw error;
+    }
+  };
+
   return {
     session,
     user,
@@ -179,6 +227,7 @@ export const useAuth = (): AuthState => {
     signUp,
     signIn,
     signOut,
-    resetPassword
+    resetPassword,
+    updateUserPayment
   };
 };
