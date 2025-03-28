@@ -7,7 +7,8 @@ export interface SubscriptionStatus {
   subscription?: any;
   loading: boolean;
   error?: string;
-  paymentRecord?: any; // Added paymentRecord property to the interface
+  paymentRecord?: any;
+  paymentHistory?: any[];
 }
 
 export const createCheckoutSession = async (): Promise<{ url: string } | null> => {
@@ -138,16 +139,43 @@ export const checkSubscriptionStatus = async (): Promise<SubscriptionStatus> => 
       };
     }
 
+    // Also check if there's additional billing information
+    const billingInfo = data?.subscription?.billing_details || null;
+    
     return { 
       subscribed: data?.subscribed || false,
       subscription: data?.subscription,
-      loading: false
+      loading: false,
+      billingInfo
     };
   } catch (error) {
     console.error("Exception checking subscription:", error);
     return { 
       subscribed: false, 
       loading: false,
+      error: error instanceof Error ? error.message : "An unknown error occurred"
+    };
+  }
+};
+
+// New function to sync subscription data
+export const syncSubscriptionData = async (): Promise<{ success: boolean, error?: string }> => {
+  try {
+    const { error } = await supabase.functions.invoke("sync-subscription-data");
+    
+    if (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+    
+    return {
+      success: true
+    };
+  } catch (error) {
+    return {
+      success: false,
       error: error instanceof Error ? error.message : "An unknown error occurred"
     };
   }

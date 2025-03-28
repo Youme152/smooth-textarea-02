@@ -49,7 +49,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
@@ -64,7 +64,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
@@ -81,6 +81,33 @@ serve(async (req) => {
       });
 
       if (customers.data.length === 0) {
+        // Check if we already have a payment record in our database
+        const { data: paymentData } = await supabaseClient
+          .from('payments_cutmod')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        // If we have a payment record with an active status, use that
+        if (paymentData && paymentData.status === 'active') {
+          return new Response(
+            JSON.stringify({ 
+              subscribed: true,
+              subscription: {
+                id: paymentData.stripe_subscription_id,
+                status: paymentData.status,
+                current_period_end: paymentData.current_period_end,
+                cancel_at_period_end: paymentData.cancel_at_period_end || false
+              },
+              localRecord: true
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200,
+            }
+          );
+        }
+          
         return new Response(
           JSON.stringify({ subscribed: false, reason: "No Stripe customer found" }),
           {
@@ -90,11 +117,10 @@ serve(async (req) => {
         );
       }
 
-      // Check for active subscriptions - updated to use the new price ID
+      // Check for active subscriptions - updated to check any active subscription
       const subscriptions = await stripe.subscriptions.list({
         customer: customers.data[0].id,
         status: 'active',
-        price: 'price_1R7YPgKbF8BsQYX0NUifYLls',  // Updated $2 test price ID
         limit: 1
       });
 
@@ -102,15 +128,66 @@ serve(async (req) => {
       
       // If subscribed, update the status in our database
       if (isSubscribed && subscriptions.data[0].id) {
+        // Get latest invoice if available
+        let latestInvoice = null;
+        let invoiceData = null;
+        
+        if (subscriptions.data[0].latest_invoice) {
+          try {
+            latestInvoice = await stripe.invoices.retrieve(
+              subscriptions.data[0].latest_invoice as string
+            );
+            
+            if (latestInvoice) {
+              invoiceData = {
+                id: latestInvoice.id,
+                status: latestInvoice.status,
+                amount_paid: latestInvoice.amount_paid,
+                created: latestInvoice.created,
+                period_start: latestInvoice.period_start,
+                period_end: latestInvoice.period_end
+              };
+            }
+          } catch (err) {
+            console.error("Error fetching latest invoice:", err);
+          }
+        }
+        
+        // Update our payment record
         await supabaseClient
           .from('payments_cutmod')
           .upsert({
             user_id: user.id,
             status: 'active',
-            stripe_session_id: subscriptions.data[0].id
+            stripe_session_id: subscriptions.data[0].id,
+            stripe_customer_id: customers.data[0].id,
+            stripe_subscription_id: subscriptions.data[0].id,
+            cancel_at_period_end: subscriptions.data[0].cancel_at_period_end,
+            current_period_end: new Date(subscriptions.data[0].current_period_end * 1000).toISOString(),
+            updated_at: new Date().toISOString()
           }, {
             onConflict: 'user_id'
           });
+      } else {
+        // Get the payment record from our database
+        const { data: paymentData } = await supabaseClient
+          .from('payments_cutmod')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+          
+        // If our DB says we have an active subscription but Stripe doesn't, update our DB
+        if (paymentData && paymentData.status === 'active') {
+          await supabaseClient
+            .from('payments_cutmod')
+            .upsert({
+              user_id: user.id,
+              status: 'inactive',
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_id'
+            });
+        }
       }
 
       return new Response(
@@ -132,7 +209,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 to prevent client-side errors but include error message
+          status: 200,
         }
       );
     }
@@ -145,7 +222,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200, // Return 200 to prevent client-side errors
+        status: 200,
       }
     );
   }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { checkSubscriptionStatus, SubscriptionStatus } from "@/services/subscriptionService";
 import { useAuthContext } from "@/components/auth/AuthContext";
@@ -21,19 +20,49 @@ export function useSubscription() {
         .from('payments_cutmod')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .single();
       
       if (error) {
+        if (error.code === 'PGRST116') { // No rows returned
+          console.log("No payment records found for user");
+          return null;
+        }
         console.error("Error fetching payment status:", error);
         return null;
       }
       
       console.log("Latest payment data:", data);
-      return data && data.length > 0 ? data[0] : null;
+      return data;
     } catch (error) {
       console.error("Exception fetching payment status:", error);
       return null;
+    }
+  }, [user]);
+
+  // Function to get payment history for the current user
+  const getPaymentHistory = useCallback(async () => {
+    if (!user) return [];
+    
+    try {
+      console.log("Fetching payment history for user:", user.id);
+      // In our current implementation, we only have one payment record per user
+      // but this function can be expanded to fetch multiple records if needed
+      const { data, error } = await supabase
+        .from('payments_cutmod')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching payment history:", error);
+        return [];
+      }
+      
+      console.log("Payment history:", data);
+      return data || [];
+    } catch (error) {
+      console.error("Exception fetching payment history:", error);
+      return [];
     }
   }, [user]);
   
@@ -55,10 +84,15 @@ export function useSubscription() {
       const status = await checkSubscriptionStatus();
       console.log("Subscription status from Stripe:", status);
       
+      // If we have conflicting information, prefer the Stripe source of truth
+      // but keep our payment record information
+      const isSubscribed = status.subscribed || (paymentRecord?.status === 'active');
+      
       // Update subscription status
       setSubscriptionStatus({
         ...status,
-        paymentRecord // This is now valid since we updated the interface
+        subscribed: isSubscribed,
+        paymentRecord
       });
     } catch (error) {
       console.error("Error in useSubscription hook:", error);
@@ -77,6 +111,7 @@ export function useSubscription() {
   return {
     ...subscriptionStatus,
     refetch: checkStatus,
-    checkPaymentStatus
+    checkPaymentStatus,
+    getPaymentHistory
   };
 }
