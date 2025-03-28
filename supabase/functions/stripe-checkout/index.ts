@@ -33,7 +33,13 @@ serve(async (req) => {
       throw new Error('No email found. User must be authenticated.');
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Get the Stripe secret key from environment variables
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      throw new Error('Missing Stripe secret key in environment variables');
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
