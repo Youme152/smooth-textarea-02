@@ -55,12 +55,14 @@ serve(async (req) => {
     });
 
     try {
+      console.log(`Looking up Stripe customer for user email: ${user.email}`);
       const customers = await stripe.customers.list({
         email: user.email,
         limit: 1
       });
 
       if (customers.data.length === 0) {
+        console.log("No Stripe customer found for this user");
         return new Response(
           JSON.stringify({ success: true, message: "No Stripe customer found" }),
           {
@@ -71,6 +73,7 @@ serve(async (req) => {
       }
 
       const customerId = customers.data[0].id;
+      console.log(`Found Stripe customer: ${customerId}`);
       
       const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
@@ -80,31 +83,41 @@ serve(async (req) => {
 
       if (subscriptions.data.length > 0) {
         const subscription = subscriptions.data[0];
+        console.log(`Found active subscription: ${subscription.id}`);
         
-        const latestInvoice = await stripe.invoices.retrieve(
-          subscription.latest_invoice as string
-        );
+        let latestInvoice;
+        try {
+          latestInvoice = await stripe.invoices.retrieve(
+            subscription.latest_invoice as string
+          );
+          console.log(`Retrieved latest invoice: ${latestInvoice.id}`);
+        } catch (invoiceError) {
+          console.error("Error retrieving latest invoice:", invoiceError);
+        }
         
+        const upsertData = {
+          user_id: user.id,
+          status: subscription.status,
+          stripe_session_id: subscription.id,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscription.id,
+          payment_status: latestInvoice?.status || 'paid',
+          amount_total: latestInvoice?.total || null,
+          currency: latestInvoice?.currency || null,
+          payment_method: latestInvoice?.payment_intent ? 'card' : null,
+          invoice_id: latestInvoice?.id || null,
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          created_at: new Date(subscription.created * 1000).toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        console.log("Upserting subscription data:", JSON.stringify(upsertData));
         const { error: upsertError } = await supabaseClient
           .from('payments_cutmod')
-          .upsert({
-            user_id: user.id,
-            status: subscription.status,
-            stripe_session_id: subscription.id,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-            payment_status: latestInvoice.status,
-            amount_total: latestInvoice.total,
-            currency: latestInvoice.currency,
-            payment_method: latestInvoice.payment_intent ? 'card' : null,
-            invoice_id: latestInvoice.id,
-            cancel_at_period_end: subscription.cancel_at_period_end,
-            period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            created_at: new Date(subscription.created * 1000).toISOString(),
-            updated_at: new Date().toISOString()
-          }, {
+          .upsert(upsertData, {
             onConflict: 'user_id'
           });
         
@@ -135,12 +148,14 @@ serve(async (req) => {
           }
         );
       } else {
+        console.log("No active subscriptions found, checking payment intents");
         const paymentIntents = await stripe.paymentIntents.list({
           customer: customerId,
           limit: 5
         });
         
         if (paymentIntents.data.length > 0) {
+          console.log(`Found ${paymentIntents.data.length} payment intents`);
           const { error: upsertError } = await supabaseClient
             .from('payments_cutmod')
             .upsert({

@@ -68,6 +68,7 @@ export function PaymentVerification({ onComplete }: PaymentVerificationProps) {
             status: 'active',
             stripe_session_id: sessionId,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }, {
             onConflict: 'user_id'
           });

@@ -73,24 +73,63 @@ export type Database = {
       }
       payments_cutmod: {
         Row: {
-          created_at: string | null
+          amount_total: number | null
+          cancel_at_period_end: boolean | null
+          canceled_at: string | null
+          created_at: string
+          currency: string | null
+          current_period_end: string | null
           id: string
+          invoice_id: string | null
+          payment_method: string | null
+          payment_status: string | null
+          period_end: string | null
+          period_start: string | null
           status: string | null
+          stripe_customer_id: string | null
           stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string | null
+          amount_total?: number | null
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
           id?: string
+          invoice_id?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          period_end?: string | null
+          period_start?: string | null
           status?: string | null
+          stripe_customer_id?: string | null
           stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Update: {
-          created_at?: string | null
+          amount_total?: number | null
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
           id?: string
+          invoice_id?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          period_end?: string | null
+          period_start?: string | null
           status?: string | null
+          stripe_customer_id?: string | null
           stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
