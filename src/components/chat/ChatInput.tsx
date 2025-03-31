@@ -13,11 +13,11 @@ export function ChatInput({
   onSendMessage, 
   isGenerating = false
 }: ChatInputProps) {
+  // Initialize all hooks at the top level
   const [input, setInput] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [lastSentTime, setLastSentTime] = useState(0);
-  // Add adaptive height state
   const [textareaHeight, setTextareaHeight] = useState(36);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);

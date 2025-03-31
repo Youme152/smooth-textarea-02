@@ -8,10 +8,9 @@ interface HtmlMessageProps {
 }
 
 export function HtmlMessage({ content, className }: HtmlMessageProps) {
+  // Always initialize all hooks at the top level
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasRendered, setHasRendered] = useState(false);
-
-  // Initialize state for content length to detect changes consistently
   const [contentLength, setContentLength] = useState(content.length);
 
   // Always render HTML content on mount or when content changes

@@ -23,8 +23,8 @@ export const MessageItem = memo(function MessageItem({
   type = "text", 
   filename 
 }: MessageItemProps) {
-  const { toast } = useToast();
   // Always initialize hooks at the top level
+  const { toast } = useToast();
   const [skipAnimation, setSkipAnimation] = useState(true);
   
   const copyToClipboard = (text: string) => {
@@ -35,29 +35,25 @@ export const MessageItem = memo(function MessageItem({
     });
   };
 
-  // Render user message
-  const renderUserMessage = () => {
-    return (
+  // Determine which content to render based on props
+  let messageContent;
+  
+  if (sender === "user") {
+    messageContent = (
       <div className="flex justify-end">
         <div className="bg-[#1E1E1E] text-white px-4 py-3 rounded-md max-w-md shadow-md">
           {content}
         </div>
       </div>
     );
-  };
-
-  // Render PDF message
-  const renderPDFMessage = () => {
-    return (
+  } else if (type === "pdf" && content) {
+    messageContent = (
       <div className="max-w-2xl">
         <PDFMessage url={content} filename={filename || "document.pdf"} />
       </div>
     );
-  };
-
-  // Render HTML message
-  const renderHTMLMessage = () => {
-    return (
+  } else if (type === "html" && content) {
+    messageContent = (
       <div className="max-w-2xl w-full">
         <HtmlMessage content={content} />
         <div className="flex items-center space-x-2 mt-4">
@@ -67,11 +63,8 @@ export const MessageItem = memo(function MessageItem({
         </div>
       </div>
     );
-  };
-
-  // Render standard assistant text message
-  const renderAssistantTextMessage = () => {
-    return (
+  } else {
+    messageContent = (
       <div className="max-w-2xl">
         <div className="text-white mb-4">
           <div className="mb-2">
@@ -101,18 +94,6 @@ export const MessageItem = memo(function MessageItem({
         </div>
       </div>
     );
-  };
-
-  // Main render logic - determine which content to show
-  let messageContent = null;
-  if (sender === "user") {
-    messageContent = renderUserMessage();
-  } else if (type === "pdf" && content) {
-    messageContent = renderPDFMessage();
-  } else if (type === "html" && content) {
-    messageContent = renderHTMLMessage();
-  } else {
-    messageContent = renderAssistantTextMessage();
   }
 
   // Always return the rendered message from the component
