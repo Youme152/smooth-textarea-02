@@ -1,7 +1,8 @@
 
 // Single webhook URL
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const WEBHOOK_TIMEOUT = 600000; // 10 minutes timeout (600,000 ms)
+const WEBHOOK_TIMEOUT = 1800000; // 30 minutes timeout (1,800,000 ms)
+const STATUS_CHECK_INTERVAL = 30000; // Check status every 30 seconds
 
 export interface AIResponse {
   type: 'text' | 'pdf' | 'html';
@@ -20,21 +21,29 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
     
     // Make a single fetch request with a longer timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      // Instead of aborting immediately, we'll just log that we're waiting longer
-      console.log("Request is taking longer than expected, but we'll keep waiting...");
-    }, 30000); // 30 seconds notification
+    const signal = controller.signal;
+    
+    // Set up periodic status updates for long-running requests
+    const timeoutUpdates = [];
+    for (let i = 1; i <= 10; i++) {
+      timeoutUpdates.push(setTimeout(() => {
+        console.log(`Request is taking longer than ${i*30} seconds, but we'll keep waiting...`);
+      }, i * STATUS_CHECK_INTERVAL));
+    }
 
     try {
-      // Make a single fetch request
+      // Make a single fetch request with a much longer timeout
       const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
           'Accept': 'application/json, application/pdf, text/html',
         },
-        // Add timeout to prevent hanging requests but make it very long
+        // Use a very long timeout to allow for lengthy processing
         signal: AbortSignal.timeout(WEBHOOK_TIMEOUT)
       });
+      
+      // Clear all timeout updates once we get a response
+      timeoutUpdates.forEach(id => clearTimeout(id));
       
       console.log("Webhook response status:", response.status);
       
@@ -161,7 +170,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
         return { type: 'text', content: responseText };
       }
     } finally {
-      clearTimeout(timeoutId);
+      timeoutUpdates.forEach(id => clearTimeout(id));
     }
   } catch (error: any) {
     console.error("Webhook error:", error);
@@ -170,13 +179,13 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
     if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout')) {
       return { 
         type: 'text', 
-        content: "The AI is still working on your request. This might take longer than usual. Your request is still being processed in the background and will appear when ready. Please check back in a moment or try a new request if you'd prefer not to wait." 
+        content: "The AI is still working on your request. This is taking longer than usual (over 2 minutes). Your request is being processed in the background and will appear when ready. Please check back in a moment or try a new request if you'd prefer not to wait." 
       };
     }
     
     return { 
       type: 'text', 
-      content: "I'm having trouble connecting to the AI service. Please try again in a moment." 
+      content: "I'm having trouble connecting to the AI service. Please try again in a moment. If this message is for a previous request, it's possible your request was too complex and the AI is still processing it." 
     };
   }
 };
