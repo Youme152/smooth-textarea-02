@@ -17,6 +17,8 @@ export function ChatInput({
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [lastSentTime, setLastSentTime] = useState(0);
+  // Add adaptive height state
+  const [textareaHeight, setTextareaHeight] = useState(36);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
@@ -35,11 +37,31 @@ export function ChatInput({
     }
   }, [isGenerating, isSending]);
   
+  // Adjust textarea height based on content
+  useEffect(() => {
+    adjustHeight();
+  }, [input]);
+  
   // Handle clicks on the input container to focus the textarea
   const handleContainerClick = () => {
     if (textareaRef.current && !isGenerating && !isSending) {
       textareaRef.current.focus();
     }
+  };
+
+  const adjustHeight = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    // Reset the height to recalculate correctly
+    textarea.style.height = '36px';
+    
+    // Calculate the new height based on scrollHeight with min/max constraints
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, 36), 150);
+    
+    // Update the state and style
+    setTextareaHeight(newHeight);
+    textarea.style.height = `${newHeight}px`;
   };
 
   const handleSendMessage = () => {
@@ -51,6 +73,12 @@ export function ChatInput({
     // Clone the input value before clearing the input field
     const messageToSend = input.trim();
     setInput("");
+    
+    // Reset textarea height
+    setTextareaHeight(36);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '36px';
+    }
     
     // Send the message
     onSendMessage(messageToSend);
@@ -103,12 +131,12 @@ export function ChatInput({
               "focus:outline-none",
               "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-none",
               "placeholder:text-gray-500 placeholder:text-base",
-              "h-[36px] min-h-[36px] max-h-[36px]",
               "transition-all duration-300",
               "overflow-hidden",
               "caret-white", // Set the cursor color to white
               (isGenerating || isSending) && "opacity-70"
             )}
+            style={{ height: `${textareaHeight}px`, minHeight: '36px', maxHeight: '150px' }}
             spellCheck={false} // Disable spellcheck to avoid the cancel button
           />
 

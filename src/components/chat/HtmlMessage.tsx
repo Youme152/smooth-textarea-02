@@ -11,8 +11,14 @@ export function HtmlMessage({ content, className }: HtmlMessageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasRendered, setHasRendered] = useState(false);
 
+  // Initialize state for content length to detect changes consistently
+  const [contentLength, setContentLength] = useState(content.length);
+
   // Always render HTML content on mount or when content changes
   useEffect(() => {
+    // Update content length to track changes
+    setContentLength(content.length);
+    
     if (containerRef.current) {
       containerRef.current.innerHTML = content;
       setHasRendered(true);

@@ -24,9 +24,9 @@ export const MessageItem = memo(function MessageItem({
   filename 
 }: MessageItemProps) {
   const { toast } = useToast();
-  const [skipAnimation] = useState(true); // Always set to true to skip animation
+  // Always initialize hooks at the top level
+  const [skipAnimation, setSkipAnimation] = useState(true);
   
-  // Consistently call hooks regardless of render path
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -35,39 +35,42 @@ export const MessageItem = memo(function MessageItem({
     });
   };
 
-  // Render based on message type
-  const renderMessage = () => {
-    if (sender === "user") {
-      return (
-        <div className="flex justify-end">
-          <div className="bg-[#1E1E1E] text-white px-4 py-3 rounded-md max-w-md shadow-md">
-            {content}
-          </div>
+  // Render user message
+  const renderUserMessage = () => {
+    return (
+      <div className="flex justify-end">
+        <div className="bg-[#1E1E1E] text-white px-4 py-3 rounded-md max-w-md shadow-md">
+          {content}
         </div>
-      );
-    }
+      </div>
+    );
+  };
 
-    if (type === "pdf" && content) {
-      return (
-        <div className="max-w-2xl">
-          <PDFMessage url={content} filename={filename || "document.pdf"} />
+  // Render PDF message
+  const renderPDFMessage = () => {
+    return (
+      <div className="max-w-2xl">
+        <PDFMessage url={content} filename={filename || "document.pdf"} />
+      </div>
+    );
+  };
+
+  // Render HTML message
+  const renderHTMLMessage = () => {
+    return (
+      <div className="max-w-2xl w-full">
+        <HtmlMessage content={content} />
+        <div className="flex items-center space-x-2 mt-4">
+          <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
+            <Copy className="h-4 w-4 text-gray-400" onClick={() => copyToClipboard(content)} />
+          </button>
         </div>
-      );
-    }
+      </div>
+    );
+  };
 
-    if (type === "html" && content) {
-      return (
-        <div className="max-w-2xl w-full">
-          <HtmlMessage content={content} />
-          <div className="flex items-center space-x-2 mt-4">
-            <button className="p-1 rounded hover:bg-gray-800 focus:outline-none">
-              <Copy className="h-4 w-4 text-gray-400" onClick={() => copyToClipboard(content)} />
-            </button>
-          </div>
-        </div>
-      );
-    }
-
+  // Render standard assistant text message
+  const renderAssistantTextMessage = () => {
     return (
       <div className="max-w-2xl">
         <div className="text-white mb-4">
@@ -100,13 +103,25 @@ export const MessageItem = memo(function MessageItem({
     );
   };
 
+  // Main render logic - determine which content to show
+  let messageContent = null;
+  if (sender === "user") {
+    messageContent = renderUserMessage();
+  } else if (type === "pdf" && content) {
+    messageContent = renderPDFMessage();
+  } else if (type === "html" && content) {
+    messageContent = renderHTMLMessage();
+  } else {
+    messageContent = renderAssistantTextMessage();
+  }
+
   // Always return the rendered message from the component
   return (
     <div className={cn(
       "mb-10 group focus:outline-none",
       sender === "user" ? "flex justify-end" : "flex justify-start"
     )}>
-      {renderMessage()}
+      {messageContent}
     </div>
   );
 });
