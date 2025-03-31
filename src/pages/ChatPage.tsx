@@ -1,6 +1,6 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { ChatContainer } from "@/components/chat/ChatContainer";

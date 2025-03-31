@@ -1,73 +1,83 @@
 
-// Single webhook URL
-const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
+import { v4 as uuidv4 } from 'uuid';
 
-export interface AIResponse {
-  type: 'text' | 'pdf' | 'html';
-  content: string;
-  filename?: string;
-}
+// For simulating AI responses in development environment
+const mockResponses = [
+  "I'm sorry, I don't understand. Could you please clarify?",
+  "That's an interesting question. Here's what I think...",
+  "Based on the latest research, the answer is more complex than it seems.",
+  "According to my knowledge, that would be correct.",
+  "I'd recommend considering several factors before making that decision."
+];
 
-// Simple function to fetch response from the webhook
-export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> => {
+// Base URL for API requests
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://timelineai-server-v1.onrender.com';
+
+/**
+ * Fetches a response from the AI based on the user's message
+ */
+export const fetchAIResponse = async (userMessage: string) => {
+  console.log("Sending message to webhook:", userMessage);
   try {
-    console.log("Sending message to webhook:", userMessage);
-    
-    // Prepare URL with message parameter
-    const url = new URL(WEBHOOK_URL);
-    url.searchParams.append('message', userMessage);
-    
-    // Make a fetch request without a timeout
-    const response = await fetch(url.toString(), {
-      method: 'GET',
+    // Send the request to the webhook endpoint
+    const response = await fetch(`${API_BASE_URL}/api/chat`, {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json, application/pdf, text/html',
       },
+      body: JSON.stringify({ 
+        message: userMessage,
+        messageId: uuidv4()
+      }),
     });
     
     console.log("Webhook response status:", response.status);
     
+    // Check if response is OK
     if (!response.ok) {
-      throw new Error(`Webhook responded with status code ${response.status}`);
+      const errorText = await response.text();
+      console.error("Error response from webhook:", errorText);
+      throw new Error(`API responded with status ${response.status}: ${errorText}`);
     }
     
     // Check content type to determine how to handle the response
     const contentType = response.headers.get('Content-Type') || '';
+    console.log("Response content type:", contentType);
     
-    // Handle PDF response
+    // Handle PDF responses
     if (contentType.includes('application/pdf')) {
       console.log("Detected PDF response");
       const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       
-      // Get filename from Content-Disposition header or use default
+      // Extract filename from Content-Disposition header if available
       const contentDisposition = response.headers.get('Content-Disposition') || '';
       const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-      const filename = filenameMatch ? filenameMatch[1] : `document-${Date.now()}.pdf`;
+      const filename = filenameMatch ? filenameMatch[1] : 'document.pdf';
       
       return {
         type: 'pdf',
-        content: objectUrl,
-        filename
+        content: url,
+        filename: filename
       };
     }
     
-    // Handle HTML response
+    // Handle HTML responses
     if (contentType.includes('text/html')) {
       console.log("Detected HTML response");
       const htmlContent = await response.text();
-      
       return {
         type: 'html',
         content: htmlContent
       };
     }
     
-    // Handle text/JSON response
+    // Get the response text for further processing
     const responseText = await response.text();
-    console.log("Raw webhook response:", responseText);
+    console.log("Response text:", responseText.substring(0, 150) + "...");
     
-    // Check if the response looks like HTML (even if not properly content-typed)
+    // Check if the content appears to be HTML based on its structure
     if (responseText.trim().startsWith('<!DOCTYPE html>') || 
         responseText.trim().startsWith('<html') || 
         (responseText.includes('<') && responseText.includes('</') && 
@@ -94,24 +104,29 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       
       // Handle array response with output field
       if (Array.isArray(data) && data.length > 0) {
-        if (data[0] && data[0].output !== undefined) {
+        if (data[0].output) {
           return { type: 'text', content: data[0].output };
+        }
+        if (typeof data[0] === 'string') {
+          return { type: 'text', content: data[0] };
         }
       }
       
-      // Handle direct object with output field
-      if (data && data.output !== undefined) {
+      // Handle standard API response formats
+      if (data.output) {
         return { type: 'text', content: data.output };
       }
       
-      // Handle direct object with response field
-      if (data && data.response !== undefined) {
-        return { type: 'text', content: data.response };
+      if (data.content) {
+        return { type: 'text', content: data.content };
       }
       
-      // Handle direct message field
-      if (data && data.message !== undefined) {
+      if (data.message) {
         return { type: 'text', content: data.message };
+      }
+      
+      if (data.text) {
+        return { type: 'text', content: data.text };
       }
       
       // If it's a string directly
@@ -119,32 +134,18 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
         return { type: 'text', content: data };
       }
       
-      // Check if there might be a parts property that's causing the error
-      if (data && data.parts) {
-        // Safely handle the parts property
-        return { 
-          type: 'text', 
-          content: Array.isArray(data.parts) ? data.parts.join('\n') : String(data.parts) 
-        };
-      }
-      
-      // Fallback to a generic message with the raw data as string
+      // Fallback for other JSON structures
       return { 
         type: 'text', 
-        content: "I received your message but couldn't format the response properly. Raw response: " + JSON.stringify(data)
+        content: "Received a JSON response that doesn't match expected format: " + JSON.stringify(data).substring(0, 200)
       };
-    } catch (jsonError) {
-      console.error("JSON parsing error:", jsonError);
-      
-      // If it's not valid JSON, just return the raw text
+    } catch (parseError) {
+      console.log("Response is not valid JSON, treating as plain text");
+      // Not JSON, treat as plain text
       return { type: 'text', content: responseText };
     }
   } catch (error) {
-    console.error("Webhook error:", error);
-    
-    return { 
-      type: 'text', 
-      content: "I'm having trouble connecting to the AI service. Please wait as I continue trying to process your request. This might take a moment." 
-    };
+    console.error("Error fetching response:", error);
+    throw error;
   }
 };

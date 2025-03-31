@@ -13,8 +13,7 @@ export function HtmlMessage({ content }: HtmlMessageProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   
   useEffect(() => {
-    if (!iframeRef.current) return;
-    
+    // Define the handler function outside any conditions
     const handleIframeLoad = () => {
       const iframe = iframeRef.current;
       if (iframe && iframe.contentWindow?.document.body) {
@@ -43,7 +42,7 @@ export function HtmlMessage({ content }: HtmlMessageProps) {
         iframe.removeEventListener('load', handleIframeLoad);
       }
     };
-  }, [content]);
+  }, [content]); // Only depend on content
   
   return (
     <div className="html-message w-full">
