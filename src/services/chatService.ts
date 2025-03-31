@@ -19,6 +19,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://timelineai-server-
 export const fetchAIResponse = async (userMessage: string) => {
   console.log("Sending message to webhook:", userMessage);
   try {
+    // Generate a unique message ID
+    const messageId = uuidv4();
+    console.log("Generated message ID:", messageId);
+    
     // Send the request to the webhook endpoint
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
@@ -28,7 +32,7 @@ export const fetchAIResponse = async (userMessage: string) => {
       },
       body: JSON.stringify({ 
         message: userMessage,
-        messageId: uuidv4()
+        messageId: messageId
       }),
     });
     

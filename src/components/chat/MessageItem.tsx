@@ -13,8 +13,10 @@ interface MessageItemProps {
 }
 
 export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
-  // Determine message content based on type
-  const renderMessageContent = () => {
+  // No hooks in this component, just render based on props
+  
+  // Render different content based on message type
+  const renderContent = () => {
     if (type === "pdf" && content) {
       return <PDFMessage url={content} filename={filename || "document.pdf"} />;
     } 
@@ -27,7 +29,7 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
     return (
       <div className="prose prose-invert max-w-none">
         {content.split("\n").map((line, i) => (
-          <p key={i} className={line.trim() === "" ? "my-3" : "my-1"}>
+          <p key={`${id}-line-${i}`} className={line.trim() === "" ? "my-3" : "my-1"}>
             {line}
           </p>
         ))}
@@ -50,7 +52,7 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
             : "bg-neutral-800 text-neutral-200"
         )}
       >
-        {renderMessageContent()}
+        {renderContent()}
       </div>
     </div>
   );
