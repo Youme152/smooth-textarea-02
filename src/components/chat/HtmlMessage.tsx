@@ -11,28 +11,13 @@ export function HtmlMessage({ content, className }: HtmlMessageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasRendered, setHasRendered] = useState(false);
 
+  // Always render HTML content on mount or when content changes
   useEffect(() => {
-    if (containerRef.current && !hasRendered) {
+    if (containerRef.current) {
       containerRef.current.innerHTML = content;
       setHasRendered(true);
     }
-  }, [content, hasRendered]);
-
-  // Prevent unnecessary re-renders on visibility change
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && containerRef.current && !hasRendered) {
-        containerRef.current.innerHTML = content;
-        setHasRendered(true);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [content, hasRendered]);
+  }, [content]);
 
   return (
     <div 

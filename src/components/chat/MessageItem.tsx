@@ -1,11 +1,11 @@
 
 import { cn } from "@/lib/utils";
-import { MessageLoadingEffect, TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Download, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { PDFMessage } from "./PDFMessage";
 import { HtmlMessage } from "./HtmlMessage";
-import { useEffect, useState, memo } from "react";
+import { useState, memo } from "react";
 
 interface MessageItemProps {
   id: string;
@@ -24,11 +24,9 @@ export const MessageItem = memo(function MessageItem({
   filename 
 }: MessageItemProps) {
   const { toast } = useToast();
-  const [skipAnimation, setSkipAnimation] = useState(true);
+  const [skipAnimation] = useState(true); // Always set to true to skip animation
   
-  // Skip animation for any message - always set to true
-  // This ensures animation is skipped even when returning to the page
-  
+  // Consistently call hooks regardless of render path
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
