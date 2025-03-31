@@ -17,19 +17,22 @@ export function MessageItem({ id, content, sender, type = "text", filename }: Me
   const renderMessageContent = () => {
     if (type === "pdf" && content) {
       return <PDFMessage url={content} filename={filename || "document.pdf"} />;
-    } else if (type === "html" && content) {
+    } 
+    
+    if (type === "html" && content) {
       return <HtmlMessage content={content} />;
-    } else {
-      return (
-        <div className="prose prose-invert max-w-none">
-          {content.split("\n").map((line, i) => (
-            <p key={i} className={line.trim() === "" ? "my-3" : "my-1"}>
-              {line}
-            </p>
-          ))}
-        </div>
-      );
-    }
+    } 
+    
+    // Default text rendering
+    return (
+      <div className="prose prose-invert max-w-none">
+        {content.split("\n").map((line, i) => (
+          <p key={i} className={line.trim() === "" ? "my-3" : "my-1"}>
+            {line}
+          </p>
+        ))}
+      </div>
+    );
   };
 
   return (

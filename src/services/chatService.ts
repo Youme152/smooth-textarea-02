@@ -23,7 +23,6 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       headers: {
         'Accept': 'application/json, application/pdf, text/html',
       },
-      // No timeout signal - wait indefinitely for the response
     });
     
     console.log("Webhook response status:", response.status);
@@ -72,7 +71,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
     if (responseText.trim().startsWith('<!DOCTYPE html>') || 
         responseText.trim().startsWith('<html') || 
         (responseText.includes('<') && responseText.includes('</') && 
-        responseText.includes('<div') || responseText.includes('<p'))) {
+        (responseText.includes('<div') || responseText.includes('<p')))) {
       console.log("Detected HTML-like content in response");
       return {
         type: 'html',
@@ -80,20 +79,18 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       };
     }
     
+    // Safety check for empty response
+    if (!responseText || responseText.trim() === '') {
+      return { 
+        type: 'text', 
+        content: "The AI service returned an empty response. Please try again with a different query."
+      };
+    }
+    
     try {
-      // Safety check for empty response
-      if (!responseText || responseText.trim() === '') {
-        return { 
-          type: 'text', 
-          content: "The AI service returned an empty response. Please try again with a different query."
-        };
-      }
-      
       // Try to parse as JSON if possible
       const data = JSON.parse(responseText);
       console.log("Parsed JSON response:", data);
-      
-      // Add additional safeguards for undefined properties
       
       // Handle array response with output field
       if (Array.isArray(data) && data.length > 0) {
@@ -120,14 +117,6 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       // If it's a string directly
       if (typeof data === 'string') {
         return { type: 'text', content: data };
-      }
-      
-      // Specifically check for undefined parts property
-      if (data && data.parts === undefined) {
-        return {
-          type: 'text',
-          content: "Received a response without expected data format. Please try again with a different query."
-        };
       }
       
       // Check if there might be a parts property that's causing the error

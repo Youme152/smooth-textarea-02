@@ -59,6 +59,7 @@ const ChatPage = () => {
     };
   }, [conversationId, messages.length, resetChatState]);
 
+  // Always return the same structure for consistency in hook usage
   return (
     <ChatContainer
       conversationTitle={conversationTitle}
@@ -70,6 +71,6 @@ const ChatPage = () => {
       onSendMessage={handleSendMessage}
     />
   );
-}
+};
 
 export default ChatPage;

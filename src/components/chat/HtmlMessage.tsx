@@ -13,6 +13,8 @@ export function HtmlMessage({ content }: HtmlMessageProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   
   useEffect(() => {
+    if (!iframeRef.current) return;
+    
     const handleIframeLoad = () => {
       const iframe = iframeRef.current;
       if (iframe && iframe.contentWindow?.document.body) {
@@ -29,6 +31,11 @@ export function HtmlMessage({ content }: HtmlMessageProps) {
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.addEventListener('load', handleIframeLoad);
+      
+      // Force load handler to run if iframe is already loaded
+      if (iframe.contentWindow?.document.readyState === 'complete') {
+        handleIframeLoad();
+      }
     }
     
     return () => {
