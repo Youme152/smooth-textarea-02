@@ -22,6 +22,9 @@ export function ChatContainer({
   onLoadMore,
   onSendMessage
 }: ChatContainerProps) {
+  // This component doesn't use hooks directly, 
+  // but passes props to components that do
+
   return (
     <div className="flex h-screen bg-[#131314] text-white overflow-hidden">
       <ChatSidebar />

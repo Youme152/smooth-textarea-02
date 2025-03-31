@@ -7,16 +7,16 @@ import { ChatContainer } from "@/components/chat/ChatContainer";
 import { tempMessageStore } from "@/pages/Index";
 
 const ChatPage = () => {
+  // Always initialize all hooks at the top level
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [initialMessage, setInitialMessage] = useState<string | null>(null);
   
+  // Get the conversationId from query params
   const queryParams = new URLSearchParams(location.search);
   const conversationId = queryParams.get("id");
-  
-  // Get the pending message from our store
-  const [initialMessage, setInitialMessage] = useState<string | null>(null);
   
   // Initialize the initialMessage state with the pending message once
   useEffect(() => {

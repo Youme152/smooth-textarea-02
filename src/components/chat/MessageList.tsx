@@ -12,7 +12,7 @@ type Message = {
   content: string;
   sender: "user" | "assistant";
   timestamp: Date;
-  type?: "text" | "pdf";
+  type?: "text" | "pdf" | "html";
   filename?: string;
 };
 
@@ -31,9 +31,11 @@ export function MessageList({
   isLoading = false, 
   hasMore = false 
 }: MessageListProps) {
+  // Always initialize all hooks at the top level
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
 
+  // Use useEffect consistently
   useEffect(() => {
     // Only auto-scroll to bottom on first render or when new messages are added (not when loading older messages)
     if (isFirstRender.current || !isLoading) {
@@ -42,6 +44,7 @@ export function MessageList({
     }
   }, [messages, isGenerating, isLoading]);
 
+  // Render content with proper message item wrapping
   return (
     <ScrollArea className="flex-1">
       <div className="max-w-3xl mx-auto py-4 px-4">
@@ -66,22 +69,16 @@ export function MessageList({
           </div>
         )}
         
+        {/* Ensure we're rendering each message in a consistent way */}
         {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={cn(
-              "mb-10 group focus:outline-none",
-              message.sender === "user" ? "flex justify-end" : "flex justify-start"
-            )}
-          >
-            <MessageItem 
-              id={message.id}
-              content={message.content}
-              sender={message.sender}
-              type={message.type}
-              filename={message.filename}
-            />
-          </div>
+          <MessageItem 
+            key={message.id}
+            id={message.id}
+            content={message.content}
+            sender={message.sender}
+            type={message.type}
+            filename={message.filename}
+          />
         ))}
         
         {isGenerating && (

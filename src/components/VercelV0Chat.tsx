@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -16,13 +17,13 @@ import { useSubscription } from "@/hooks/useSubscription";
 const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds
 
 export function VercelV0Chat() {
+  // Always initialize all hooks at the top level of your component
   const [value, setValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [lastSentMessage, setLastSentMessage] = useState({ content: "", timestamp: 0 });
   
   const isMobile = useIsMobile();
-  
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { subscribed, loading: subscriptionLoading } = useSubscription();
