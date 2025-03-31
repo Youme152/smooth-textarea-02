@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ const MESSAGES_PER_PAGE = 20;
 const DUPLICATE_PREVENTION_TIMEOUT = 5000; // 5 seconds cooldown between identical messages
 
 export const useChatMessages = (conversationId: string | null, user: any | null, initialMessage: string | null) => {
+  // Always initialize all hooks at the top level
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [conversationTitle, setConversationTitle] = useState("New Conversation");
@@ -107,7 +109,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
   }, [conversationId, initialMessage, initialMessageProcessed, isGenerating, initialLoadComplete, messages]);
 
   // Check if a message is a duplicate (sent recently)
-  const isDuplicateMessage = (content: string) => {
+  const isDuplicateMessage = useCallback((content: string) => {
     const normalizedContent = content.trim().toLowerCase();
     const now = Date.now();
     
@@ -124,10 +126,10 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     
     // Not a duplicate or timeout has passed
     return false;
-  };
+  }, [recentMessages]);
 
   // Add message to recent messages tracking
-  const trackMessageSent = (content: string) => {
+  const trackMessageSent = useCallback((content: string) => {
     const normalizedContent = content.trim().toLowerCase();
     const now = Date.now();
     
@@ -145,14 +147,19 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       
       return updated;
     });
-  };
+  }, []);
 
-  const createNewConversation = async () => {
+  const createNewConversation = useCallback(async () => {
     try {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+      
       const { data, error } = await supabase
         .from("chat_conversations")
         .insert([{ 
-          user_id: user?.id,
+          user_id: user.id,
           title: "New Conversation" 
         }])
         .select()
@@ -169,9 +176,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         description: error.message || "An error occurred while creating a new conversation."
       });
     }
-  };
+  }, [user, navigate, toast]);
 
-  const fetchConversationTitle = async () => {
+  const fetchConversationTitle = useCallback(async () => {
     if (!conversationId) return;
     
     try {
@@ -187,9 +194,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     } catch (error) {
       console.error("Error fetching conversation title:", error);
     }
-  };
+  }, [conversationId]);
 
-  const fetchMessages = async (page = 0, forceRefresh = false) => {
+  const fetchMessages = useCallback(async (page = 0, forceRefresh = false) => {
     if (!conversationId) return;
     
     try {
@@ -243,15 +250,15 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     } finally {
       setIsLoadingMessages(false);
     }
-  };
+  }, [conversationId]);
 
-  const loadMoreMessages = () => {
+  const loadMoreMessages = useCallback(() => {
     if (!isLoadingMessages && hasMoreMessages) {
       fetchMessages(currentPage + 1);
     }
-  };
+  }, [isLoadingMessages, hasMoreMessages, fetchMessages, currentPage]);
 
-  const updateConversationTitle = async (content: string) => {
+  const updateConversationTitle = useCallback(async (content: string) => {
     if (!conversationId || !user) return;
     
     try {
@@ -270,10 +277,10 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     } catch (error) {
       console.error("Error updating conversation title:", error);
     }
-  };
+  }, [conversationId, user, messages.length, conversationTitle]);
 
-  const saveMessageToSupabase = async (content: string, isUserMessage: boolean, type: "text" | "pdf" | "html" = "text", filename?: string) => {
-    if (!conversationId || !user) return;
+  const saveMessageToSupabase = useCallback(async (content: string, isUserMessage: boolean, type: "text" | "pdf" | "html" = "text", filename?: string) => {
+    if (!conversationId || !user) return null;
     
     try {
       const { data, error } = await supabase
@@ -300,9 +307,9 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
       console.error("Error saving message:", error);
       return null;
     }
-  };
+  }, [conversationId, user, updateConversationTitle]);
 
-  const handleSendMessage = async (input: string) => {
+  const handleSendMessage = useCallback(async (input: string) => {
     if (!input.trim() || isGenerating) return;
     
     console.log("Handling send message:", input);
@@ -368,7 +375,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         );
       }
       
-      // Get AI response - with no timeout
+      // Get AI response - without a timeout
       const aiResponse = await fetchAIResponse(input);
       
       // Check if this request is still active and for the current conversation
@@ -441,7 +448,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         activeRequestRef.current = null;
       }
     }
-  };
+  }, [isGenerating, isDuplicateMessage, toast, processedMessageIds, trackMessageSent, saveMessageToSupabase]);
 
   return {
     messages,

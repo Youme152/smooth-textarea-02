@@ -6,15 +6,17 @@ interface HtmlMessageProps {
 }
 
 export function HtmlMessage({ content }: HtmlMessageProps) {
+  // Always initialize all hooks at the top level
   const [isExpanded, setIsExpanded] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [iframeHeight, setIframeHeight] = useState(300);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   
   useEffect(() => {
     const handleIframeLoad = () => {
-      if (iframeRef.current?.contentWindow?.document.body) {
-        const body = iframeRef.current.contentWindow.document.body;
+      const iframe = iframeRef.current;
+      if (iframe && iframe.contentWindow?.document.body) {
+        const body = iframe.contentWindow.document.body;
         const height = body.scrollHeight;
         setIframeHeight(Math.min(Math.max(height, 200), 800));
         

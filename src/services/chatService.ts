@@ -1,7 +1,6 @@
 
 // Single webhook URL
 const WEBHOOK_URL = "https://ydo453.app.n8n.cloud/webhook/4958690b-eb4d-4f82-8f52-49e13e56b7eb";
-const WEBHOOK_TIMEOUT = 0; // No timeout - wait indefinitely as requested
 
 export interface AIResponse {
   type: 'text' | 'pdf' | 'html';
@@ -24,7 +23,7 @@ export const fetchAIResponse = async (userMessage: string): Promise<AIResponse> 
       headers: {
         'Accept': 'application/json, application/pdf, text/html',
       },
-      // No timeout signal
+      // No timeout signal - wait indefinitely for the response
     });
     
     console.log("Webhook response status:", response.status);
