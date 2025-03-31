@@ -28,6 +28,20 @@ export function ChatInput({
     return now - lastSentTime >= sendCooldown;
   };
 
+  // Auto-focus the textarea when the component mounts
+  useEffect(() => {
+    if (textareaRef.current && !isGenerating && !isSending) {
+      textareaRef.current.focus();
+    }
+  }, [isGenerating, isSending]);
+  
+  // Handle clicks on the input container to focus the textarea
+  const handleContainerClick = () => {
+    if (textareaRef.current && !isGenerating && !isSending) {
+      textareaRef.current.focus();
+    }
+  };
+
   const handleSendMessage = () => {
     if (!input.trim() || isGenerating || isSending || !canSendMessage()) return;
     
@@ -51,20 +65,6 @@ export function ChatInput({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
-    }
-  };
-
-  // Auto-focus the textarea when the component mounts
-  useEffect(() => {
-    if (textareaRef.current && !isGenerating && !isSending) {
-      textareaRef.current.focus();
-    }
-  }, [isGenerating, isSending]);
-  
-  // Handle clicks on the input container to focus the textarea
-  const handleContainerClick = () => {
-    if (textareaRef.current && !isGenerating && !isSending) {
-      textareaRef.current.focus();
     }
   };
 
