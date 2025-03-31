@@ -1,6 +1,6 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuthContext } from "@/components/auth/AuthContext";
 import { useChatMessages } from "@/hooks/useChatMessages";
 import { ChatContainer } from "@/components/chat/ChatContainer";
@@ -28,6 +28,7 @@ const ChatPage = () => {
   }, [conversationId]); // Add conversationId as dependency to reset on chat change
 
   // Use the custom hook to manage chat messages and state
+  // Important: Always call hooks regardless of conditions
   const {
     messages,
     isGenerating,
@@ -59,7 +60,7 @@ const ChatPage = () => {
     };
   }, [conversationId, messages.length, resetChatState]);
 
-  // Always return the same structure for consistency in hook usage
+  // Always return the ChatContainer with all necessary props
   return (
     <ChatContainer
       conversationTitle={conversationTitle}

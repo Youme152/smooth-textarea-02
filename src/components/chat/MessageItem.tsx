@@ -13,8 +13,6 @@ interface MessageItemProps {
 }
 
 export function MessageItem({ id, content, sender, type = "text", filename }: MessageItemProps) {
-  // No hooks in this component, just render based on props
-  
   // Render different content based on message type
   const renderContent = () => {
     if (type === "pdf" && content) {
