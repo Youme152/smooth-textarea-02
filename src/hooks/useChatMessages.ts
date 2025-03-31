@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -85,7 +84,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
     
     fetchMessages(0);
     fetchConversationTitle();
-  }, [conversationId, user]);
+  }, [conversationId, user, navigate]);
 
   // Process initial message after conversation is loaded
   useEffect(() => {
@@ -369,7 +368,7 @@ export const useChatMessages = (conversationId: string | null, user: any | null,
         );
       }
       
-      // Get AI response
+      // Get AI response - with no timeout
       const aiResponse = await fetchAIResponse(input);
       
       // Check if this request is still active and for the current conversation
