@@ -31,6 +31,13 @@ export function ChatInputField({
 }: ChatInputFieldProps) {
   const isMobile = useIsMobile();
   
+  // Always call adjustHeight when value changes to ensure consistency
+  useEffect(() => {
+    if (adjustHeight) {
+      adjustHeight();
+    }
+  }, [value, adjustHeight]);
+  
   return (
     <div className="overflow-hidden">
       <Textarea
@@ -38,7 +45,7 @@ export function ChatInputField({
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          // No height adjustment
+          // Don't call adjustHeight here - we handle it in the useEffect
         }}
         onKeyDown={onKeyDown}
         onFocus={onFocus}

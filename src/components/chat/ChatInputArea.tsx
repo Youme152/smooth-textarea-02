@@ -27,6 +27,7 @@ export function ChatInputArea({
   onKeyDown,
   isCreatingChat = false
 }: ChatInputAreaProps) {
+  // Always initialize hooks - don't conditionally call them
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 60,
     maxHeight: 200,
@@ -85,6 +86,11 @@ export function ChatInputArea({
   useEffect(() => {
     updateSuggestions(value);
   }, [value]);
+
+  // Ensure adjustHeight is consistently called
+  useEffect(() => {
+    adjustHeight();
+  }, [value, adjustHeight]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Pass to parent component if provided
